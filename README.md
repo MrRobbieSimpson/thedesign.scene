@@ -83,7 +83,8 @@ src/
 
 Editorial, calm, and premium — inspired by recent.design, handheld.design, and spottedinprod.com:
 
-- Geist Sans throughout (tight, modern heading weight)
+- **Primary typeface: Geist Sans** (body, UI, brand, headings). **Geist Mono** for code only — no display serif for now
+- Headings use the same family with medium weight + tight tracking
 - Generous spacing and soft borders
 - Distinct card treatments per content type
 - First-class light / dark themes
