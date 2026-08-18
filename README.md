@@ -23,7 +23,19 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000).
 
-Without `DATABASE_URL`, the app runs on **demo data** so you can explore the UI immediately. Admin writes stay disabled until Postgres is connected.
+### Environment
+
+| Variable | Purpose |
+| --- | --- |
+| `DATABASE_URL` | Neon/Postgres |
+| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | Clerk (required for sign-in) |
+| `CLERK_SECRET_KEY` | Clerk server |
+| `NEXT_PUBLIC_CLERK_SIGN_IN_URL` | `/sign-in` |
+| `NEXT_PUBLIC_CLERK_SIGN_UP_URL` | `/sign-up` |
+
+Create a Clerk app, enable **Google**, **X**, and **LinkedIn**, then paste keys into `.env.local` and Vercel.
+
+Without `DATABASE_URL`, the app runs on **demo data**. Admin / Saves / Scenes require Clerk sign-in.
 
 ## Database (Neon or Supabase)
 

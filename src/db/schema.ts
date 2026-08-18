@@ -2,6 +2,7 @@ import { relations, sql } from "drizzle-orm";
 import {
   boolean,
   doublePrecision,
+  integer,
   jsonb,
   pgEnum,
   pgTable,
@@ -12,6 +13,7 @@ import {
 } from "drizzle-orm/pg-core";
 
 export const CONTENT_TYPES = [
+  "article",
   "thought",
   "visual",
   "build",
@@ -60,6 +62,9 @@ export const content = pgTable(
     id: uuid("id").defaultRandom().primaryKey(),
     type: contentTypeEnum("type").notNull(),
     title: text("title").notNull(),
+    slug: text("slug").unique(),
+    body: text("body"),
+    readingTimeMinutes: integer("reading_time_minutes"),
     url: text("url"),
     excerpt: text("excerpt"),
     image: text("image"),
@@ -127,14 +132,128 @@ export const events = pgTable(
   ]
 );
 
+export const profiles = pgTable("profiles", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  clerkUserId: text("clerk_user_id").notNull().unique(),
+  displayName: text("display_name"),
+  handle: text("handle").unique(),
+  avatarUrl: text("avatar_url"),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
+    .defaultNow()
+    .notNull()
+    .$onUpdate(() => new Date()),
+});
+
+export const saves = pgTable(
+  "saves",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    profileId: uuid("profile_id")
+      .notNull()
+      .references(() => profiles.id, { onDelete: "cascade" }),
+    contentId: uuid("content_id")
+      .notNull()
+      .references(() => content.id, { onDelete: "cascade" }),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    uniqueIndex("saves_profile_content_uidx").on(
+      table.profileId,
+      table.contentId
+    ),
+  ]
+);
+
+export const scenes = pgTable("scenes", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  profileId: uuid("profile_id")
+    .notNull()
+    .references(() => profiles.id, { onDelete: "cascade" }),
+  title: text("title").notNull(),
+  description: text("description"),
+  isPublic: boolean("is_public").notNull().default(false),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
+    .defaultNow()
+    .notNull()
+    .$onUpdate(() => new Date()),
+});
+
+export const sceneItems = pgTable(
+  "scene_items",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    sceneId: uuid("scene_id")
+      .notNull()
+      .references(() => scenes.id, { onDelete: "cascade" }),
+    contentId: uuid("content_id")
+      .notNull()
+      .references(() => content.id, { onDelete: "cascade" }),
+    position: integer("position").notNull().default(0),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    uniqueIndex("scene_items_scene_content_uidx").on(
+      table.sceneId,
+      table.contentId
+    ),
+  ]
+);
+
 export const makersRelations = relations(makers, ({ many }) => ({
   content: many(content),
 }));
 
-export const contentRelations = relations(content, ({ one }) => ({
+export const contentRelations = relations(content, ({ one, many }) => ({
   maker: one(makers, {
     fields: [content.makerId],
     references: [makers.id],
+  }),
+  saves: many(saves),
+  sceneItems: many(sceneItems),
+}));
+
+export const profilesRelations = relations(profiles, ({ many }) => ({
+  saves: many(saves),
+  scenes: many(scenes),
+}));
+
+export const savesRelations = relations(saves, ({ one }) => ({
+  profile: one(profiles, {
+    fields: [saves.profileId],
+    references: [profiles.id],
+  }),
+  content: one(content, {
+    fields: [saves.contentId],
+    references: [content.id],
+  }),
+}));
+
+export const scenesRelations = relations(scenes, ({ one, many }) => ({
+  profile: one(profiles, {
+    fields: [scenes.profileId],
+    references: [profiles.id],
+  }),
+  items: many(sceneItems),
+}));
+
+export const sceneItemsRelations = relations(sceneItems, ({ one }) => ({
+  scene: one(scenes, {
+    fields: [sceneItems.sceneId],
+    references: [scenes.id],
+  }),
+  content: one(content, {
+    fields: [sceneItems.contentId],
+    references: [content.id],
   }),
 }));
 
@@ -144,6 +263,8 @@ export type Content = typeof content.$inferSelect;
 export type NewContent = typeof content.$inferInsert;
 export type Event = typeof events.$inferSelect;
 export type NewEvent = typeof events.$inferInsert;
+export type Profile = typeof profiles.$inferSelect;
+export type Scene = typeof scenes.$inferSelect;
 export type ContentType = (typeof CONTENT_TYPES)[number];
 export type ContentStatus = (typeof contentStatusEnum.enumValues)[number];
 export type EventType = (typeof eventTypeEnum.enumValues)[number];

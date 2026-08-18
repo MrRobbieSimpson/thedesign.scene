@@ -3,6 +3,7 @@ import Link from "next/link";
 import {
   ArrowUpRight,
   AtSign,
+  BookOpen,
   Layers,
   Lightbulb,
   Newspaper,
@@ -21,6 +22,8 @@ import { cn } from "@/lib/utils";
 function TypeIcon({ type }: { type: ContentWithMaker["type"] }) {
   const className = "size-3.5";
   switch (type) {
+    case "article":
+      return <BookOpen className={className} />;
     case "thought":
       return <Lightbulb className={className} />;
     case "visual":
@@ -32,6 +35,11 @@ function TypeIcon({ type }: { type: ContentWithMaker["type"] }) {
     case "post":
       return <AtSign className={className} />;
   }
+}
+
+function contentHref(item: ContentWithMaker) {
+  if (item.type === "article" && item.slug) return `/article/${item.slug}`;
+  return `/content/${item.id}`;
 }
 
 function Attribution({
@@ -48,7 +56,7 @@ function Attribution({
     sourcePlatformLabel(item.sourcePlatform) ??
     "thedesign.scene";
 
-  return (
+  const inner = (
     <div className="flex items-center gap-2.5 text-sm text-muted-foreground">
       {item.maker?.avatar ? (
         <Image
@@ -71,13 +79,35 @@ function Attribution({
             {formatPublishedDate(date)}
           </>
         ) : null}
+        {item.readingTimeMinutes ? (
+          <>
+            <span className="mx-1.5 text-border">·</span>
+            {item.readingTimeMinutes} min
+          </>
+        ) : null}
       </span>
     </div>
   );
+
+  if (item.maker?.handle) {
+    return (
+      <Link
+        href={`/maker/${item.maker.handle}`}
+        onClick={(event) => event.stopPropagation()}
+        className="transition-colors hover:text-foreground"
+      >
+        {inner}
+      </Link>
+    );
+  }
+
+  return inner;
 }
 
 export function ContentCard({ item }: { item: ContentWithMaker }) {
   switch (item.type) {
+    case "article":
+      return <ArticleCard item={item} />;
     case "thought":
       return <ThoughtCard item={item} />;
     case "visual":
@@ -91,10 +121,52 @@ export function ContentCard({ item }: { item: ContentWithMaker }) {
   }
 }
 
+function ArticleCard({ item }: { item: ContentWithMaker }) {
+  return (
+    <Link
+      href={contentHref(item)}
+      className={cn(
+        "group flex h-full flex-col justify-between rounded-2xl border border-border/70 bg-card p-8 shadow-[0_1px_0_rgba(0,0,0,0.02)] transition-all",
+        "hover:-translate-y-0.5 hover:border-border hover:shadow-[0_16px_48px_-28px_rgba(0,0,0,0.4)]"
+      )}
+    >
+      <div className="space-y-5">
+        <div className="flex items-center justify-between gap-3">
+          <Badge variant="secondary" className="gap-1.5">
+            <TypeIcon type="article" />
+            {contentTypeLabel("article")}
+          </Badge>
+          {item.featured ? (
+            <span className="text-[11px] font-medium tracking-wide text-muted-foreground uppercase">
+              Featured
+            </span>
+          ) : null}
+        </div>
+        <div className="space-y-3">
+          <h3 className="font-heading text-[1.65rem] leading-[1.2] text-balance">
+            {item.title}
+          </h3>
+          {item.excerpt ? (
+            <p className="line-clamp-3 text-[0.98rem] leading-relaxed text-muted-foreground">
+              {item.excerpt}
+            </p>
+          ) : null}
+        </div>
+      </div>
+      <div className="mt-10 flex items-center justify-between gap-3">
+        <Attribution item={item} date={item.publishedAt} />
+        <span className="text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100">
+          <ArrowUpRight className="size-4" />
+        </span>
+      </div>
+    </Link>
+  );
+}
+
 function ThoughtCard({ item }: { item: ContentWithMaker }) {
   return (
     <Link
-      href={`/content/${item.id}`}
+      href={contentHref(item)}
       className={cn(
         "group flex h-full flex-col justify-between rounded-2xl border border-border/70 bg-card p-7 shadow-[0_1px_0_rgba(0,0,0,0.02)] transition-all",
         "hover:-translate-y-0.5 hover:border-border hover:shadow-[0_12px_40px_-24px_rgba(0,0,0,0.35)]"
@@ -138,7 +210,7 @@ function ThoughtCard({ item }: { item: ContentWithMaker }) {
 function VisualCard({ item }: { item: ContentWithMaker }) {
   return (
     <Link
-      href={`/content/${item.id}`}
+      href={contentHref(item)}
       className={cn(
         "group flex h-full flex-col overflow-hidden rounded-2xl border border-border/70 bg-card shadow-[0_1px_0_rgba(0,0,0,0.02)] transition-all",
         "hover:-translate-y-0.5 hover:border-border hover:shadow-[0_18px_50px_-28px_rgba(0,0,0,0.45)]"
@@ -197,7 +269,7 @@ function VisualCard({ item }: { item: ContentWithMaker }) {
 function BuildCard({ item }: { item: ContentWithMaker }) {
   return (
     <Link
-      href={`/content/${item.id}`}
+      href={contentHref(item)}
       className={cn(
         "group relative flex h-full flex-col overflow-hidden rounded-2xl border border-border/70 bg-card shadow-[0_1px_0_rgba(0,0,0,0.02)] transition-all",
         "hover:-translate-y-0.5 hover:border-border hover:shadow-[0_18px_50px_-28px_rgba(0,0,0,0.45)]"
@@ -263,7 +335,7 @@ function BuildCard({ item }: { item: ContentWithMaker }) {
 function NewsCard({ item }: { item: ContentWithMaker }) {
   return (
     <Link
-      href={`/content/${item.id}`}
+      href={contentHref(item)}
       className={cn(
         "group flex h-full flex-col overflow-hidden rounded-2xl border border-border/70 bg-card shadow-[0_1px_0_rgba(0,0,0,0.02)] transition-all",
         "hover:-translate-y-0.5 hover:border-border hover:shadow-[0_18px_50px_-28px_rgba(0,0,0,0.45)]"
@@ -325,7 +397,7 @@ function NewsCard({ item }: { item: ContentWithMaker }) {
 function PostCard({ item }: { item: ContentWithMaker }) {
   return (
     <Link
-      href={`/content/${item.id}`}
+      href={contentHref(item)}
       className={cn(
         "group flex h-full flex-col overflow-hidden rounded-2xl border border-border/70 bg-card shadow-[0_1px_0_rgba(0,0,0,0.02)] transition-all",
         "hover:-translate-y-0.5 hover:border-border hover:shadow-[0_12px_40px_-24px_rgba(0,0,0,0.35)]"

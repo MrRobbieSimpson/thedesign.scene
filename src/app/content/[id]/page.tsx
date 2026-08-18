@@ -1,8 +1,9 @@
 import Image from "next/image";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { ArrowLeft, ArrowUpRight, ExternalLink } from "lucide-react";
 
+import { SaveButton } from "@/components/save-button";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -34,6 +35,10 @@ export default async function ContentPage({ params }: ContentPageProps) {
 
   if (!item || item.status !== "published") {
     notFound();
+  }
+
+  if (item.type === "article" && item.slug) {
+    redirect(`/article/${item.slug}`);
   }
 
   const outbound = item.sourceUrl ?? item.url;
@@ -84,31 +89,35 @@ export default async function ContentPage({ params }: ContentPageProps) {
           {item.title}
         </h1>
 
-        {attribution ? (
-          <div className="flex items-center gap-3">
-            {item.maker?.avatar ? (
-              <Image
-                src={item.maker.avatar}
-                alt={item.maker.name}
-                width={40}
-                height={40}
-                className="size-10 rounded-full object-cover ring-1 ring-border"
-              />
-            ) : null}
-            <div>
-              <p className="text-sm font-medium">{attribution}</p>
-              {item.maker?.handle ? (
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          {item.maker ? (
+            <Link
+              href={`/maker/${item.maker.handle}`}
+              className="flex items-center gap-3 transition-opacity hover:opacity-80"
+            >
+              {item.maker.avatar ? (
+                <Image
+                  src={item.maker.avatar}
+                  alt={item.maker.name}
+                  width={40}
+                  height={40}
+                  className="size-10 rounded-full object-cover ring-1 ring-border"
+                />
+              ) : null}
+              <div>
+                <p className="text-sm font-medium">{attribution}</p>
                 <p className="text-sm text-muted-foreground">
                   @{item.maker.handle}
                 </p>
-              ) : item.authorHandle && item.maker?.name ? (
-                <p className="text-sm text-muted-foreground">
-                  @{item.authorHandle}
-                </p>
-              ) : null}
-            </div>
-          </div>
-        ) : null}
+              </div>
+            </Link>
+          ) : attribution ? (
+            <p className="text-sm font-medium">{attribution}</p>
+          ) : (
+            <div />
+          )}
+          <SaveButton contentId={item.id} />
+        </div>
       </header>
 
       {showHero ? (

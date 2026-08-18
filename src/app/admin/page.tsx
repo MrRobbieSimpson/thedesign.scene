@@ -5,7 +5,7 @@ import { ImportEventForm } from "@/components/admin/import-event-form";
 import { ImportRssPanel } from "@/components/admin/import-rss-panel";
 import { ImportUrlForm } from "@/components/admin/import-url-form";
 import { isDatabaseConfigured } from "@/db";
-import { getAllContent, getAllEvents } from "@/lib/queries";
+import { getAllContent, getAllEvents, getMakers } from "@/lib/queries";
 
 export const dynamic = "force-dynamic";
 
@@ -15,9 +15,10 @@ export const metadata = {
 };
 
 export default async function AdminPage() {
-  const [items, eventItems] = await Promise.all([
+  const [items, eventItems, makers] = await Promise.all([
     getAllContent(),
     getAllEvents(),
+    getMakers(),
   ]);
   const dbReady = isDatabaseConfigured();
 
@@ -51,7 +52,7 @@ export default async function AdminPage() {
       <div className="space-y-10">
         <ImportUrlForm disabled={!dbReady} />
         <ImportRssPanel disabled={!dbReady} />
-        <ContentForm disabled={!dbReady} />
+        <ContentForm disabled={!dbReady} makers={makers} />
 
         <section className="space-y-4">
           <div className="flex items-end justify-between gap-3">

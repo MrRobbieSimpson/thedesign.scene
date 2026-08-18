@@ -19,7 +19,10 @@ export function FeedGrid({ items }: { items: ContentWithMaker[] }) {
         <div
           key={item.id}
           className={
-            (item.type === "thought" || item.type === "news") && item.featured
+            (item.type === "article" ||
+              item.type === "thought" ||
+              item.type === "news") &&
+            item.featured
               ? "md:col-span-2"
               : undefined
           }

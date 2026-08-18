@@ -23,6 +23,8 @@ export function formatEventRange(start: Date, end?: Date | null) {
 
 export function contentTypeLabel(type: ContentType) {
   switch (type) {
+    case "article":
+      return "Article";
     case "thought":
       return "Thought";
     case "visual":

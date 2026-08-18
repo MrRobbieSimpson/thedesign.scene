@@ -51,6 +51,9 @@ type DemoInput = Omit<
   | "authorHandle"
   | "authorName"
   | "sourcePayload"
+  | "slug"
+  | "body"
+  | "readingTimeMinutes"
 > &
   Partial<
     Pick<
@@ -61,6 +64,9 @@ type DemoInput = Omit<
       | "authorHandle"
       | "authorName"
       | "sourcePayload"
+      | "slug"
+      | "body"
+      | "readingTimeMinutes"
     >
   > & {
     maker?: Maker | null;
@@ -75,6 +81,9 @@ function item(partial: DemoInput): DemoContent {
       authorHandle: null as string | null,
       authorName: null as string | null,
       sourcePayload: null as Record<string, unknown> | null,
+      slug: null as string | null,
+      body: null as string | null,
+      readingTimeMinutes: null as number | null,
       createdAt: now,
       updatedAt: now,
       maker: null as Maker | null,
@@ -85,6 +94,41 @@ function item(partial: DemoInput): DemoContent {
 }
 
 export const demoContent: DemoContent[] = [
+  item({
+    id: "a0000000-0000-4000-8000-000000000001",
+    type: "article",
+    title: "Curation is an editorial act",
+    slug: "curation-is-an-editorial-act",
+    excerpt:
+      "Collecting is easy. Editing is the craft — knowing what to leave out so what remains can breathe.",
+    body: `There is a quiet difference between a feed that *accumulates* and a feed that *edits*.
+
+Most of the internet optimizes for accumulation. More posts. More shots. More tabs. The result is a kind of visual white noise — impressive in aggregate, forgettable in particular.
+
+**Curation is the opposite impulse.** It is closer to magazine-making than to archiving. You choose a point of view, then you defend it with what you include and, more importantly, what you refuse.
+
+## Taste as a constraint
+
+Constraints are how taste becomes visible. A platform that shows everything cannot be trusted to show you anything that matters. A platform that shows *less*, carefully, earns the right to your attention.
+
+At thedesign.scene we treat editorial writing as the center of gravity. Visuals and builds matter — but they orbit writing that explains *why*.
+
+## What we keep
+
+- Work with a clear point of view
+- Interfaces that feel calm under pressure
+- Essays that change how you see a problem
+
+Everything else can live somewhere noisier.`,
+    readingTimeMinutes: 3,
+    url: null,
+    image: null,
+    status: "published",
+    featured: true,
+    makerId: demoMakers[0].id,
+    publishedAt: new Date("2026-08-15T10:00:00.000Z"),
+    maker: demoMakers[0],
+  }),
   item({
     id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
     type: "thought",

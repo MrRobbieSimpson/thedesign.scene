@@ -7,13 +7,20 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { CONTENT_TYPES } from "@/db/schema";
+import { CONTENT_TYPES, type Maker } from "@/db/schema";
 import { contentTypeLabel } from "@/lib/format";
 
-export function ContentForm({ disabled }: { disabled?: boolean }) {
+export function ContentForm({
+  disabled,
+  makers = [],
+}: {
+  disabled?: boolean;
+  makers?: Maker[];
+}) {
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState(false);
   const [pending, startTransition] = useTransition();
+  const [type, setType] = useState<string>("article");
 
   function onSubmit(formData: FormData) {
     setMessage(null);
@@ -26,6 +33,7 @@ export function ContentForm({ disabled }: { disabled?: boolean }) {
           "create-content-form"
         ) as HTMLFormElement | null;
         form?.reset();
+        setType("article");
       }
     });
   }
@@ -39,7 +47,7 @@ export function ContentForm({ disabled }: { disabled?: boolean }) {
       <div>
         <h2 className="font-heading text-2xl tracking-tight">New content</h2>
         <p className="mt-1 text-sm text-muted-foreground">
-          Create a draft or publish immediately. Unprotected in Phase 1.
+          Prefer Articles for long-form editorial. Sign-in required.
         </p>
       </div>
 
@@ -62,12 +70,13 @@ export function ContentForm({ disabled }: { disabled?: boolean }) {
             name="type"
             required
             disabled={disabled || pending}
-            defaultValue="thought"
+            value={type}
+            onChange={(event) => setType(event.target.value)}
             className="h-8 w-full rounded-lg border border-input bg-transparent px-2.5 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 dark:bg-input/30"
           >
-            {CONTENT_TYPES.map((type) => (
-              <option key={type} value={type}>
-                {contentTypeLabel(type)}
+            {CONTENT_TYPES.map((value) => (
+              <option key={value} value={value}>
+                {contentTypeLabel(value)}
               </option>
             ))}
           </select>
@@ -87,6 +96,31 @@ export function ContentForm({ disabled }: { disabled?: boolean }) {
           </select>
         </div>
 
+        {type === "article" ? (
+          <>
+            <div className="space-y-2 sm:col-span-2">
+              <Label htmlFor="slug">Slug</Label>
+              <Input
+                id="slug"
+                name="slug"
+                disabled={disabled || pending}
+                placeholder="curation-is-an-editorial-act (optional — auto from title)"
+              />
+            </div>
+            <div className="space-y-2 sm:col-span-2">
+              <Label htmlFor="body">Body (Markdown)</Label>
+              <Textarea
+                id="body"
+                name="body"
+                disabled={disabled || pending}
+                placeholder="Write the full article in Markdown…"
+                rows={12}
+                className="font-mono text-sm"
+              />
+            </div>
+          </>
+        ) : null}
+
         <div className="space-y-2 sm:col-span-2">
           <Label htmlFor="excerpt">Excerpt</Label>
           <Textarea
@@ -94,8 +128,26 @@ export function ContentForm({ disabled }: { disabled?: boolean }) {
             name="excerpt"
             disabled={disabled || pending}
             placeholder="A short editorial blurb…"
-            rows={4}
+            rows={3}
           />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="makerId">Maker</Label>
+          <select
+            id="makerId"
+            name="makerId"
+            disabled={disabled || pending}
+            defaultValue=""
+            className="h-8 w-full rounded-lg border border-input bg-transparent px-2.5 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 dark:bg-input/30"
+          >
+            <option value="">None</option>
+            {makers.map((maker) => (
+              <option key={maker.id} value={maker.id}>
+                {maker.name} (@{maker.handle})
+              </option>
+            ))}
+          </select>
         </div>
 
         <div className="space-y-2">
@@ -126,7 +178,7 @@ export function ContentForm({ disabled }: { disabled?: boolean }) {
             id="sourcePlatform"
             name="sourcePlatform"
             disabled={disabled || pending}
-            placeholder="x, layers, handheld, dezeen…"
+            placeholder="x, layers, handheld…"
           />
         </div>
 

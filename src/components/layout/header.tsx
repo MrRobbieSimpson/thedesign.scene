@@ -2,13 +2,26 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import {
+  SignedIn,
+  SignedOut,
+  SignInButton,
+  UserButton,
+} from "@clerk/nextjs";
 
 import { ThemeToggle } from "@/components/theme-toggle";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 const nav = [
   { href: "/", label: "Feed" },
   { href: "/events", label: "Events" },
+];
+
+const signedInNav = [
+  { href: "/saves", label: "Saves" },
+  { href: "/scenes", label: "Scenes" },
+  { href: "/admin", label: "Admin" },
 ];
 
 export function Header() {
@@ -49,17 +62,46 @@ export function Header() {
                 </Link>
               );
             })}
+            <SignedIn>
+              {signedInNav.map((item) => {
+                const active = pathname.startsWith(item.href);
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={cn(
+                      "rounded-full px-3.5 py-1.5 text-sm transition-colors",
+                      active
+                        ? "bg-foreground/[0.06] text-foreground"
+                        : "text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    {item.label}
+                  </Link>
+                );
+              })}
+            </SignedIn>
           </nav>
         </div>
 
-        <div className="flex items-center gap-1">
-          <Link
-            href="/admin"
-            className="mr-1 hidden rounded-full px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground sm:inline-flex"
-          >
-            Admin
-          </Link>
+        <div className="flex items-center gap-2">
           <ThemeToggle />
+          <SignedOut>
+            <SignInButton mode="modal">
+              <Button variant="outline" size="sm">
+                Sign in
+              </Button>
+            </SignInButton>
+          </SignedOut>
+          <SignedIn>
+            <UserButton
+              appearance={{
+                elements: {
+                  avatarBox: "size-8",
+                },
+              }}
+            />
+          </SignedIn>
         </div>
       </div>
     </header>

@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 
 const filters: { value: ContentType | "all"; label: string }[] = [
   { value: "all", label: "All" },
+  { value: "article", label: "Articles" },
   { value: "thought", label: "Thoughts" },
   { value: "visual", label: "Visual" },
   { value: "build", label: "Builds" },

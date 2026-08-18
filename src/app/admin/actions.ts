@@ -45,11 +45,15 @@ export async function createContent(formData: FormData): Promise<ActionResult> {
   const missing = requireDb();
   if (missing) return missing;
 
+  const { readingTimeMinutes, slugify } = await import("@/lib/slug");
+
   const title = String(formData.get("title") ?? "").trim();
   const typeRaw = String(formData.get("type") ?? "");
   const excerpt = String(formData.get("excerpt") ?? "").trim() || null;
   const url = String(formData.get("url") ?? "").trim() || null;
   const image = String(formData.get("image") ?? "").trim() || null;
+  const body = String(formData.get("body") ?? "").trim() || null;
+  const makerId = String(formData.get("makerId") ?? "").trim() || null;
   const status = (String(formData.get("status") ?? "draft") ||
     "draft") as ContentStatus;
   const featured = formData.get("featured") === "on";
@@ -60,6 +64,7 @@ export async function createContent(formData: FormData): Promise<ActionResult> {
     String(formData.get("authorHandle") ?? "").trim().replace(/^@/, "") ||
     null;
   const authorName = String(formData.get("authorName") ?? "").trim() || null;
+  let slug = String(formData.get("slug") ?? "").trim() || null;
 
   if (!title) {
     return { ok: false, message: "Title is required." };
@@ -72,23 +77,46 @@ export async function createContent(formData: FormData): Promise<ActionResult> {
   const type = typeRaw as ContentType;
   const publishedAt = status === "published" ? new Date() : null;
 
-  await db!.insert(content).values({
-    title,
-    type,
-    excerpt,
-    url,
-    image,
-    status,
-    featured,
-    publishedAt,
-    sourcePlatform,
-    sourceUrl,
-    authorHandle,
-    authorName,
-  });
+  if (type === "article") {
+    slug = slugify(slug || title);
+    if (!slug) {
+      return { ok: false, message: "Articles need a valid slug." };
+    }
+  } else {
+    slug = null;
+  }
+
+  try {
+    await db!.insert(content).values({
+      title,
+      type,
+      slug,
+      body: type === "article" ? body : null,
+      readingTimeMinutes:
+        type === "article" && body ? readingTimeMinutes(body) : null,
+      excerpt,
+      url,
+      image,
+      status,
+      featured,
+      makerId,
+      publishedAt,
+      sourcePlatform,
+      sourceUrl,
+      authorHandle,
+      authorName,
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Create failed.";
+    if (message.toLowerCase().includes("unique")) {
+      return { ok: false, message: "That slug is already in use." };
+    }
+    return { ok: false, message };
+  }
 
   revalidatePath("/");
   revalidatePath("/admin");
+  if (slug) revalidatePath(`/article/${slug}`);
 
   return { ok: true, message: "Content created." };
 }

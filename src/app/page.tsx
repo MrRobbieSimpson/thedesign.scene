@@ -34,8 +34,8 @@ export default async function HomePage({ searchParams }: HomeProps) {
           Design worth sitting with.
         </h1>
         <p className="text-base leading-relaxed text-muted-foreground sm:text-lg">
-          Thoughts, visuals, builds, design news, and sharp posts from X —
-          quality over quantity.
+          Editorial writing first — plus visuals, builds, news, and posts.
+          Quality over quantity.
         </p>
       </section>
 

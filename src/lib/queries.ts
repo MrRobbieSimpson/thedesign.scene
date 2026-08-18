@@ -95,3 +95,49 @@ export async function getMakers() {
     orderBy: (fields, { asc }) => [asc(fields.name)],
   });
 }
+
+export async function getContentBySlug(
+  slug: string
+): Promise<ContentWithMaker | null> {
+  if (!isDatabaseConfigured() || !db) {
+    return (
+      filterDemoContent("all", { includeDrafts: true }).find(
+        (item) => item.slug === slug
+      ) ?? null
+    );
+  }
+
+  const row = await db.query.content.findFirst({
+    where: eq(content.slug, slug),
+    with: { maker: true },
+  });
+
+  return row ?? null;
+}
+
+export async function getMakerByHandle(handle: string) {
+  if (!isDatabaseConfigured() || !db) {
+    return demoMakers.find((maker) => maker.handle === handle) ?? null;
+  }
+
+  return (
+    (await db.query.makers.findFirst({
+      where: (fields, { eq: e }) => e(fields.handle, handle),
+    })) ?? null
+  );
+}
+
+export async function getPublishedContentByMaker(makerId: string) {
+  if (!isDatabaseConfigured() || !db) {
+    return filterDemoContent("all").filter((item) => item.makerId === makerId);
+  }
+
+  return db.query.content.findMany({
+    where: and(eq(content.status, "published"), eq(content.makerId, makerId)),
+    with: { maker: true },
+    orderBy: (fields, { desc: d }) => [
+      d(fields.publishedAt),
+      d(fields.createdAt),
+    ],
+  });
+}
