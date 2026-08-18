@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import { Show, SignInButton, SignUpButton, UserButton } from "@clerk/nextjs";
 
 import { WriteButton } from "@/components/writing/write-button";
@@ -32,16 +33,20 @@ function GuestAuthLinks() {
 }
 
 /**
- * Clear Sign in / Register when signed out; write + avatar when signed in.
+ * Always show Sign in / Register for guests.
+ * Prefer Clerk modal buttons once hydrated; fall back to routes.
  */
 export function AuthControls() {
-  if (!isClerkPublishableConfigured()) {
+  const [ready, setReady] = useState(false);
+  useEffect(() => setReady(true), []);
+
+  if (!isClerkPublishableConfigured() || !ready) {
     return <GuestAuthLinks />;
   }
 
   return (
     <>
-      <Show when="signed-out">
+      <Show when="signed-out" fallback={<GuestAuthLinks />}>
         <div className="flex items-center gap-2">
           <SignInButton mode="modal">
             <Button variant="ghost" size="sm">
