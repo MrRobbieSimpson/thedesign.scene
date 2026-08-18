@@ -19,6 +19,26 @@ import {
 import type { ContentWithMaker } from "@/lib/demo-data";
 import { cn } from "@/lib/utils";
 
+export type CardDensity = "comfortable" | "compact" | "mosaic";
+
+function densityPad(density: CardDensity) {
+  if (density === "compact") return "p-4";
+  if (density === "mosaic") return "p-5";
+  return "p-7";
+}
+
+function densityTitle(density: CardDensity, large?: boolean) {
+  if (density === "compact") return "text-base leading-snug";
+  if (density === "mosaic") return "text-lg leading-snug";
+  return large ? "text-[1.65rem] leading-[1.2]" : "text-2xl leading-[1.2]";
+}
+
+function densityExcerpt(density: CardDensity) {
+  if (density === "compact") return "line-clamp-2 text-xs leading-relaxed";
+  if (density === "mosaic") return "line-clamp-3 text-sm leading-relaxed";
+  return "line-clamp-3 text-[0.95rem] leading-relaxed";
+}
+
 function TypeIcon({ type }: { type: ContentWithMaker["type"] }) {
   const className = "size-3.5";
   switch (type) {
@@ -104,56 +124,84 @@ function Attribution({
   return inner;
 }
 
-export function ContentCard({ item }: { item: ContentWithMaker }) {
+export function ContentCard({
+  item,
+  density = "comfortable",
+}: {
+  item: ContentWithMaker;
+  density?: CardDensity;
+}) {
   switch (item.type) {
     case "article":
-      return <ArticleCard item={item} />;
+      return <ArticleCard item={item} density={density} />;
     case "thought":
-      return <ThoughtCard item={item} />;
+      return <ThoughtCard item={item} density={density} />;
     case "visual":
-      return <VisualCard item={item} />;
+      return <VisualCard item={item} density={density} />;
     case "build":
-      return <BuildCard item={item} />;
+      return <BuildCard item={item} density={density} />;
     case "news":
-      return <NewsCard item={item} />;
+      return <NewsCard item={item} density={density} />;
     case "post":
-      return <PostCard item={item} />;
+      return <PostCard item={item} density={density} />;
   }
 }
 
-function ArticleCard({ item }: { item: ContentWithMaker }) {
+function ArticleCard({
+  item,
+  density,
+}: {
+  item: ContentWithMaker;
+  density: CardDensity;
+}) {
   return (
     <Link
       href={contentHref(item)}
       className={cn(
-        "group flex h-full flex-col justify-between rounded-2xl border border-border/70 bg-card p-8 shadow-[0_1px_0_rgba(0,0,0,0.02)] transition-all",
+        "group flex h-full flex-col justify-between rounded-2xl border border-border/70 bg-card shadow-[0_1px_0_rgba(0,0,0,0.02)] transition-all",
+        density === "comfortable" ? "p-8" : densityPad(density),
         "hover:-translate-y-0.5 hover:border-border hover:shadow-[0_16px_48px_-28px_rgba(0,0,0,0.4)]"
       )}
     >
-      <div className="space-y-5">
+      <div className={cn(density === "compact" ? "space-y-3" : "space-y-5")}>
         <div className="flex items-center justify-between gap-3">
           <Badge variant="secondary" className="gap-1.5">
             <TypeIcon type="article" />
             {contentTypeLabel("article")}
           </Badge>
-          {item.featured ? (
+          {item.featured && density !== "compact" ? (
             <span className="text-[11px] font-medium tracking-wide text-muted-foreground uppercase">
               Featured
             </span>
           ) : null}
         </div>
-        <div className="space-y-3">
-          <h3 className="font-heading text-[1.65rem] leading-[1.2] text-balance">
+        <div className="space-y-2">
+          <h3
+            className={cn(
+              "font-heading text-balance",
+              densityTitle(density, true)
+            )}
+          >
             {item.title}
           </h3>
           {item.excerpt ? (
-            <p className="line-clamp-3 text-[0.98rem] leading-relaxed text-muted-foreground">
+            <p
+              className={cn(
+                "text-muted-foreground",
+                densityExcerpt(density)
+              )}
+            >
               {item.excerpt}
             </p>
           ) : null}
         </div>
       </div>
-      <div className="mt-10 flex items-center justify-between gap-3">
+      <div
+        className={cn(
+          "flex items-center justify-between gap-3",
+          density === "compact" ? "mt-4" : "mt-10"
+        )}
+      >
         <Attribution item={item} date={item.publishedAt} />
         <span className="text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100">
           <ArrowUpRight className="size-4" />
@@ -163,41 +211,58 @@ function ArticleCard({ item }: { item: ContentWithMaker }) {
   );
 }
 
-function ThoughtCard({ item }: { item: ContentWithMaker }) {
+function ThoughtCard({
+  item,
+  density,
+}: {
+  item: ContentWithMaker;
+  density: CardDensity;
+}) {
   return (
     <Link
       href={contentHref(item)}
       className={cn(
-        "group flex h-full flex-col justify-between rounded-2xl border border-border/70 bg-card p-7 shadow-[0_1px_0_rgba(0,0,0,0.02)] transition-all",
+        "group flex h-full flex-col justify-between rounded-2xl border border-border/70 bg-card shadow-[0_1px_0_rgba(0,0,0,0.02)] transition-all",
+        densityPad(density),
         "hover:-translate-y-0.5 hover:border-border hover:shadow-[0_12px_40px_-24px_rgba(0,0,0,0.35)]"
       )}
     >
-      <div className="space-y-5">
+      <div className={cn(density === "compact" ? "space-y-3" : "space-y-5")}>
         <div className="flex items-center justify-between gap-3">
           <Badge variant="secondary" className="gap-1.5">
             <TypeIcon type="thought" />
             {contentTypeLabel("thought")}
           </Badge>
-          {item.featured ? (
+          {item.featured && density !== "compact" ? (
             <span className="text-[11px] font-medium tracking-wide text-muted-foreground uppercase">
               Featured
             </span>
           ) : null}
         </div>
 
-        <div className="space-y-3">
-          <h3 className="font-heading text-2xl leading-[1.2] text-balance transition-colors group-hover:text-foreground">
+        <div className="space-y-2">
+          <h3
+            className={cn(
+              "font-heading text-balance transition-colors group-hover:text-foreground",
+              densityTitle(density)
+            )}
+          >
             {item.title}
           </h3>
           {item.excerpt ? (
-            <p className="line-clamp-4 text-[0.95rem] leading-relaxed text-muted-foreground">
+            <p className={cn("text-muted-foreground", densityExcerpt(density))}>
               {item.excerpt}
             </p>
           ) : null}
         </div>
       </div>
 
-      <div className="mt-8 flex items-center justify-between gap-3">
+      <div
+        className={cn(
+          "flex items-center justify-between gap-3",
+          density === "compact" ? "mt-4" : "mt-8"
+        )}
+      >
         <Attribution item={item} date={item.publishedAt} />
         <span className="text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100">
           <ArrowUpRight className="size-4" />
@@ -207,7 +272,13 @@ function ThoughtCard({ item }: { item: ContentWithMaker }) {
   );
 }
 
-function VisualCard({ item }: { item: ContentWithMaker }) {
+function VisualCard({
+  item,
+  density,
+}: {
+  item: ContentWithMaker;
+  density: CardDensity;
+}) {
   return (
     <Link
       href={contentHref(item)}
@@ -216,7 +287,16 @@ function VisualCard({ item }: { item: ContentWithMaker }) {
         "hover:-translate-y-0.5 hover:border-border hover:shadow-[0_18px_50px_-28px_rgba(0,0,0,0.45)]"
       )}
     >
-      <div className="relative aspect-[4/3] overflow-hidden bg-muted">
+      <div
+        className={cn(
+          "relative overflow-hidden bg-muted",
+          density === "mosaic"
+            ? "aspect-[3/4]"
+            : density === "compact"
+              ? "aspect-[5/4]"
+              : "aspect-[4/3]"
+        )}
+      >
         {item.image ? (
           <Image
             src={item.image}
@@ -249,7 +329,12 @@ function VisualCard({ item }: { item: ContentWithMaker }) {
 
       <div className="flex flex-1 flex-col gap-4 p-5">
         <div className="space-y-2">
-          <h3 className="font-heading text-xl leading-snug text-balance">
+          <h3
+            className={cn(
+              "font-heading text-balance",
+              density === "compact" ? "text-sm leading-snug" : "text-xl leading-snug"
+            )}
+          >
             {item.title}
           </h3>
           {item.excerpt ? (
@@ -266,7 +351,13 @@ function VisualCard({ item }: { item: ContentWithMaker }) {
   );
 }
 
-function BuildCard({ item }: { item: ContentWithMaker }) {
+function BuildCard({
+  item,
+  density,
+}: {
+  item: ContentWithMaker;
+  density: CardDensity;
+}) {
   return (
     <Link
       href={contentHref(item)}
@@ -275,7 +366,12 @@ function BuildCard({ item }: { item: ContentWithMaker }) {
         "hover:-translate-y-0.5 hover:border-border hover:shadow-[0_18px_50px_-28px_rgba(0,0,0,0.45)]"
       )}
     >
-      <div className="relative aspect-[16/10] overflow-hidden bg-muted">
+      <div
+        className={cn(
+          "relative overflow-hidden bg-muted",
+          density === "compact" ? "aspect-[16/11]" : "aspect-[16/10]"
+        )}
+      >
         {item.image ? (
           <Image
             src={item.image}
@@ -308,7 +404,12 @@ function BuildCard({ item }: { item: ContentWithMaker }) {
 
       <div className="flex flex-1 flex-col gap-4 px-5 pt-1 pb-5">
         <div className="space-y-2">
-          <h3 className="font-heading text-xl leading-snug text-balance">
+          <h3
+            className={cn(
+              "font-heading text-balance",
+              density === "compact" ? "text-sm leading-snug" : "text-xl leading-snug"
+            )}
+          >
             {item.title}
           </h3>
           {item.excerpt ? (
@@ -332,7 +433,13 @@ function BuildCard({ item }: { item: ContentWithMaker }) {
   );
 }
 
-function NewsCard({ item }: { item: ContentWithMaker }) {
+function NewsCard({
+  item,
+  density,
+}: {
+  item: ContentWithMaker;
+  density: CardDensity;
+}) {
   return (
     <Link
       href={contentHref(item)}
@@ -341,7 +448,16 @@ function NewsCard({ item }: { item: ContentWithMaker }) {
         "hover:-translate-y-0.5 hover:border-border hover:shadow-[0_18px_50px_-28px_rgba(0,0,0,0.45)]"
       )}
     >
-      <div className="relative aspect-[16/9] overflow-hidden bg-muted">
+      <div
+        className={cn(
+          "relative overflow-hidden bg-muted",
+          density === "mosaic"
+            ? "aspect-[4/5]"
+            : density === "compact"
+              ? "aspect-[16/10]"
+              : "aspect-[16/9]"
+        )}
+      >
         {item.image ? (
           <Image
             src={item.image}
@@ -373,7 +489,12 @@ function NewsCard({ item }: { item: ContentWithMaker }) {
 
       <div className="flex flex-1 flex-col gap-4 p-5">
         <div className="space-y-2">
-          <h3 className="font-heading text-xl leading-snug text-balance">
+          <h3
+            className={cn(
+              "font-heading text-balance",
+              density === "compact" ? "text-sm leading-snug" : "text-xl leading-snug"
+            )}
+          >
             {item.title}
           </h3>
           {item.excerpt ? (
@@ -394,7 +515,13 @@ function NewsCard({ item }: { item: ContentWithMaker }) {
   );
 }
 
-function PostCard({ item }: { item: ContentWithMaker }) {
+function PostCard({
+  item,
+  density,
+}: {
+  item: ContentWithMaker;
+  density: CardDensity;
+}) {
   return (
     <Link
       href={contentHref(item)}
@@ -404,7 +531,12 @@ function PostCard({ item }: { item: ContentWithMaker }) {
       )}
     >
       {item.image ? (
-        <div className="relative aspect-[4/3] overflow-hidden bg-muted">
+        <div
+          className={cn(
+            "relative overflow-hidden bg-muted",
+            density === "compact" ? "aspect-[5/4]" : "aspect-[4/3]"
+          )}
+        >
           <Image
             src={item.image}
             alt={item.title}
@@ -441,7 +573,12 @@ function PostCard({ item }: { item: ContentWithMaker }) {
         ) : null}
 
         <div className="space-y-3">
-          <h3 className="font-heading text-xl leading-snug text-balance">
+          <h3
+            className={cn(
+              "font-heading text-balance",
+              density === "compact" ? "text-sm leading-snug" : "text-xl leading-snug"
+            )}
+          >
             {item.title}
           </h3>
           {item.excerpt ? (

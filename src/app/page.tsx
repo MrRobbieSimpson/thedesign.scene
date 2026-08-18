@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 
+import { FeedExplorer } from "@/components/content/feed-explorer";
 import { FeedFilters } from "@/components/content/feed-filters";
-import { FeedGrid } from "@/components/content/feed-grid";
 import { CONTENT_TYPES, type ContentType } from "@/db/schema";
 import { getPublishedContent } from "@/lib/queries";
 
@@ -37,20 +37,18 @@ export default async function HomePage({ searchParams }: HomeProps) {
         </p>
       </section>
 
-      <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <Suspense
-          fallback={
-            <div className="h-10 w-72 animate-pulse rounded-full bg-muted" />
-          }
-        >
-          <FeedFilters />
-        </Suspense>
-        <p className="text-sm text-muted-foreground">
-          {items.length} {items.length === 1 ? "piece" : "pieces"}
-        </p>
-      </div>
-
-      <FeedGrid items={items} />
+      <FeedExplorer
+        items={items}
+        toolbar={
+          <Suspense
+            fallback={
+              <div className="h-10 w-72 animate-pulse rounded-full bg-muted" />
+            }
+          >
+            <FeedFilters />
+          </Suspense>
+        }
+      />
     </div>
   );
 }
