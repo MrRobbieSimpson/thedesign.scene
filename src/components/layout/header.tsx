@@ -3,8 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  SignedIn,
-  SignedOut,
+  Show,
   SignInButton,
   UserButton,
 } from "@clerk/nextjs";
@@ -65,7 +64,7 @@ export function Header() {
                 </Link>
               );
             })}
-            <SignedIn>
+            <Show when="signed-in">
               {signedInNav.map((item) => {
                 const active = pathname.startsWith(item.href);
                 return (
@@ -83,21 +82,21 @@ export function Header() {
                   </Link>
                 );
               })}
-            </SignedIn>
+            </Show>
           </nav>
         </div>
 
         <div className="flex shrink-0 items-center gap-3">
           <LocalTime />
           <ThemeToggle />
-          <SignedOut>
+          <Show when="signed-out">
             <SignInButton mode="modal">
               <Button variant="outline" size="sm">
                 Sign in
               </Button>
             </SignInButton>
-          </SignedOut>
-          <SignedIn>
+          </Show>
+          <Show when="signed-in">
             <WriteButton />
             <UserButton
               appearance={{
@@ -106,7 +105,7 @@ export function Header() {
                 },
               }}
             />
-          </SignedIn>
+          </Show>
         </div>
       </div>
     </header>
