@@ -9,6 +9,7 @@ import {
   UserButton,
 } from "@clerk/nextjs";
 
+import { LocalTime } from "@/components/layout/local-time";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { WriteButton } from "@/components/writing/write-button";
 import { Button } from "@/components/ui/button";
@@ -86,7 +87,8 @@ export function Header() {
           </nav>
         </div>
 
-        <div className="flex shrink-0 items-center gap-2">
+        <div className="flex shrink-0 items-center gap-3">
+          <LocalTime />
           <ThemeToggle />
           <SignedOut>
             <SignInButton mode="modal">
