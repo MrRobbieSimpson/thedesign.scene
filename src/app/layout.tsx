@@ -35,7 +35,29 @@ export const metadata: Metadata = {
     "A calm curation of articles, thoughts, visuals, builds, news, posts, and design events.",
 };
 
-function AppShell({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  const shell = (
+    <ThemeProvider
+      attribute="class"
+      defaultTheme="dark"
+      enableSystem={false}
+      disableTransitionOnChange={false}
+    >
+      <WritingProvider>
+        <SiteStage>
+          <Header />
+          <main className="flex-1">{children}</main>
+          <Footer />
+        </SiteStage>
+        <DeferredUi />
+      </WritingProvider>
+    </ThemeProvider>
+  );
+
   return (
     <html
       lang="en"
@@ -43,38 +65,12 @@ function AppShell({ children }: { children: React.ReactNode }) {
       className={`${geistSans.variable} ${geistMono.variable}`}
     >
       <body className={`${geistSans.className} min-h-dvh antialiased`}>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="dark"
-          enableSystem={false}
-          disableTransitionOnChange={false}
-        >
-          <WritingProvider>
-            <SiteStage>
-              <Header />
-              <main className="flex-1">{children}</main>
-              <Footer />
-            </SiteStage>
-            <DeferredUi />
-          </WritingProvider>
-        </ThemeProvider>
+        {isClerkPublishableConfigured() ? (
+          <ClerkProvider>{shell}</ClerkProvider>
+        ) : (
+          shell
+        )}
       </body>
     </html>
-  );
-}
-
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
-  if (!isClerkPublishableConfigured()) {
-    return <AppShell>{children}</AppShell>;
-  }
-
-  return (
-    <ClerkProvider>
-      <AppShell>{children}</AppShell>
-    </ClerkProvider>
   );
 }
