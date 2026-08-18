@@ -53,7 +53,10 @@ export function FeedExplorer({
 
   useEffect(() => {
     const stored = window.localStorage.getItem(FEED_LAYOUT_STORAGE_KEY);
-    if (stored && isFeedLayout(stored)) setLayout(stored);
+    // Prefer calm big layout for the editorial promise.
+    if (stored && isFeedLayout(stored) && stored !== "mosaic") {
+      setLayout(stored);
+    }
   }, []);
 
   function onLayoutChange(next: FeedLayout) {
@@ -61,17 +64,15 @@ export function FeedExplorer({
     window.localStorage.setItem(FEED_LAYOUT_STORAGE_KEY, next);
   }
 
-  // Key by item ids so filter changes clearly remount the grid on mobile.
   const listKey = revived.map((item) => item.id).join("|");
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-10">
       <div className="flex flex-wrap items-center gap-3">
         <div className="w-fit max-w-full shrink-0">{toolbar}</div>
         <div className="ml-auto flex items-center gap-3">
           <p className="text-sm text-muted-foreground">
-            {revived.length} curated{" "}
-            {revived.length === 1 ? "piece" : "pieces"}
+            {revived.length} selected
           </p>
           <FeedLayoutSwitcher value={layout} onChange={onLayoutChange} />
         </div>
@@ -88,19 +89,14 @@ function densityFor(layout: FeedLayout) {
   return "comfortable" as const;
 }
 
-function shouldSpan(item: FeedItem, layout: FeedLayout) {
+function shouldSpan(item: FeedItem, layout: FeedLayout, index: number) {
   if (layout !== "big") return false;
   if (item.kind === "event") return true;
-  if (
-    (item.item.type === "article" || item.item.type === "thought") &&
-    item.item.featured
-  ) {
+  if (item.item.type === "article") return true;
+  if (item.item.type === "thought" && (item.item.featured || index < 4)) {
     return true;
   }
-  if (item.item.type === "article" && !item.item.featured) {
-    // Lead articles still get room to breathe in big layout.
-    return Boolean(item.item.excerpt && item.item.excerpt.length > 120);
-  }
+  if (item.item.type === "build" && item.item.featured) return true;
   return false;
 }
 
@@ -113,10 +109,12 @@ function FeedGridLayout({
 }) {
   if (items.length === 0) {
     return (
-      <div className="rounded-2xl border border-dashed border-border/80 px-6 py-20 text-center">
-        <p className="font-heading text-2xl tracking-tight">Nothing here yet</p>
+      <div className="rounded-2xl border border-dashed border-border/80 px-6 py-24 text-center">
+        <p className="font-heading text-2xl tracking-tight">
+          Nothing selected yet
+        </p>
         <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
-          Featured writing, visuals, builds, and events will appear here.
+          Editor’s picks, writing, builds, and events will appear here.
         </p>
       </div>
     );
@@ -126,15 +124,9 @@ function FeedGridLayout({
 
   if (layout === "mosaic") {
     return (
-      <div className="columns-1 gap-5 sm:columns-2 lg:columns-3">
+      <div className="columns-1 gap-6 sm:columns-2 lg:columns-3">
         {items.map((item, index) => (
-          <div
-            key={item.id}
-            className={cn(
-              "mb-5 break-inside-avoid",
-              index % 7 === 0 && "sm:translate-y-1"
-            )}
-          >
+          <div key={item.id} className="mb-6 break-inside-avoid">
             <FeedItemCard item={item} density={density} priority={index < 3} />
           </div>
         ))}
@@ -144,7 +136,7 @@ function FeedGridLayout({
 
   if (layout === "small") {
     return (
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
         {items.map((item, index) => (
           <FeedItemCard
             key={item.id}
@@ -158,17 +150,15 @@ function FeedGridLayout({
   }
 
   return (
-    <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+    <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
       {items.map((item, index) => (
         <div
           key={item.id}
-          className={shouldSpan(item, layout) ? "md:col-span-2" : undefined}
+          className={
+            shouldSpan(item, layout, index) ? "md:col-span-2" : undefined
+          }
         >
-          <FeedItemCard
-            item={item}
-            density={density}
-            priority={index < 4}
-          />
+          <FeedItemCard item={item} density={density} priority={index < 4} />
         </div>
       ))}
     </div>

@@ -13,8 +13,8 @@ export async function Footer() {
             thedesign.scene
           </p>
           <p className="max-w-sm text-sm leading-relaxed text-muted-foreground">
-            A calm curation of thoughts, visuals, builds, news, posts, and
-            design events — quality over quantity.
+            A considered selection of writing, builds, visuals, and events —
+            quality over quantity.
           </p>
           <p className="pt-1 text-sm text-muted-foreground">
             <span className="font-medium tabular-nums text-foreground">

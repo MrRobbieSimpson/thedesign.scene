@@ -1,12 +1,12 @@
 import type { ContentType, Event } from "@/db/schema";
 import type { ContentWithMaker } from "@/lib/demo-data";
 
-/** Public feed filter tabs (Events lives in the same feed surface). */
+/** Public feed filter tabs — intentional, not a noisy timeline. */
 export const FEED_FILTERS = [
   "all",
   "articles",
-  "visuals",
   "builds",
+  "visuals",
   "events",
 ] as const;
 
@@ -30,20 +30,29 @@ export type FeedEventItem = {
 
 export type FeedItem = FeedContentItem | FeedEventItem;
 
-const MIX_TARGET = 36;
+/** Tight default — quality over quantity. */
+const MIX_TARGET = 22;
 
-/** Target share of the curated “All” feed (approx). */
-const MIX_SHARES = {
-  editorial: 0.4, // article + thought
-  visual: 0.2,
-  build: 0.18,
-  event: 0.12,
-  newsy: 0.1, // news + post — hard cap
+/**
+ * Absolute caps for the curated “All” feed (after featured picks).
+ * Hierarchy: Featured → Articles/Thoughts → Builds → Visuals → Events → News.
+ * Average X posts are excluded unless featured.
+ */
+const CAPS = {
+  featuredEditorial: 6,
+  featuredOther: 2,
+  editorial: 10,
+  builds: 4,
+  visuals: 4,
+  events: 3,
+  news: 2,
+  posts: 0, // only via featured
 } as const;
 
 function asTime(value: Date | string | null | undefined) {
   if (!value) return 0;
-  const time = value instanceof Date ? value.getTime() : new Date(value).getTime();
+  const time =
+    value instanceof Date ? value.getTime() : new Date(value).getTime();
   return Number.isFinite(time) ? time : 0;
 }
 
@@ -51,18 +60,36 @@ function publishedAtMs(item: ContentWithMaker) {
   return asTime(item.publishedAt ?? item.createdAt);
 }
 
+function hasImage(item: ContentWithMaker) {
+  return Boolean(item.image?.trim());
+}
+
+function hasSubstance(item: ContentWithMaker) {
+  const excerpt = item.excerpt?.trim() ?? "";
+  return excerpt.length >= 80 || Boolean(item.body?.trim());
+}
+
+function sortQuality(a: ContentWithMaker, b: ContentWithMaker) {
+  if (a.featured !== b.featured) return a.featured ? -1 : 1;
+  const aScore =
+    (hasSubstance(a) ? 2 : 0) + (hasImage(a) ? 1 : 0) + (a.readingTimeMinutes ? 1 : 0);
+  const bScore =
+    (hasSubstance(b) ? 2 : 0) + (hasImage(b) ? 1 : 0) + (b.readingTimeMinutes ? 1 : 0);
+  if (aScore !== bScore) return bScore - aScore;
+  return publishedAtMs(b) - publishedAtMs(a);
+}
+
 function takeByType(
   pool: ContentWithMaker[],
   types: ContentType[],
-  count: number
+  count: number,
+  predicate?: (item: ContentWithMaker) => boolean
 ) {
   const allowed = new Set(types);
   return pool
     .filter((item) => allowed.has(item.type))
-    .sort((a, b) => {
-      if (a.featured !== b.featured) return a.featured ? -1 : 1;
-      return publishedAtMs(b) - publishedAtMs(a);
-    })
+    .filter((item) => (predicate ? predicate(item) : true))
+    .sort(sortQuality)
     .slice(0, Math.max(0, count));
 }
 
@@ -91,30 +118,60 @@ function toEventItems(items: Event[]): FeedEventItem[] {
 }
 
 /**
- * Interleave buckets so the feed reads as a curated mix
- * rather than a chronological news dump.
+ * Editorial-weighted interleave: writing appears more often than the rest.
+ * Pattern roughly: E B E V E Ev E N …
  */
-function interleave(buckets: FeedItem[][]): FeedItem[] {
-  const queues = buckets.map((bucket) => [...bucket]);
-  const out: FeedItem[] = [];
-  let progressed = true;
+function interleaveEditorialFirst(buckets: {
+  editorial: FeedItem[];
+  builds: FeedItem[];
+  visuals: FeedItem[];
+  events: FeedItem[];
+  news: FeedItem[];
+}): FeedItem[] {
+  const q = {
+    editorial: [...buckets.editorial],
+    builds: [...buckets.builds],
+    visuals: [...buckets.visuals],
+    events: [...buckets.events],
+    news: [...buckets.news],
+  };
 
-  while (progressed) {
-    progressed = false;
-    for (const queue of queues) {
-      const next = queue.shift();
+  const out: FeedItem[] = [];
+  const pattern = [
+    "editorial",
+    "builds",
+    "editorial",
+    "visuals",
+    "editorial",
+    "events",
+    "editorial",
+    "news",
+  ] as const;
+
+  let guard = 0;
+  while (guard < 200) {
+    guard += 1;
+    let progressed = false;
+    for (const key of pattern) {
+      const next = q[key].shift();
       if (!next) continue;
       out.push(next);
       progressed = true;
     }
+    if (!progressed) break;
+  }
+
+  // Drain leftovers in priority order
+  for (const key of ["editorial", "builds", "visuals", "events", "news"] as const) {
+    out.push(...q[key]);
   }
 
   return out;
 }
 
 /**
- * Curate the home “All” feed toward the desired taste mix.
- * Featured editorial pieces lead; news/posts are capped.
+ * Premium home mix — tight, featured-led, writing-first.
+ * Generic X posts are excluded unless explicitly featured.
  */
 export function curateHomeFeed(
   content: ContentWithMaker[],
@@ -124,70 +181,76 @@ export function curateHomeFeed(
   const featuredEditorial = takeByType(
     content.filter((item) => item.featured),
     ["article", "thought"],
-    6
+    CAPS.featuredEditorial
   );
-  const featuredRest = content
+
+  const featuredOther = content
     .filter(
       (item) =>
         item.featured &&
-        item.type !== "article" &&
-        item.type !== "thought" &&
-        !featuredEditorial.some((f) => f.id === item.id)
+        !featuredEditorial.some((f) => f.id === item.id) &&
+        // Still allow a featured build/visual/news — never dump average posts
+        item.type !== "post"
     )
-    .sort((a, b) => publishedAtMs(b) - publishedAtMs(a))
-    .slice(0, 3);
+    .sort(sortQuality)
+    .slice(0, CAPS.featuredOther);
+
+  // Exception: one exceptional featured X thought/post max
+  const featuredPost = content
+    .filter((item) => item.featured && item.type === "post")
+    .sort(sortQuality)
+    .slice(0, 1);
 
   const used = new Set(
-    [...featuredEditorial, ...featuredRest].map((item) => item.id)
+    [...featuredEditorial, ...featuredOther, ...featuredPost].map((i) => i.id)
   );
   const remaining = content.filter((item) => !used.has(item.id));
-
-  const featuredCount = featuredEditorial.length + featuredRest.length;
-  const slots = Math.max(target - featuredCount, 12);
 
   const editorial = takeByType(
     remaining,
     ["article", "thought"],
-    Math.round(slots * MIX_SHARES.editorial)
+    CAPS.editorial,
+    (item) => hasSubstance(item) || item.featured
   );
   editorial.forEach((item) => used.add(item.id));
-
-  const visuals = takeByType(
-    remaining.filter((item) => !used.has(item.id)),
-    ["visual"],
-    Math.round(slots * MIX_SHARES.visual)
-  );
-  visuals.forEach((item) => used.add(item.id));
 
   const builds = takeByType(
     remaining.filter((item) => !used.has(item.id)),
     ["build"],
-    Math.round(slots * MIX_SHARES.build)
+    CAPS.builds
   );
   builds.forEach((item) => used.add(item.id));
 
-  const newsy = takeByType(
+  const visuals = takeByType(
     remaining.filter((item) => !used.has(item.id)),
-    ["news", "post"],
-    Math.round(slots * MIX_SHARES.newsy)
+    ["visual"],
+    CAPS.visuals,
+    (item) => hasImage(item)
+  );
+  visuals.forEach((item) => used.add(item.id));
+
+  // News: only with substance — never fill the feed with link dumps
+  const news = takeByType(
+    remaining.filter((item) => !used.has(item.id)),
+    ["news"],
+    CAPS.news,
+    (item) => hasSubstance(item)
   );
 
-  const eventPicks = upcomingEvents(
-    events,
-    Math.round(slots * MIX_SHARES.event)
-  );
+  const eventPicks = upcomingEvents(events, CAPS.events);
 
-  const mixed = interleave([
-    toContentItems(editorial),
-    toContentItems(visuals),
-    toContentItems(builds),
-    toEventItems(eventPicks),
-    toContentItems(newsy),
-  ]);
+  const mixed = interleaveEditorialFirst({
+    editorial: toContentItems(editorial),
+    builds: toContentItems(builds),
+    visuals: toContentItems(visuals),
+    events: toEventItems(eventPicks),
+    news: toContentItems(news),
+  });
 
   return [
     ...toContentItems(featuredEditorial),
-    ...toContentItems(featuredRest),
+    ...toContentItems(featuredOther),
+    ...toContentItems(featuredPost),
     ...mixed,
   ].slice(0, target);
 }
@@ -202,13 +265,17 @@ export function filterFeedItems(
       return curateHomeFeed(content, events);
     case "articles":
       return toContentItems(
-        takeByType(content, ["article", "thought"], MIX_TARGET)
+        takeByType(content, ["article", "thought"], 28, (item) =>
+          Boolean(item.featured || hasSubstance(item))
+        )
       );
-    case "visuals":
-      return toContentItems(takeByType(content, ["visual"], MIX_TARGET));
     case "builds":
-      return toContentItems(takeByType(content, ["build"], MIX_TARGET));
+      return toContentItems(takeByType(content, ["build"], 24));
+    case "visuals":
+      return toContentItems(
+        takeByType(content, ["visual"], 24, (item) => hasImage(item))
+      );
     case "events":
-      return toEventItems(upcomingEvents(events, MIX_TARGET));
+      return toEventItems(upcomingEvents(events, 24));
   }
 }

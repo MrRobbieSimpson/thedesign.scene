@@ -156,32 +156,38 @@ function ArticleCard({
   item: ContentWithMaker;
   density: CardDensity;
 }) {
+  const comfortable = density === "comfortable";
   return (
     <Link
       href={contentHref(item)}
       className={cn(
-        "group flex h-full flex-col justify-between rounded-2xl border border-foreground/12 bg-card shadow-[0_1px_0_rgba(0,0,0,0.02)] transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
-        density === "comfortable" ? "p-8 sm:p-10" : densityPad(density),
-        "hover:-translate-y-0.5 hover:border-foreground/25 hover:shadow-[0_20px_56px_-28px_rgba(0,0,0,0.5)] active:translate-y-0 active:scale-[0.985]"
+        "group flex h-full flex-col justify-between rounded-2xl border bg-card shadow-[0_1px_0_rgba(0,0,0,0.02)] transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
+        item.featured
+          ? "border-foreground/20"
+          : "border-foreground/10",
+        comfortable ? "p-9 sm:p-12" : densityPad(density),
+        "hover:-translate-y-0.5 hover:border-foreground/30 hover:shadow-[0_24px_60px_-32px_rgba(0,0,0,0.55)] active:translate-y-0 active:scale-[0.99]"
       )}
     >
-      <div className={cn(density === "compact" ? "space-y-3" : "space-y-5")}>
+      <div className={cn(density === "compact" ? "space-y-3" : "space-y-6")}>
         <div className="flex items-center justify-between gap-3">
           <Badge className="gap-1.5 border-0 bg-foreground text-background">
             <TypeIcon type="article" />
             {contentTypeLabel("article")}
           </Badge>
           {item.featured && density !== "compact" ? (
-            <span className="text-[11px] font-medium tracking-[0.14em] text-muted-foreground uppercase">
-              Featured
+            <span className="text-[11px] font-medium tracking-[0.16em] text-muted-foreground uppercase">
+              Editor’s pick
             </span>
           ) : null}
         </div>
-        <div className="space-y-2">
+        <div className={cn("space-y-3", comfortable && "max-w-3xl")}>
           <h3
             className={cn(
-              "font-heading text-balance",
-              densityTitle(density, true)
+              "font-heading text-balance tracking-tight",
+              comfortable
+                ? "text-[1.85rem] leading-[1.15] sm:text-[2.15rem]"
+                : densityTitle(density, true)
             )}
           >
             {item.title}
@@ -190,7 +196,9 @@ function ArticleCard({
             <p
               className={cn(
                 "text-muted-foreground",
-                densityExcerpt(density)
+                comfortable
+                  ? "line-clamp-4 text-[1.05rem] leading-relaxed"
+                  : densityExcerpt(density)
               )}
             >
               {item.excerpt}
@@ -200,12 +208,13 @@ function ArticleCard({
       </div>
       <div
         className={cn(
-          "flex items-center justify-between gap-3",
-          density === "compact" ? "mt-4" : "mt-10"
+          "flex items-center justify-between gap-3 border-t border-border/50",
+          density === "compact" ? "mt-4 pt-3" : "mt-12 pt-5"
         )}
       >
         <Attribution item={item} date={item.publishedAt} />
-        <span className="text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100">
+        <span className="inline-flex items-center gap-1 text-sm text-muted-foreground transition-colors group-hover:text-foreground">
+          Read
           <ArrowUpRight className="size-4" />
         </span>
       </div>
@@ -236,8 +245,8 @@ function ThoughtCard({
             {contentTypeLabel("thought")}
           </Badge>
           {item.featured && density !== "compact" ? (
-            <span className="text-[11px] font-medium tracking-wide text-muted-foreground uppercase">
-              Featured
+            <span className="text-[11px] font-medium tracking-[0.16em] text-muted-foreground uppercase">
+              Editor’s pick
             </span>
           ) : null}
         </div>
@@ -246,7 +255,9 @@ function ThoughtCard({
           <h3
             className={cn(
               "font-heading text-balance transition-colors group-hover:text-foreground",
-              densityTitle(density)
+              density === "comfortable"
+                ? "text-[1.55rem] leading-[1.2]"
+                : densityTitle(density)
             )}
           >
             {item.title}
