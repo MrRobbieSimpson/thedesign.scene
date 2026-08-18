@@ -100,7 +100,7 @@ export const demoContent: DemoContent[] = [
     maker: demoMakers[0],
   }),
   item({
-    id: "n1111111-1111-4111-8111-111111111111",
+    id: "41111111-1111-4111-8111-111111111111",
     type: "news",
     title: "Calming Color Theory | Design Picks #34",
     url: "https://www.handheld.design/p/calming-color-theory-design-picks",
@@ -119,7 +119,7 @@ export const demoContent: DemoContent[] = [
     authorHandle: "camjxrdan",
   }),
   item({
-    id: "n2222222-2222-4222-8222-222222222222",
+    id: "42222222-2222-4222-8222-222222222222",
     type: "news",
     title:
       "Atelier Vens Vanbelle references brick industrial buildings for cubic home in Belgium",
@@ -139,7 +139,7 @@ export const demoContent: DemoContent[] = [
     authorName: "Jon Astbury",
   }),
   item({
-    id: "n3333333-3333-4333-8333-333333333333",
+    id: "43333333-3333-4333-8333-333333333333",
     type: "news",
     title:
       "Barbican and Made.com launch homeware collection celebrating iconic London estate",
@@ -158,7 +158,7 @@ export const demoContent: DemoContent[] = [
     authorName: "Lizzie Crook",
   }),
   item({
-    id: "p1111111-1111-4111-8111-111111111111",
+    id: "51111111-1111-4111-8111-111111111111",
     type: "post",
     title: "Interest setup flow by Mayor",
     url: "https://x.com/mayowafalowo/status/2038861297089995081",
@@ -177,7 +177,7 @@ export const demoContent: DemoContent[] = [
     authorName: "Mayor",
   }),
   item({
-    id: "p2222222-2222-4222-8222-222222222222",
+    id: "52222222-2222-4222-8222-222222222222",
     type: "post",
     title: "Health management dashboard by Hephra",
     url: "https://x.com/Hephrastan/status/2038889715667996963",
@@ -196,7 +196,7 @@ export const demoContent: DemoContent[] = [
     authorName: "Hephra",
   }),
   item({
-    id: "p3333333-3333-4333-8333-333333333333",
+    id: "53333333-3333-4333-8333-333333333333",
     type: "post",
     title: "Compliance scanner flow by Nick Baked",
     url: "https://x.com/nickbakeddesign/status/2038367912311062831",
