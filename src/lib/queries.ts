@@ -1,7 +1,7 @@
 import { unstable_cache } from "next/cache";
 import { and, eq } from "drizzle-orm";
 
-import { content, events, type ContentType } from "@/db/schema";
+import { content, events, type ContentType, type Event } from "@/db/schema";
 import { db, isDatabaseConfigured } from "@/db";
 import {
   demoEvents,
@@ -12,6 +12,33 @@ import {
 
 const FEED_POOL_LIMIT = 120;
 const FEED_REVALIDATE_SECONDS = 60;
+
+function asDate(value: Date | string | null | undefined): Date | null {
+  if (!value) return null;
+  if (value instanceof Date) return value;
+  const parsed = new Date(value);
+  return Number.isFinite(parsed.getTime()) ? parsed : null;
+}
+
+/** `unstable_cache` serializes Dates to strings — revive after read. */
+function reviveContent(item: ContentWithMaker): ContentWithMaker {
+  return {
+    ...item,
+    publishedAt: asDate(item.publishedAt),
+    createdAt: asDate(item.createdAt) ?? new Date(0),
+    updatedAt: asDate(item.updatedAt) ?? new Date(0),
+  };
+}
+
+function reviveEvent(event: Event): Event {
+  return {
+    ...event,
+    startDate: asDate(event.startDate) ?? new Date(0),
+    endDate: asDate(event.endDate),
+    createdAt: asDate(event.createdAt) ?? new Date(0),
+    updatedAt: asDate(event.updatedAt) ?? new Date(0),
+  };
+}
 
 async function fetchPublishedContent(
   type: ContentType | "all" = "all",
@@ -44,11 +71,12 @@ async function fetchPublishedContent(
 export async function getPublishedContent(
   type: ContentType | "all" = "all"
 ): Promise<ContentWithMaker[]> {
-  return unstable_cache(
+  const rows = await unstable_cache(
     () => fetchPublishedContent(type),
-    ["published-content", type, "v2"],
+    ["published-content", type, "v3"],
     { revalidate: FEED_REVALIDATE_SECONDS, tags: ["content"] }
   )();
+  return rows.map(reviveContent);
 }
 
 /** All published types for the curated home mix. */
@@ -98,10 +126,15 @@ async function fetchPublishedEvents() {
 }
 
 export async function getPublishedEvents() {
-  return unstable_cache(() => fetchPublishedEvents(), ["published-events"], {
-    revalidate: FEED_REVALIDATE_SECONDS,
-    tags: ["events"],
-  })();
+  const rows = await unstable_cache(
+    () => fetchPublishedEvents(),
+    ["published-events", "v3"],
+    {
+      revalidate: FEED_REVALIDATE_SECONDS,
+      tags: ["events"],
+    }
+  )();
+  return rows.map(reviveEvent);
 }
 
 export async function getAllEvents() {
