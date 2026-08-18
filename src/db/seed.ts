@@ -1,134 +1,20 @@
 import { config } from "dotenv";
-import { drizzle } from "drizzle-orm/postgres-js";
-import postgres from "postgres";
-
-import { demoContent, demoEvents, demoMakers } from "@/lib/demo-data";
-import { content, events, makers } from "./schema";
 
 config({ path: ".env.local" });
 
+/**
+ * Intentionally empty. thedesign.scene starts blank —
+ * content comes from writers, admin imports, and curation.
+ *
+ * Usage: npm run db:seed
+ */
 async function seed() {
-  const connectionString = process.env.DATABASE_URL;
-
-  if (!connectionString) {
-    console.error("Missing DATABASE_URL. Set it in .env.local before seeding.");
+  if (!process.env.DATABASE_URL) {
+    console.error("Missing DATABASE_URL.");
     process.exit(1);
   }
 
-  const client = postgres(connectionString, { prepare: false, max: 1 });
-  const db = drizzle(client);
-
-  console.log("Seeding makers...");
-  await db
-    .insert(makers)
-    .values(
-      demoMakers.map(({ id, name, handle, bio, avatar, website }) => ({
-        id,
-        name,
-        handle,
-        bio,
-        avatar,
-        website,
-      }))
-    )
-    .onConflictDoNothing();
-
-  console.log("Seeding content...");
-  await db
-    .insert(content)
-    .values(
-      demoContent.map(
-        ({
-          id,
-          type,
-          title,
-          slug,
-          body,
-          readingTimeMinutes,
-          url,
-          excerpt,
-          image,
-          status,
-          featured,
-          makerId,
-          authorProfileId,
-          publishedAt,
-          sourcePlatform,
-          sourceUrl,
-          externalId,
-          authorHandle,
-          authorName,
-          sourcePayload,
-        }) => ({
-          id,
-          type,
-          title,
-          slug,
-          body,
-          readingTimeMinutes,
-          url,
-          excerpt,
-          image,
-          status,
-          featured,
-          makerId,
-          authorProfileId,
-          publishedAt,
-          sourcePlatform,
-          sourceUrl,
-          externalId,
-          authorHandle,
-          authorName,
-          sourcePayload,
-        })
-      )
-    )
-    .onConflictDoNothing();
-
-  console.log("Seeding events...");
-  await db
-    .insert(events)
-    .values(
-      demoEvents.map(
-        ({
-          id,
-          title,
-          description,
-          url,
-          location,
-          latitude,
-          longitude,
-          startDate,
-          endDate,
-          type,
-          status,
-          sourcePlatform,
-          sourceUrl,
-          externalId,
-          sourcePayload,
-        }) => ({
-          id,
-          title,
-          description,
-          url,
-          location,
-          latitude,
-          longitude,
-          startDate,
-          endDate,
-          type,
-          status,
-          sourcePlatform,
-          sourceUrl,
-          externalId,
-          sourcePayload,
-        })
-      )
-    )
-    .onConflictDoNothing();
-
-  await client.end();
-  console.log("Seed complete.");
+  console.log("No seed data. Database left as-is (use admin / Write to add content).");
 }
 
 seed().catch((error) => {

@@ -2,7 +2,6 @@ import { Suspense } from "react";
 
 import { FeedFilters } from "@/components/content/feed-filters";
 import { FeedGrid } from "@/components/content/feed-grid";
-import { isDatabaseConfigured } from "@/db";
 import { CONTENT_TYPES, type ContentType } from "@/db/schema";
 import { getPublishedContent } from "@/lib/queries";
 
@@ -22,7 +21,6 @@ export default async function HomePage({ searchParams }: HomeProps) {
   ) as ContentType | "all";
 
   const items = await getPublishedContent(type);
-  const usingDemo = !isDatabaseConfigured();
 
   return (
     <div className="mx-auto max-w-6xl px-6 py-12 sm:py-16">
@@ -38,17 +36,6 @@ export default async function HomePage({ searchParams }: HomeProps) {
           Quality over quantity.
         </p>
       </section>
-
-      {usingDemo ? (
-        <div className="mb-8 rounded-xl border border-border/70 bg-muted/30 px-4 py-3 text-sm text-muted-foreground">
-          Running with demo data. Add a{" "}
-          <code className="rounded bg-muted px-1.5 py-0.5 text-xs">
-            DATABASE_URL
-          </code>{" "}
-          in <code className="rounded bg-muted px-1.5 py-0.5 text-xs">.env.local</code>{" "}
-          to connect Postgres (Neon or Supabase).
-        </div>
-      ) : null}
 
       <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <Suspense
