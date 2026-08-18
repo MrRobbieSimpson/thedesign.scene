@@ -1,15 +1,24 @@
 "use client";
 
 import { useMemo, useState, useTransition } from "react";
-import { MapPin, Navigation } from "lucide-react";
+import Link from "next/link";
+import { ArrowUpRight, MapPin, Navigation } from "lucide-react";
 
 import { EventCard } from "@/components/events/event-card";
 import { Button } from "@/components/ui/button";
 import type { Event } from "@/db/schema";
+import {
+  BELFAST_COORDS,
+  BELFAST_DESIGN_LUMA,
+  BELFAST_NEAR_KM,
+} from "@/lib/ingest/luma";
 import { distanceKm, formatDistanceKm, type Coordinates } from "@/lib/geo";
 import { cn } from "@/lib/utils";
 
-type SerializedEvent = Omit<Event, "startDate" | "endDate" | "createdAt" | "updatedAt"> & {
+type SerializedEvent = Omit<
+  Event,
+  "startDate" | "endDate" | "createdAt" | "updatedAt"
+> & {
   startDate: string | Date;
   endDate: string | Date | null;
   createdAt: string | Date;
@@ -32,6 +41,16 @@ function reviveEvent(event: SerializedEvent): Event {
   };
 }
 
+function isBelfastDesignEvent(event: Event) {
+  const payload = event.sourcePayload as { username?: string } | null;
+  return (
+    event.sourcePlatform === "luma" &&
+    (payload?.username === BELFAST_DESIGN_LUMA.username ||
+      event.title.toLowerCase().includes("belfast design") ||
+      event.sourceUrl?.includes("lu.ma/"))
+  );
+}
+
 export function EventsExplorer({ events }: EventsExplorerProps) {
   const [userLocation, setUserLocation] = useState<Coordinates | null>(null);
   const [nearMe, setNearMe] = useState(false);
@@ -39,6 +58,11 @@ export function EventsExplorer({ events }: EventsExplorerProps) {
   const [pending, startTransition] = useTransition();
 
   const revived = useMemo(() => events.map(reviveEvent), [events]);
+
+  const nearBelfast = useMemo(() => {
+    if (!userLocation) return false;
+    return distanceKm(userLocation, BELFAST_COORDS) <= BELFAST_NEAR_KM;
+  }, [userLocation]);
 
   const located = useMemo<LocatedEvent[]>(() => {
     const withDistance = revived.map((event) => {
@@ -64,8 +88,22 @@ export function EventsExplorer({ events }: EventsExplorerProps) {
       );
     }
 
+    // Near Belfast: pin Belfast Design events first, then by distance
+    if (nearBelfast) {
+      return withDistance.sort((a, b) => {
+        const aLocal = isBelfastDesignEvent(a) ? 0 : 1;
+        const bLocal = isBelfastDesignEvent(b) ? 0 : 1;
+        if (aLocal !== bLocal) return aLocal - bLocal;
+        if (a.distanceKm == null && b.distanceKm == null) {
+          return a.startDate.getTime() - b.startDate.getTime();
+        }
+        if (a.distanceKm == null) return 1;
+        if (b.distanceKm == null) return -1;
+        return a.distanceKm - b.distanceKm;
+      });
+    }
+
     return withDistance.sort((a, b) => {
-      // Geocoded events first, nearest first; remote / unknown after
       if (a.distanceKm == null && b.distanceKm == null) {
         return a.startDate.getTime() - b.startDate.getTime();
       }
@@ -73,7 +111,7 @@ export function EventsExplorer({ events }: EventsExplorerProps) {
       if (b.distanceKm == null) return -1;
       return a.distanceKm - b.distanceKm;
     });
-  }, [revived, nearMe, userLocation]);
+  }, [revived, nearMe, userLocation, nearBelfast]);
 
   function enableNearMe() {
     setError(null);
@@ -94,7 +132,9 @@ export function EventsExplorer({ events }: EventsExplorerProps) {
         },
         (err) => {
           if (err.code === err.PERMISSION_DENIED) {
-            setError("Location permission denied. You can enable it in browser settings.");
+            setError(
+              "Location permission denied. You can enable it in browser settings."
+            );
           } else {
             setError("Couldn’t get your location. Try again in a moment.");
           }
@@ -150,10 +190,34 @@ export function EventsExplorer({ events }: EventsExplorerProps) {
 
         <p className="text-sm text-muted-foreground">
           {nearMe
-            ? "Sorted by distance from you"
+            ? nearBelfast
+              ? "Near Belfast · local design events first"
+              : "Sorted by distance from you"
             : `${events.length} upcoming · sorted by date`}
         </p>
       </div>
+
+      {nearMe && nearBelfast ? (
+        <div className="flex flex-col gap-3 rounded-2xl border border-border/70 bg-muted/25 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="space-y-1">
+            <p className="text-sm font-medium tracking-tight">
+              Belfast Design is nearby
+            </p>
+            <p className="text-sm text-muted-foreground">
+              Meetups, coffee, and workshops from the local design community.
+            </p>
+          </div>
+          <Link
+            href={BELFAST_DESIGN_LUMA.profileUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex shrink-0 items-center gap-1 text-sm font-medium text-foreground transition-opacity hover:opacity-70"
+          >
+            View on Luma
+            <ArrowUpRight className="size-3.5" />
+          </Link>
+        </div>
+      ) : null}
 
       {error ? (
         <p className="rounded-xl border border-border/70 bg-muted/30 px-4 py-3 text-sm text-muted-foreground">
@@ -172,6 +236,11 @@ export function EventsExplorer({ events }: EventsExplorerProps) {
         <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
           {located.map((event) => (
             <div key={event.id} className="relative">
+              {nearMe && nearBelfast && isBelfastDesignEvent(event) ? (
+                <span className="absolute top-4 left-4 z-10 rounded-full border border-border/70 bg-background/90 px-2.5 py-1 text-[11px] font-medium backdrop-blur-md">
+                  Belfast Design
+                </span>
+              ) : null}
               {nearMe && event.distanceKm != null ? (
                 <span
                   className={cn(

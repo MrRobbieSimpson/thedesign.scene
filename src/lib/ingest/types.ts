@@ -16,6 +16,7 @@ export type SourcePlatform =
   | "spottedinprod"
   | "medium"
   | "smashing"
+  | "luma"
   | "rss"
   | "web";
 

@@ -63,6 +63,8 @@ export function sourcePlatformLabel(platform: string | null | undefined) {
       return "Medium";
     case "smashing":
       return "Smashing Magazine";
+    case "luma":
+      return "Luma";
     case "rss":
       return "RSS";
     case "web":
