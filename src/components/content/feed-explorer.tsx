@@ -61,6 +61,9 @@ export function FeedExplorer({
     window.localStorage.setItem(FEED_LAYOUT_STORAGE_KEY, next);
   }
 
+  // Key by item ids so filter changes clearly remount the grid on mobile.
+  const listKey = revived.map((item) => item.id).join("|");
+
   return (
     <div className="space-y-8">
       <div className="flex flex-wrap items-center gap-3">
@@ -74,7 +77,7 @@ export function FeedExplorer({
         </div>
       </div>
 
-      <FeedGridLayout items={revived} layout={layout} />
+      <FeedGridLayout key={listKey} items={revived} layout={layout} />
     </div>
   );
 }

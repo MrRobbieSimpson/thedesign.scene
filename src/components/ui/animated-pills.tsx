@@ -26,6 +26,7 @@ type AnimatedPillsProps = {
   className?: string;
   size?: "sm" | "md";
   variant?: "segmented" | "ghost";
+  /** Hover-follow highlight (disabled by default on touch). */
   followHover?: boolean;
   "aria-label"?: string;
 };
@@ -53,14 +54,26 @@ export function AnimatedPills({
   const trackRef = useRef<HTMLDivElement>(null);
   const itemRefs = useRef(new Map<string, HTMLElement>());
   const [hoverKey, setHoverKey] = useState<string | null>(null);
+  const [canFollowHover, setCanFollowHover] = useState(false);
   const [indicator, setIndicator] = useState<Indicator>(emptyIndicator);
 
+  useEffect(() => {
+    if (!followHover) {
+      setCanFollowHover(false);
+      return;
+    }
+    const fine = window.matchMedia("(hover: hover) and (pointer: fine)");
+    const sync = () => setCanFollowHover(fine.matches);
+    sync();
+    fine.addEventListener("change", sync);
+    return () => fine.removeEventListener("change", sync);
+  }, [followHover]);
+
   const activeKey = items.find((item) => item.active)?.key ?? null;
-  // Prefer hover target while hovering; otherwise stick to selection.
   const highlightKey =
-    followHover && hoverKey != null ? hoverKey : activeKey;
+    canFollowHover && hoverKey != null ? hoverKey : activeKey;
   const hoveringOther = Boolean(
-    followHover && hoverKey != null && hoverKey !== activeKey
+    canFollowHover && hoverKey != null && hoverKey !== activeKey
   );
 
   const measure = useCallback(() => {
@@ -91,7 +104,7 @@ export function AnimatedPills({
 
   useLayoutEffect(() => {
     measure();
-  }, [measure, items]);
+  }, [measure, items, activeKey]);
 
   useEffect(() => {
     const track = trackRef.current;
@@ -117,7 +130,6 @@ export function AnimatedPills({
     (key: string, node: HTMLElement | null) => {
       if (node) itemRefs.current.set(key, node);
       else itemRefs.current.delete(key);
-      // Remeasure after refs settle (first paint / filter change).
       requestAnimationFrame(() => measure());
     },
     [measure]
@@ -130,7 +142,10 @@ export function AnimatedPills({
       aria-label={ariaLabel}
       onMouseLeave={() => setHoverKey(null)}
       className={cn(
-        "relative isolate inline-flex w-fit max-w-full flex-nowrap items-center overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
+        "relative isolate inline-flex w-fit max-w-full flex-nowrap items-center",
+        // Allow horizontal scroll only when overflowing; don't steal taps.
+        "overflow-x-auto overscroll-x-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
+        "touch-pan-x",
         variant === "segmented" &&
           "gap-0.5 rounded-full border border-border/70 bg-muted/40 p-1",
         variant === "ghost" && "gap-0.5 rounded-full p-0.5",
@@ -159,21 +174,44 @@ export function AnimatedPills({
 
       {items.map((item) => {
         const active = Boolean(item.active);
-        const hovered = hoverKey === item.key;
+        const hovered = canFollowHover && hoverKey === item.key;
         const sharedClass = cn(
           "relative z-10 inline-flex shrink-0 items-center justify-center rounded-full font-medium transition-colors duration-200 ease-[cubic-bezier(0.22,1,0.36,1)]",
+          "touch-manipulation select-none",
           size === "sm" ? "size-8 text-xs" : "h-8 px-3.5 text-sm",
           active || hovered
             ? "text-foreground"
             : "text-muted-foreground hover:text-foreground"
         );
 
-        const handlers = {
-          onMouseEnter: () => setHoverKey(item.key),
-          onFocus: () => setHoverKey(item.key),
-          onBlur: () =>
-            setHoverKey((current) => (current === item.key ? null : current)),
-        };
+        const hoverHandlers = canFollowHover
+          ? {
+              onMouseEnter: () => setHoverKey(item.key),
+              onFocus: () => setHoverKey(item.key),
+              onBlur: () =>
+                setHoverKey((current) =>
+                  current === item.key ? null : current
+                ),
+            }
+          : {};
+
+        if (item.onClick) {
+          return (
+            <button
+              key={item.key}
+              type="button"
+              title={item.title}
+              aria-label={item["aria-label"]}
+              aria-pressed={active}
+              onClick={item.onClick}
+              ref={(node) => setItemRef(item.key, node)}
+              className={sharedClass}
+              {...hoverHandlers}
+            >
+              {item.label}
+            </button>
+          );
+        }
 
         if (item.href) {
           return (
@@ -186,7 +224,7 @@ export function AnimatedPills({
               aria-current={active ? "page" : undefined}
               ref={(node) => setItemRef(item.key, node)}
               className={sharedClass}
-              {...handlers}
+              {...hoverHandlers}
             >
               {item.label}
             </Link>
@@ -200,10 +238,9 @@ export function AnimatedPills({
             title={item.title}
             aria-label={item["aria-label"]}
             aria-pressed={active}
-            onClick={item.onClick}
             ref={(node) => setItemRef(item.key, node)}
             className={sharedClass}
-            {...handlers}
+            {...hoverHandlers}
           >
             {item.label}
           </button>

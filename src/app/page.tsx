@@ -53,6 +53,7 @@ export default async function HomePage({ searchParams }: HomeProps) {
       </section>
 
       <FeedExplorer
+        key={filter}
         items={items}
         toolbar={
           <Suspense
