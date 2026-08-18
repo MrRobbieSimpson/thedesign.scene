@@ -3,8 +3,10 @@ import { eq } from "drizzle-orm";
 
 import { db } from "@/db";
 import { profiles, type Profile } from "@/db/schema";
+import { isClerkConfigured } from "@/lib/clerk";
 
 export async function getClerkUserId() {
+  if (!isClerkConfigured()) return null;
   const { userId } = await auth();
   return userId;
 }

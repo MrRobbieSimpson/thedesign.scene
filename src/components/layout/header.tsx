@@ -2,16 +2,13 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  Show,
-  SignInButton,
-  UserButton,
-} from "@clerk/nextjs";
 
+import {
+  AuthControls,
+  SignedInNav,
+} from "@/components/layout/auth-controls";
 import { LocalTime } from "@/components/layout/local-time";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { WriteButton } from "@/components/writing/write-button";
-import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 const nav = [
@@ -64,48 +61,14 @@ export function Header() {
                 </Link>
               );
             })}
-            <Show when="signed-in">
-              {signedInNav.map((item) => {
-                const active = pathname.startsWith(item.href);
-                return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    className={cn(
-                      "rounded-full px-3 py-1.5 text-sm transition-colors",
-                      active
-                        ? "bg-foreground/[0.06] text-foreground"
-                        : "text-muted-foreground hover:text-foreground"
-                    )}
-                  >
-                    {item.label}
-                  </Link>
-                );
-              })}
-            </Show>
+            <SignedInNav items={signedInNav} pathname={pathname} />
           </nav>
         </div>
 
         <div className="flex shrink-0 items-center gap-3">
           <LocalTime />
           <ThemeToggle />
-          <Show when="signed-out">
-            <SignInButton mode="modal">
-              <Button variant="outline" size="sm">
-                Sign in
-              </Button>
-            </SignInButton>
-          </Show>
-          <Show when="signed-in">
-            <WriteButton />
-            <UserButton
-              appearance={{
-                elements: {
-                  avatarBox: "size-8",
-                },
-              }}
-            />
-          </Show>
+          <AuthControls />
         </div>
       </div>
     </header>

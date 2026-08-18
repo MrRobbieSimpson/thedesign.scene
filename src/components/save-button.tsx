@@ -7,9 +7,10 @@ import { useRouter } from "next/navigation";
 
 import { isSaved, toggleSave } from "@/app/actions/library";
 import { Button } from "@/components/ui/button";
+import { isClerkPublishableConfigured } from "@/lib/clerk";
 import { cn } from "@/lib/utils";
 
-export function SaveButton({ contentId }: { contentId: string }) {
+function SaveButtonAuthed({ contentId }: { contentId: string }) {
   const { isSignedIn } = useAuth();
   const router = useRouter();
   const [saved, setSaved] = useState(false);
@@ -52,4 +53,27 @@ export function SaveButton({ contentId }: { contentId: string }) {
       {saved ? "Saved" : "Save"}
     </Button>
   );
+}
+
+function SaveButtonGuest() {
+  const router = useRouter();
+  return (
+    <Button
+      type="button"
+      variant="outline"
+      size="sm"
+      onClick={() => router.push("/sign-in")}
+      className="gap-1.5"
+    >
+      <Bookmark className="size-3.5" />
+      Save
+    </Button>
+  );
+}
+
+export function SaveButton({ contentId }: { contentId: string }) {
+  if (!isClerkPublishableConfigured()) {
+    return <SaveButtonGuest />;
+  }
+  return <SaveButtonAuthed contentId={contentId} />;
 }

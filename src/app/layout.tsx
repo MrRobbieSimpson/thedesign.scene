@@ -9,6 +9,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { SiteStage } from "@/components/writing/site-stage";
 import { WritingProvider } from "@/components/writing/writing-context";
 import { WritingStudio } from "@/components/writing/writing-studio";
+import { isClerkPublishableConfigured } from "@/lib/clerk";
 
 import "./globals.css";
 
@@ -31,37 +32,47 @@ export const metadata: Metadata = {
     "A calm curation of articles, thoughts, visuals, builds, news, posts, and design events.",
 };
 
+function AppShell({ children }: { children: React.ReactNode }) {
+  return (
+    <html
+      lang="en"
+      suppressHydrationWarning
+      className={`${geistSans.variable} ${geistMono.variable}`}
+    >
+      <body className={`${geistSans.className} min-h-dvh antialiased`}>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="dark"
+          enableSystem={false}
+          disableTransitionOnChange={false}
+        >
+          <WritingProvider>
+            <CursorSpotlight />
+            <SiteStage>
+              <Header />
+              <main className="flex-1">{children}</main>
+              <Footer />
+            </SiteStage>
+            <WritingStudio />
+          </WritingProvider>
+        </ThemeProvider>
+      </body>
+    </html>
+  );
+}
+
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  if (!isClerkPublishableConfigured()) {
+    return <AppShell>{children}</AppShell>;
+  }
+
   return (
     <ClerkProvider>
-      <html
-        lang="en"
-        suppressHydrationWarning
-        className={`${geistSans.variable} ${geistMono.variable}`}
-      >
-        <body className={`${geistSans.className} min-h-dvh antialiased`}>
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="dark"
-            enableSystem={false}
-            disableTransitionOnChange={false}
-          >
-            <WritingProvider>
-              <CursorSpotlight />
-              <SiteStage>
-                <Header />
-                <main className="flex-1">{children}</main>
-                <Footer />
-              </SiteStage>
-              <WritingStudio />
-            </WritingProvider>
-          </ThemeProvider>
-        </body>
-      </html>
+      <AppShell>{children}</AppShell>
     </ClerkProvider>
   );
 }
