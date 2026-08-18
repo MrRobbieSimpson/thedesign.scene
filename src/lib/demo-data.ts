@@ -54,6 +54,7 @@ type DemoInput = Omit<
   | "slug"
   | "body"
   | "readingTimeMinutes"
+  | "authorProfileId"
 > &
   Partial<
     Pick<
@@ -67,6 +68,7 @@ type DemoInput = Omit<
       | "slug"
       | "body"
       | "readingTimeMinutes"
+      | "authorProfileId"
     >
   > & {
     maker?: Maker | null;
@@ -84,6 +86,7 @@ function item(partial: DemoInput): DemoContent {
       slug: null as string | null,
       body: null as string | null,
       readingTimeMinutes: null as number | null,
+      authorProfileId: null as string | null,
       createdAt: now,
       updatedAt: now,
       maker: null as Maker | null,

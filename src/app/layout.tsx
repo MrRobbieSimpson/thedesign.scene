@@ -6,6 +6,9 @@ import { CursorSpotlight } from "@/components/cursor-spotlight";
 import { Footer } from "@/components/layout/footer";
 import { Header } from "@/components/layout/header";
 import { ThemeProvider } from "@/components/theme-provider";
+import { SiteStage } from "@/components/writing/site-stage";
+import { WritingProvider } from "@/components/writing/writing-context";
+import { WritingStudio } from "@/components/writing/writing-studio";
 
 import "./globals.css";
 
@@ -47,12 +50,15 @@ export default function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
-            <CursorSpotlight />
-            <div className="flex min-h-dvh flex-col">
-              <Header />
-              <main className="flex-1">{children}</main>
-              <Footer />
-            </div>
+            <WritingProvider>
+              <CursorSpotlight />
+              <SiteStage>
+                <Header />
+                <main className="flex-1">{children}</main>
+                <Footer />
+              </SiteStage>
+              <WritingStudio />
+            </WritingProvider>
           </ThemeProvider>
         </body>
       </html>

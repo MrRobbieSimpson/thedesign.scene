@@ -56,6 +56,21 @@ export const makers = pgTable("makers", {
     .$onUpdate(() => new Date()),
 });
 
+export const profiles = pgTable("profiles", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  clerkUserId: text("clerk_user_id").notNull().unique(),
+  displayName: text("display_name"),
+  handle: text("handle").unique(),
+  avatarUrl: text("avatar_url"),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
+    .defaultNow()
+    .notNull()
+    .$onUpdate(() => new Date()),
+});
+
 export const content = pgTable(
   "content",
   {
@@ -71,6 +86,9 @@ export const content = pgTable(
     status: contentStatusEnum("status").notNull().default("draft"),
     featured: boolean("featured").notNull().default(false),
     makerId: uuid("maker_id").references(() => makers.id, {
+      onDelete: "set null",
+    }),
+    authorProfileId: uuid("author_profile_id").references(() => profiles.id, {
       onDelete: "set null",
     }),
     sourcePlatform: text("source_platform"),
@@ -131,21 +149,6 @@ export const events = pgTable(
       ),
   ]
 );
-
-export const profiles = pgTable("profiles", {
-  id: uuid("id").defaultRandom().primaryKey(),
-  clerkUserId: text("clerk_user_id").notNull().unique(),
-  displayName: text("display_name"),
-  handle: text("handle").unique(),
-  avatarUrl: text("avatar_url"),
-  createdAt: timestamp("created_at", { withTimezone: true })
-    .defaultNow()
-    .notNull(),
-  updatedAt: timestamp("updated_at", { withTimezone: true })
-    .defaultNow()
-    .notNull()
-    .$onUpdate(() => new Date()),
-});
 
 export const saves = pgTable(
   "saves",
@@ -218,6 +221,10 @@ export const contentRelations = relations(content, ({ one, many }) => ({
     fields: [content.makerId],
     references: [makers.id],
   }),
+  authorProfile: one(profiles, {
+    fields: [content.authorProfileId],
+    references: [profiles.id],
+  }),
   saves: many(saves),
   sceneItems: many(sceneItems),
 }));
@@ -225,6 +232,7 @@ export const contentRelations = relations(content, ({ one, many }) => ({
 export const profilesRelations = relations(profiles, ({ many }) => ({
   saves: many(saves),
   scenes: many(scenes),
+  articles: many(content),
 }));
 
 export const savesRelations = relations(saves, ({ one }) => ({
