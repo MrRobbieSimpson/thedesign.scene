@@ -41,8 +41,14 @@ const MIX_SHARES = {
   newsy: 0.1, // news + post — hard cap
 } as const;
 
+function asTime(value: Date | string | null | undefined) {
+  if (!value) return 0;
+  const time = value instanceof Date ? value.getTime() : new Date(value).getTime();
+  return Number.isFinite(time) ? time : 0;
+}
+
 function publishedAtMs(item: ContentWithMaker) {
-  return (item.publishedAt ?? item.createdAt).getTime();
+  return asTime(item.publishedAt ?? item.createdAt);
 }
 
 function takeByType(
@@ -63,8 +69,8 @@ function takeByType(
 function upcomingEvents(events: Event[], count: number) {
   const now = Date.now();
   return [...events]
-    .filter((event) => event.startDate.getTime() >= now - 12 * 60 * 60 * 1000)
-    .sort((a, b) => a.startDate.getTime() - b.startDate.getTime())
+    .filter((event) => asTime(event.startDate) >= now - 12 * 60 * 60 * 1000)
+    .sort((a, b) => asTime(a.startDate) - asTime(b.startDate))
     .slice(0, Math.max(0, count));
 }
 
