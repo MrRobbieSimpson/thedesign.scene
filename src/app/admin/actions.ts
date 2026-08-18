@@ -1,15 +1,23 @@
 "use server";
 
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
 import { db, isDatabaseConfigured } from "@/db";
 import {
   content,
+  events,
   isContentType,
   type ContentStatus,
   type ContentType,
+  type EventStatus,
+  type EventType,
 } from "@/db/schema";
+import {
+  eventNeedsDates,
+  resolveEventUrl,
+  type ResolvedEvent,
+} from "@/lib/ingest/event-resolve";
 import { resolveImportUrl } from "@/lib/ingest/resolve";
 import { fetchRssCandidates } from "@/lib/ingest/rss";
 import { getFeedSource } from "@/lib/ingest/sources";
@@ -214,4 +222,154 @@ export async function importRssSelection(
       message: error instanceof Error ? error.message : "RSS import failed.",
     };
   }
+}
+
+export async function previewEventUrl(url: string): Promise<
+  | { ok: true; data: ResolvedEvent; needsDates: boolean }
+  | { ok: false; message: string }
+> {
+  try {
+    const data = await resolveEventUrl(url);
+    return { ok: true, data, needsDates: eventNeedsDates(data) };
+  } catch (error) {
+    return {
+      ok: false,
+      message:
+        error instanceof Error ? error.message : "Could not resolve that event URL.",
+    };
+  }
+}
+
+export async function confirmEventImport(
+  formData: FormData
+): Promise<ActionResult> {
+  const missing = requireDb();
+  if (missing) return missing;
+
+  const url = String(formData.get("url") ?? "").trim();
+  if (!url) return { ok: false, message: "URL is required." };
+
+  try {
+    const resolved = await resolveEventUrl(url);
+    const title = String(formData.get("title") ?? "").trim() || resolved.title;
+    const description =
+      String(formData.get("description") ?? "").trim() || resolved.description;
+    const location =
+      String(formData.get("location") ?? "").trim() || resolved.location;
+    const typeRaw = String(formData.get("type") ?? resolved.type);
+    const type = (["in-person", "hybrid", "remote"].includes(typeRaw)
+      ? typeRaw
+      : "in-person") as EventType;
+
+    const startRaw = String(formData.get("startDate") ?? "").trim();
+    const endRaw = String(formData.get("endDate") ?? "").trim();
+
+    let startDate = resolved.startDate;
+    let endDate = resolved.endDate;
+
+    if (startRaw) startDate = new Date(startRaw);
+    if (endRaw) endDate = new Date(endRaw);
+
+    if (Number.isNaN(startDate.getTime())) {
+      return {
+        ok: false,
+        message: "Start date is required (page had no structured event dates).",
+      };
+    }
+
+    const existing = await db!.query.events.findFirst({
+      where: and(
+        eq(events.sourcePlatform, resolved.sourcePlatform),
+        eq(events.externalId, resolved.externalId)
+      ),
+    });
+    if (existing) {
+      return { ok: true, message: "Already imported — skipped duplicate." };
+    }
+
+    await db!.insert(events).values({
+      title,
+      description,
+      url: resolved.url,
+      location,
+      startDate,
+      endDate: endDate && !Number.isNaN(endDate.getTime()) ? endDate : null,
+      type,
+      status: "draft",
+      sourcePlatform: resolved.sourcePlatform,
+      sourceUrl: resolved.sourceUrl,
+      externalId: resolved.externalId,
+      sourcePayload: resolved.sourcePayload,
+    });
+
+    revalidatePath("/admin");
+    revalidatePath("/events");
+    return { ok: true, message: "Event imported as draft." };
+  } catch (error) {
+    return {
+      ok: false,
+      message: error instanceof Error ? error.message : "Event import failed.",
+    };
+  }
+}
+
+export async function createEvent(formData: FormData): Promise<ActionResult> {
+  const missing = requireDb();
+  if (missing) return missing;
+
+  const title = String(formData.get("title") ?? "").trim();
+  const description = String(formData.get("description") ?? "").trim() || null;
+  const url = String(formData.get("url") ?? "").trim() || null;
+  const location = String(formData.get("location") ?? "").trim() || null;
+  const typeRaw = String(formData.get("type") ?? "in-person");
+  const status = (String(formData.get("status") ?? "draft") ||
+    "draft") as EventStatus;
+  const startRaw = String(formData.get("startDate") ?? "").trim();
+  const endRaw = String(formData.get("endDate") ?? "").trim();
+
+  if (!title) return { ok: false, message: "Title is required." };
+  if (!startRaw) return { ok: false, message: "Start date is required." };
+
+  const startDate = new Date(startRaw);
+  if (Number.isNaN(startDate.getTime())) {
+    return { ok: false, message: "Invalid start date." };
+  }
+
+  const type = (["in-person", "hybrid", "remote"].includes(typeRaw)
+    ? typeRaw
+    : "in-person") as EventType;
+
+  const endDate = endRaw ? new Date(endRaw) : null;
+
+  await db!.insert(events).values({
+    title,
+    description,
+    url,
+    location,
+    startDate,
+    endDate: endDate && !Number.isNaN(endDate.getTime()) ? endDate : null,
+    type,
+    status,
+  });
+
+  revalidatePath("/admin");
+  revalidatePath("/events");
+  return { ok: true, message: "Event created." };
+}
+
+export async function setEventStatus(
+  id: string,
+  status: EventStatus
+): Promise<ActionResult> {
+  const missing = requireDb();
+  if (missing) return missing;
+
+  await db!.update(events).set({ status }).where(eq(events.id, id));
+
+  revalidatePath("/admin");
+  revalidatePath("/events");
+  return {
+    ok: true,
+    message: status === "published" ? "Published." : "Unpublished.",
+  };
 }

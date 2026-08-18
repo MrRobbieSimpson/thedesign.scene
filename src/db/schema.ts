@@ -91,24 +91,38 @@ export const content = pgTable(
   ]
 );
 
-export const events = pgTable("events", {
-  id: uuid("id").defaultRandom().primaryKey(),
-  title: text("title").notNull(),
-  description: text("description"),
-  url: text("url"),
-  location: text("location"),
-  startDate: timestamp("start_date", { withTimezone: true }).notNull(),
-  endDate: timestamp("end_date", { withTimezone: true }),
-  type: eventTypeEnum("type").notNull(),
-  status: eventStatusEnum("status").notNull().default("draft"),
-  createdAt: timestamp("created_at", { withTimezone: true })
-    .defaultNow()
-    .notNull(),
-  updatedAt: timestamp("updated_at", { withTimezone: true })
-    .defaultNow()
-    .notNull()
-    .$onUpdate(() => new Date()),
-});
+export const events = pgTable(
+  "events",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    title: text("title").notNull(),
+    description: text("description"),
+    url: text("url"),
+    location: text("location"),
+    startDate: timestamp("start_date", { withTimezone: true }).notNull(),
+    endDate: timestamp("end_date", { withTimezone: true }),
+    type: eventTypeEnum("type").notNull(),
+    status: eventStatusEnum("status").notNull().default("draft"),
+    sourcePlatform: text("source_platform"),
+    sourceUrl: text("source_url"),
+    externalId: text("external_id"),
+    sourcePayload: jsonb("source_payload").$type<Record<string, unknown>>(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .defaultNow()
+      .notNull()
+      .$onUpdate(() => new Date()),
+  },
+  (table) => [
+    uniqueIndex("events_source_external_uidx")
+      .on(table.sourcePlatform, table.externalId)
+      .where(
+        sql`${table.sourcePlatform} is not null and ${table.externalId} is not null`
+      ),
+  ]
+);
 
 export const makersRelations = relations(makers, ({ many }) => ({
   content: many(content),

@@ -74,6 +74,18 @@ export async function getPublishedEvents() {
   });
 }
 
+export async function getAllEvents() {
+  if (!isDatabaseConfigured() || !db) {
+    return [...demoEvents].sort(
+      (a, b) => a.startDate.getTime() - b.startDate.getTime()
+    );
+  }
+
+  return db.query.events.findMany({
+    orderBy: (fields, { asc }) => [asc(fields.startDate)],
+  });
+}
+
 export async function getMakers() {
   if (!isDatabaseConfigured() || !db) {
     return demoMakers;

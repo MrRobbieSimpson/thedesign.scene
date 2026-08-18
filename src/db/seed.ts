@@ -92,6 +92,10 @@ async function seed() {
           endDate,
           type,
           status,
+          sourcePlatform,
+          sourceUrl,
+          externalId,
+          sourcePayload,
         }) => ({
           id,
           title,
@@ -102,6 +106,10 @@ async function seed() {
           endDate,
           type,
           status,
+          sourcePlatform,
+          sourceUrl,
+          externalId,
+          sourcePayload,
         })
       )
     )
