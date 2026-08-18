@@ -5,7 +5,8 @@ import { FeedFilters } from "@/components/content/feed-filters";
 import { CONTENT_TYPES, type ContentType } from "@/db/schema";
 import { getPublishedContent } from "@/lib/queries";
 
-export const dynamic = "force-dynamic";
+/** Soft ISR — feed stays fresh without a Neon hit on every request. */
+export const revalidate = 60;
 
 type HomeProps = {
   searchParams: Promise<{ type?: string }>;

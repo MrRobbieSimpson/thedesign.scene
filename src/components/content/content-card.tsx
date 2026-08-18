@@ -127,9 +127,11 @@ function Attribution({
 export function ContentCard({
   item,
   density = "comfortable",
+  priority = false,
 }: {
   item: ContentWithMaker;
   density?: CardDensity;
+  priority?: boolean;
 }) {
   switch (item.type) {
     case "article":
@@ -137,13 +139,13 @@ export function ContentCard({
     case "thought":
       return <ThoughtCard item={item} density={density} />;
     case "visual":
-      return <VisualCard item={item} density={density} />;
+      return <VisualCard item={item} density={density} priority={priority} />;
     case "build":
-      return <BuildCard item={item} density={density} />;
+      return <BuildCard item={item} density={density} priority={priority} />;
     case "news":
-      return <NewsCard item={item} density={density} />;
+      return <NewsCard item={item} density={density} priority={priority} />;
     case "post":
-      return <PostCard item={item} density={density} />;
+      return <PostCard item={item} density={density} priority={priority} />;
   }
 }
 
@@ -275,9 +277,11 @@ function ThoughtCard({
 function VisualCard({
   item,
   density,
+  priority = false,
 }: {
   item: ContentWithMaker;
   density: CardDensity;
+  priority?: boolean;
 }) {
   return (
     <Link
@@ -302,6 +306,7 @@ function VisualCard({
             src={item.image}
             alt={item.title}
             fill
+            priority={priority}
             sizes="(max-width: 768px) 100vw, 50vw"
             className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]"
           />
@@ -354,9 +359,11 @@ function VisualCard({
 function BuildCard({
   item,
   density,
+  priority = false,
 }: {
   item: ContentWithMaker;
   density: CardDensity;
+  priority?: boolean;
 }) {
   return (
     <Link
@@ -377,6 +384,7 @@ function BuildCard({
             src={item.image}
             alt={item.title}
             fill
+            priority={priority}
             sizes="(max-width: 768px) 100vw, 50vw"
             className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]"
           />
@@ -436,9 +444,11 @@ function BuildCard({
 function NewsCard({
   item,
   density,
+  priority = false,
 }: {
   item: ContentWithMaker;
   density: CardDensity;
+  priority?: boolean;
 }) {
   return (
     <Link
@@ -463,6 +473,7 @@ function NewsCard({
             src={item.image}
             alt={item.title}
             fill
+            priority={priority}
             sizes="(max-width: 768px) 100vw, 50vw"
             className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]"
           />
@@ -518,9 +529,11 @@ function NewsCard({
 function PostCard({
   item,
   density,
+  priority = false,
 }: {
   item: ContentWithMaker;
   density: CardDensity;
+  priority?: boolean;
 }) {
   return (
     <Link
@@ -541,6 +554,7 @@ function PostCard({
             src={item.image}
             alt={item.title}
             fill
+            priority={priority}
             sizes="(max-width: 768px) 100vw, 50vw"
             className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]"
           />

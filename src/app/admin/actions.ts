@@ -1,7 +1,7 @@
 "use server";
 
 import { and, eq } from "drizzle-orm";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 
 import { db, isDatabaseConfigured } from "@/db";
 import {
@@ -115,6 +115,7 @@ export async function createContent(formData: FormData): Promise<ActionResult> {
   }
 
   revalidatePath("/");
+  revalidateTag("content");
   revalidatePath("/admin");
   if (slug) revalidatePath(`/article/${slug}`);
 
@@ -137,6 +138,7 @@ export async function setContentStatus(
     .where(eq(content.id, id));
 
   revalidatePath("/");
+  revalidateTag("content");
   revalidatePath("/admin");
   revalidatePath(`/content/${id}`);
 
@@ -187,6 +189,7 @@ export async function confirmImportUrl(formData: FormData): Promise<ActionResult
 
     revalidatePath("/admin");
     revalidatePath("/");
+    revalidateTag("content");
 
     return {
       ok: true,
@@ -236,6 +239,7 @@ export async function importRssSelection(
 
     revalidatePath("/admin");
     revalidatePath("/");
+    revalidateTag("content");
 
     if (result.errors.length && result.imported === 0) {
       return { ok: false, message: result.errors[0] };
@@ -352,6 +356,7 @@ export async function confirmEventImport(
 
     revalidatePath("/admin");
     revalidatePath("/events");
+    revalidateTag("events");
     return { ok: true, message: "Event imported as draft." };
   } catch (error) {
     return {
@@ -402,6 +407,7 @@ export async function createEvent(formData: FormData): Promise<ActionResult> {
 
   revalidatePath("/admin");
   revalidatePath("/events");
+  revalidateTag("events");
   return { ok: true, message: "Event created." };
 }
 
@@ -416,6 +422,7 @@ export async function setEventStatus(
 
   revalidatePath("/admin");
   revalidatePath("/events");
+  revalidateTag("events");
   return {
     ok: true,
     message: status === "published" ? "Published." : "Unpublished.",

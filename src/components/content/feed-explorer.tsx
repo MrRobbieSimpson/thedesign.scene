@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { ContentCard } from "@/components/content/content-card";
 import {
@@ -29,13 +29,11 @@ export function FeedExplorer({
   toolbar?: React.ReactNode;
 }) {
   const [layout, setLayout] = useState<FeedLayout>("big");
-  const [ready, setReady] = useState(false);
-  const revived = items.map(reviveItem);
+  const revived = useMemo(() => items.map(reviveItem), [items]);
 
   useEffect(() => {
     const stored = window.localStorage.getItem(FEED_LAYOUT_STORAGE_KEY);
     if (stored && isFeedLayout(stored)) setLayout(stored);
-    setReady(true);
   }, []);
 
   function onLayoutChange(next: FeedLayout) {
@@ -55,14 +53,7 @@ export function FeedExplorer({
         </div>
       </div>
 
-      <div
-        className={cn(
-          "transition-opacity duration-300",
-          ready ? "opacity-100" : "opacity-0"
-        )}
-      >
-        <FeedGridLayout items={revived} layout={layout} />
-      </div>
+      <FeedGridLayout items={revived} layout={layout} />
     </div>
   );
 }
@@ -93,11 +84,14 @@ function FeedGridLayout({
             key={item.id}
             className={cn(
               "mb-5 break-inside-avoid",
-              // Vary visual weight slightly for a mosaic feel
               index % 7 === 0 && "sm:translate-y-1"
             )}
           >
-            <ContentCard item={item} density="mosaic" />
+            <ContentCard
+              item={item}
+              density="mosaic"
+              priority={index < 3}
+            />
           </div>
         ))}
       </div>
@@ -107,17 +101,21 @@ function FeedGridLayout({
   if (layout === "small") {
     return (
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {items.map((item) => (
-          <ContentCard key={item.id} item={item} density="compact" />
+        {items.map((item, index) => (
+          <ContentCard
+            key={item.id}
+            item={item}
+            density="compact"
+            priority={index < 6}
+          />
         ))}
       </div>
     );
   }
 
-  // big
   return (
     <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-      {items.map((item) => (
+      {items.map((item, index) => (
         <div
           key={item.id}
           className={
@@ -129,7 +127,11 @@ function FeedGridLayout({
               : undefined
           }
         >
-          <ContentCard item={item} density="comfortable" />
+          <ContentCard
+            item={item}
+            density="comfortable"
+            priority={index < 4}
+          />
         </div>
       ))}
     </div>

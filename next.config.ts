@@ -1,7 +1,13 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // Tree-shake icon / SDK imports for smaller client bundles.
+  experimental: {
+    optimizePackageImports: ["lucide-react", "@clerk/nextjs", "date-fns"],
+  },
   images: {
+    formats: ["image/avif", "image/webp"],
+    minimumCacheTTL: 60 * 60 * 24 * 30,
     remotePatterns: [
       { protocol: "https", hostname: "images.unsplash.com" },
       { protocol: "https", hostname: "static.dezeen.com" },

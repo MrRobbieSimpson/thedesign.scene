@@ -1,7 +1,7 @@
 "use server";
 
 import { and, desc, eq } from "drizzle-orm";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 
 import { db } from "@/db";
 import { content } from "@/db/schema";
@@ -70,6 +70,7 @@ export async function saveArticleDraft(payload: WritePayload) {
       .returning();
 
     revalidatePath("/");
+    revalidateTag("content");
     revalidatePath("/drafts");
     if (updated.slug) revalidatePath(`/article/${updated.slug}`);
 
@@ -100,6 +101,7 @@ export async function saveArticleDraft(payload: WritePayload) {
     .returning();
 
   revalidatePath("/");
+  revalidateTag("content");
   revalidatePath("/drafts");
   if (created.slug) revalidatePath(`/article/${created.slug}`);
 

@@ -14,7 +14,13 @@ export function isDatabaseConfigured() {
 }
 
 const client = connectionString
-  ? postgres(connectionString, { prepare: false, max: 10 })
+  ? postgres(connectionString, {
+      prepare: false,
+      // Serverless-friendly: one connection per isolate avoids pool churn.
+      max: 1,
+      idle_timeout: 20,
+      connect_timeout: 10,
+    })
   : null;
 
 export const db = client ? drizzle(client, { schema }) : null;

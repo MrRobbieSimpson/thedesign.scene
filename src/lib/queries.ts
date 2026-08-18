@@ -1,3 +1,4 @@
+import { unstable_cache } from "next/cache";
 import { and, eq } from "drizzle-orm";
 
 import { content, events, type ContentType } from "@/db/schema";
@@ -9,11 +10,15 @@ import {
   type ContentWithMaker,
 } from "@/lib/demo-data";
 
-export async function getPublishedContent(
-  type: ContentType | "all" = "all"
+const FEED_LIMIT = 60;
+const FEED_REVALIDATE_SECONDS = 60;
+
+async function fetchPublishedContent(
+  type: ContentType | "all" = "all",
+  limit = FEED_LIMIT
 ): Promise<ContentWithMaker[]> {
   if (!isDatabaseConfigured() || !db) {
-    return filterDemoContent(type);
+    return filterDemoContent(type).slice(0, limit);
   }
 
   const conditions = [eq(content.status, "published")];
@@ -28,9 +33,21 @@ export async function getPublishedContent(
       d(fields.publishedAt),
       d(fields.createdAt),
     ],
+    limit,
   });
 
   return rows;
+}
+
+/** Cached feed query — keeps Neon off the critical path for most requests. */
+export async function getPublishedContent(
+  type: ContentType | "all" = "all"
+): Promise<ContentWithMaker[]> {
+  return unstable_cache(
+    () => fetchPublishedContent(type),
+    ["published-content", type],
+    { revalidate: FEED_REVALIDATE_SECONDS, tags: ["content"] }
+  )();
 }
 
 export async function getAllContent(): Promise<ContentWithMaker[]> {
@@ -61,7 +78,7 @@ export async function getContentById(
   return row ?? null;
 }
 
-export async function getPublishedEvents() {
+async function fetchPublishedEvents() {
   if (!isDatabaseConfigured() || !db) {
     return demoEvents
       .filter((event) => event.status === "published")
@@ -72,6 +89,13 @@ export async function getPublishedEvents() {
     where: eq(events.status, "published"),
     orderBy: (fields, { asc }) => [asc(fields.startDate)],
   });
+}
+
+export async function getPublishedEvents() {
+  return unstable_cache(() => fetchPublishedEvents(), ["published-events"], {
+    revalidate: FEED_REVALIDATE_SECONDS,
+    tags: ["events"],
+  })();
 }
 
 export async function getAllEvents() {

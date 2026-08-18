@@ -1,7 +1,7 @@
 import { EventsExplorer } from "@/components/events/events-explorer";
 import { getPublishedEvents } from "@/lib/queries";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 
 export const metadata = {
   title: "Events",

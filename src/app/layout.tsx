@@ -2,13 +2,12 @@ import type { Metadata } from "next";
 import { ClerkProvider } from "@clerk/nextjs";
 import { Geist, Geist_Mono } from "next/font/google";
 
-import { CursorSpotlight } from "@/components/cursor-spotlight";
+import { DeferredUi } from "@/components/deferred-ui";
 import { Footer } from "@/components/layout/footer";
 import { Header } from "@/components/layout/header";
 import { ThemeProvider } from "@/components/theme-provider";
 import { SiteStage } from "@/components/writing/site-stage";
 import { WritingProvider } from "@/components/writing/writing-context";
-import { WritingStudio } from "@/components/writing/writing-studio";
 import { isClerkPublishableConfigured } from "@/lib/clerk";
 
 import "./globals.css";
@@ -16,11 +15,15 @@ import "./globals.css";
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
+  display: "swap",
+  preload: true,
 });
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+  display: "swap",
+  preload: false,
 });
 
 export const metadata: Metadata = {
@@ -47,13 +50,12 @@ function AppShell({ children }: { children: React.ReactNode }) {
           disableTransitionOnChange={false}
         >
           <WritingProvider>
-            <CursorSpotlight />
             <SiteStage>
               <Header />
               <main className="flex-1">{children}</main>
               <Footer />
             </SiteStage>
-            <WritingStudio />
+            <DeferredUi />
           </WritingProvider>
         </ThemeProvider>
       </body>
