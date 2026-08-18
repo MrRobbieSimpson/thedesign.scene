@@ -3,12 +3,12 @@
 import { useEffect, useState } from "react";
 
 /**
- * Extremely soft radial highlight that follows the pointer.
+ * Soft radial highlight that follows the pointer.
  * Disabled when the user prefers reduced motion or has no fine pointer.
  */
 export function CursorSpotlight() {
   const [enabled, setEnabled] = useState(false);
-  const [pos, setPos] = useState({ x: 0, y: 0 });
+  const [pos, setPos] = useState({ x: -9999, y: -9999 });
 
   useEffect(() => {
     const motion = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -44,12 +44,13 @@ export function CursorSpotlight() {
   return (
     <div
       aria-hidden
-      className="pointer-events-none fixed inset-0 z-50 mix-blend-soft-light transition-opacity duration-700"
+      className="pointer-events-none fixed inset-0 z-[60]"
       style={{
         background: `radial-gradient(
-          420px circle at ${pos.x}px ${pos.y}px,
-          color-mix(in oklch, var(--foreground) 4.5%, transparent),
-          transparent 55%
+          560px circle at ${pos.x}px ${pos.y}px,
+          color-mix(in oklch, var(--foreground) 11%, transparent),
+          color-mix(in oklch, var(--foreground) 3.5%, transparent) 35%,
+          transparent 65%
         )`,
       }}
     />
