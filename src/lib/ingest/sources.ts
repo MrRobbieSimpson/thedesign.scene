@@ -12,9 +12,8 @@ export type FeedSource = {
 };
 
 /**
- * Curated RSS sources for /admin → Browse RSS.
- * Anything else (Behance, Layers, Siteinspire, Spottedinprod, X…) —
- * paste the URL into Import URL (Open Graph / oEmbed).
+ * Curated RSS sources — design news, writing, and visual inspiration.
+ * Non-RSS sites (Layers, Siteinspire, Spottedinprod…) use Import URL / OG.
  */
 export const FEED_SOURCES: FeedSource[] = [
   {
@@ -34,6 +33,15 @@ export const FEED_SOURCES: FeedSource[] = [
     defaultType: "news",
     siteUrl: "https://www.dezeen.com",
     description: "Architecture & design news",
+  },
+  {
+    id: "behance",
+    name: "Behance Projects",
+    feedUrl: "https://www.behance.net/feeds/projects",
+    platform: "behance",
+    defaultType: "visual",
+    siteUrl: "https://www.behance.net",
+    description: "Creative project showcases",
   },
   {
     id: "dribbble-stories",
@@ -61,6 +69,60 @@ export const FEED_SOURCES: FeedSource[] = [
     defaultType: "news",
     siteUrl: "https://www.smashingmagazine.com",
     description: "Design & front-end articles",
+  },
+  {
+    id: "uxdesign",
+    name: "UX Collective",
+    feedUrl: "https://uxdesign.cc/feed",
+    platform: "medium",
+    defaultType: "news",
+    siteUrl: "https://uxdesign.cc",
+    description: "UX & product design writing",
+  },
+  {
+    id: "css-tricks",
+    name: "CSS-Tricks",
+    feedUrl: "https://css-tricks.com/feed/",
+    platform: "web",
+    defaultType: "news",
+    siteUrl: "https://css-tricks.com",
+    description: "CSS, UI engineering, craft",
+  },
+  {
+    id: "designboom",
+    name: "designboom",
+    feedUrl: "https://www.designboom.com/feed/",
+    platform: "web",
+    defaultType: "news",
+    siteUrl: "https://www.designboom.com",
+    description: "Art, architecture & design",
+  },
+  {
+    id: "creativebloq",
+    name: "Creative Bloq",
+    feedUrl: "https://www.creativebloq.com/feed",
+    platform: "web",
+    defaultType: "news",
+    siteUrl: "https://www.creativebloq.com",
+    description: "Design news & inspiration",
+  },
+  {
+    id: "sidebar",
+    name: "Sidebar",
+    feedUrl: "https://sidebar.io/feed.xml",
+    platform: "web",
+    defaultType: "news",
+    siteUrl: "https://sidebar.io",
+    description: "Daily design links",
+  },
+  {
+    id: "webdesignerdepot",
+    name: "Webdesigner Depot",
+    feedUrl: "https://www.webdesignerdepot.com/feed/",
+    platform: "web",
+    defaultType: "news",
+    siteUrl: "https://www.webdesignerdepot.com",
+    description: "Web design resources & news",
   },
   {
     id: "medium-product-design",
