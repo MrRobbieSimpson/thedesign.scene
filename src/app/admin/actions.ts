@@ -13,6 +13,7 @@ import {
   type EventStatus,
   type EventType,
 } from "@/db/schema";
+import { geocodeLocation } from "@/lib/geo";
 import {
   eventNeedsDates,
   resolveEventUrl,
@@ -277,6 +278,22 @@ export async function confirmEventImport(
       };
     }
 
+    const latRaw = String(formData.get("latitude") ?? "").trim();
+    const lngRaw = String(formData.get("longitude") ?? "").trim();
+    let latitude = latRaw ? Number(latRaw) : null;
+    let longitude = lngRaw ? Number(lngRaw) : null;
+
+    if (
+      (latitude == null || longitude == null || Number.isNaN(latitude) || Number.isNaN(longitude)) &&
+      location
+    ) {
+      const geo = await geocodeLocation(location);
+      if (geo) {
+        latitude = geo.latitude;
+        longitude = geo.longitude;
+      }
+    }
+
     const existing = await db!.query.events.findFirst({
       where: and(
         eq(events.sourcePlatform, resolved.sourcePlatform),
@@ -292,6 +309,9 @@ export async function confirmEventImport(
       description,
       url: resolved.url,
       location,
+      latitude: latitude != null && !Number.isNaN(latitude) ? latitude : null,
+      longitude:
+        longitude != null && !Number.isNaN(longitude) ? longitude : null,
       startDate,
       endDate: endDate && !Number.isNaN(endDate.getTime()) ? endDate : null,
       type,

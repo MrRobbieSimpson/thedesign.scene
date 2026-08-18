@@ -1,6 +1,7 @@
 import { relations, sql } from "drizzle-orm";
 import {
   boolean,
+  doublePrecision,
   jsonb,
   pgEnum,
   pgTable,
@@ -99,6 +100,8 @@ export const events = pgTable(
     description: text("description"),
     url: text("url"),
     location: text("location"),
+    latitude: doublePrecision("latitude"),
+    longitude: doublePrecision("longitude"),
     startDate: timestamp("start_date", { withTimezone: true }).notNull(),
     endDate: timestamp("end_date", { withTimezone: true }),
     type: eventTypeEnum("type").notNull(),

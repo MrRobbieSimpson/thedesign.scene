@@ -169,6 +169,11 @@ export function ImportEventForm({ disabled }: { disabled?: boolean }) {
                 disabled={pending}
               />
             </div>
+
+            <p className="text-xs text-muted-foreground sm:col-span-2">
+              Coordinates power “Find near me”. Leave blank to auto-geocode from
+              the location text when possible.
+            </p>
           </div>
 
           <Button type="submit" disabled={disabled || pending}>

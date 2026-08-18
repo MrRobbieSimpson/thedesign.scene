@@ -1,4 +1,4 @@
-import { EventCard } from "@/components/events/event-card";
+import { EventsExplorer } from "@/components/events/events-explorer";
 import { getPublishedEvents } from "@/lib/queries";
 
 export const dynamic = "force-dynamic";
@@ -21,25 +21,12 @@ export default async function EventsPage() {
           Design events worth showing up for.
         </h1>
         <p className="text-base leading-relaxed text-muted-foreground sm:text-lg">
-          Talks, meetups, and studio hours — curated with the same taste as the
-          feed.
+          Talks, meetups, and conferences — curated with the same taste as the
+          feed. Use Find near me to sort by distance (we only ask when you tap).
         </p>
       </section>
 
-      {events.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-border/80 px-6 py-20 text-center">
-          <p className="font-heading text-2xl tracking-tight">No events yet</p>
-          <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
-            Published events will appear here.
-          </p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
-          {events.map((event) => (
-            <EventCard key={event.id} event={event} />
-          ))}
-        </div>
-      )}
+      <EventsExplorer events={events} />
     </div>
   );
 }
