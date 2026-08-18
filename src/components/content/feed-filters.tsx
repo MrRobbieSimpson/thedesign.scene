@@ -26,7 +26,7 @@ export function FeedFilters() {
 
   return (
     <AnimatedPills
-      className="max-w-full"
+      className="w-fit max-w-full"
       items={filters.map((filter) => ({
         key: filter.value,
         label: filter.label,

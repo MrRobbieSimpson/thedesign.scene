@@ -43,10 +43,10 @@ export function FeedExplorer({
 
   return (
     <div className="space-y-8">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="min-w-0 flex-1">{toolbar}</div>
-        <div className="flex items-center justify-between gap-4 sm:justify-end">
-          <p className="text-sm text-muted-foreground sm:order-first">
+      <div className="flex flex-wrap items-center gap-3">
+        <div className="w-fit max-w-full shrink-0">{toolbar}</div>
+        <div className="ml-auto flex items-center gap-3">
+          <p className="text-sm text-muted-foreground">
             {revived.length} {revived.length === 1 ? "piece" : "pieces"}
           </p>
           <FeedLayoutSwitcher value={layout} onChange={onLayoutChange} />

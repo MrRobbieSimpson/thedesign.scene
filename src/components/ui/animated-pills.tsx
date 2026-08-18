@@ -112,7 +112,7 @@ export function AnimatedPills({
       aria-label={ariaLabel}
       onMouseLeave={() => setHoverKey(null)}
       className={cn(
-        "relative inline-flex max-w-full flex-nowrap items-center overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
+        "relative inline-flex w-fit max-w-full flex-nowrap items-center overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
         variant === "segmented" &&
           "gap-0.5 rounded-full border border-border/70 bg-muted/40 p-1",
         variant === "ghost" && "gap-0.5 rounded-full p-0.5",
