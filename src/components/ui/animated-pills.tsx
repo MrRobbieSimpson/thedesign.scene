@@ -24,11 +24,8 @@ export type AnimatedPillItem = {
 type AnimatedPillsProps = {
   items: AnimatedPillItem[];
   className?: string;
-  /** Visual density */
   size?: "sm" | "md";
-  /** Softer track for header (no heavy border) */
   variant?: "segmented" | "ghost";
-  /** When true, indicator follows hover; otherwise only selection */
   followHover?: boolean;
   "aria-label"?: string;
 };
@@ -41,6 +38,10 @@ type Indicator = {
   ready: boolean;
 };
 
+function emptyIndicator(): Indicator {
+  return { left: 0, top: 0, width: 0, height: 0, ready: false };
+}
+
 export function AnimatedPills({
   items,
   className,
@@ -52,33 +53,38 @@ export function AnimatedPills({
   const trackRef = useRef<HTMLDivElement>(null);
   const itemRefs = useRef(new Map<string, HTMLElement>());
   const [hoverKey, setHoverKey] = useState<string | null>(null);
-  const [indicator, setIndicator] = useState<Indicator>({
-    left: 0,
-    top: 0,
-    width: 0,
-    height: 0,
-    ready: false,
-  });
+  const [indicator, setIndicator] = useState<Indicator>(emptyIndicator);
 
   const activeKey = items.find((item) => item.active)?.key ?? null;
-  const highlightKey = followHover && hoverKey ? hoverKey : activeKey;
+  // Prefer hover target while hovering; otherwise stick to selection.
+  const highlightKey =
+    followHover && hoverKey != null ? hoverKey : activeKey;
   const hoveringOther = Boolean(
-    followHover && hoverKey && hoverKey !== activeKey
+    followHover && hoverKey != null && hoverKey !== activeKey
   );
 
   const measure = useCallback(() => {
+    const track = trackRef.current;
     const key = highlightKey;
-    if (!key) {
-      setIndicator((prev) => ({ ...prev, ready: false }));
+    if (!track || !key) {
+      setIndicator(emptyIndicator());
       return;
     }
+
     const el = itemRefs.current.get(key);
-    if (!el) return;
+    if (!el) {
+      setIndicator(emptyIndicator());
+      return;
+    }
+
+    const trackRect = track.getBoundingClientRect();
+    const elRect = el.getBoundingClientRect();
+
     setIndicator({
-      left: el.offsetLeft,
-      top: el.offsetTop,
-      width: el.offsetWidth,
-      height: el.offsetHeight,
+      left: elRect.left - trackRect.left + track.scrollLeft,
+      top: elRect.top - trackRect.top + track.scrollTop,
+      width: elRect.width,
+      height: elRect.height,
       ready: true,
     });
   }, [highlightKey]);
@@ -89,21 +95,33 @@ export function AnimatedPills({
 
   useEffect(() => {
     const track = trackRef.current;
-    if (!track || typeof ResizeObserver === "undefined") return;
-    const ro = new ResizeObserver(() => measure());
-    ro.observe(track);
-    for (const el of itemRefs.current.values()) ro.observe(el);
+    if (!track) return;
+
+    const ro =
+      typeof ResizeObserver !== "undefined"
+        ? new ResizeObserver(() => measure())
+        : null;
+    ro?.observe(track);
+    for (const el of itemRefs.current.values()) ro?.observe(el);
+
     window.addEventListener("resize", measure);
+    document.fonts?.ready.then(() => measure()).catch(() => undefined);
+
     return () => {
-      ro.disconnect();
+      ro?.disconnect();
       window.removeEventListener("resize", measure);
     };
   }, [measure, items]);
 
-  const setItemRef = useCallback((key: string, node: HTMLElement | null) => {
-    if (node) itemRefs.current.set(key, node);
-    else itemRefs.current.delete(key);
-  }, []);
+  const setItemRef = useCallback(
+    (key: string, node: HTMLElement | null) => {
+      if (node) itemRefs.current.set(key, node);
+      else itemRefs.current.delete(key);
+      // Remeasure after refs settle (first paint / filter change).
+      requestAnimationFrame(() => measure());
+    },
+    [measure]
+  );
 
   return (
     <div
@@ -112,7 +130,7 @@ export function AnimatedPills({
       aria-label={ariaLabel}
       onMouseLeave={() => setHoverKey(null)}
       className={cn(
-        "relative inline-flex w-fit max-w-full flex-nowrap items-center overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
+        "relative isolate inline-flex w-fit max-w-full flex-nowrap items-center overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
         variant === "segmented" &&
           "gap-0.5 rounded-full border border-border/70 bg-muted/40 p-1",
         variant === "ghost" && "gap-0.5 rounded-full p-0.5",
@@ -122,13 +140,13 @@ export function AnimatedPills({
       <span
         aria-hidden
         className={cn(
-          "nav-pill-indicator pointer-events-none absolute rounded-full transition-[transform,width,height,opacity,background-color,box-shadow] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] will-change-transform",
+          "nav-pill-indicator pointer-events-none absolute top-0 left-0 rounded-full transition-[transform,width,height,opacity,background-color,box-shadow] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] will-change-transform",
           variant === "segmented" &&
             "bg-background shadow-sm ring-1 ring-border/50",
           variant === "ghost" && "bg-foreground/[0.07]",
           hoveringOther &&
             variant === "segmented" &&
-            "bg-foreground/[0.06] shadow-none ring-0",
+            "bg-foreground/[0.07] shadow-none ring-0",
           hoveringOther && variant === "ghost" && "bg-foreground/[0.05]",
           indicator.ready ? "opacity-100" : "opacity-0"
         )}
@@ -141,19 +159,20 @@ export function AnimatedPills({
 
       {items.map((item) => {
         const active = Boolean(item.active);
+        const hovered = hoverKey === item.key;
         const sharedClass = cn(
-          "relative z-10 inline-flex items-center justify-center rounded-full font-medium transition-[color,transform] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
-          size === "sm" ? "size-8 text-xs" : "px-3.5 py-1.5 text-sm",
-          active
+          "relative z-10 inline-flex shrink-0 items-center justify-center rounded-full font-medium transition-colors duration-200 ease-[cubic-bezier(0.22,1,0.36,1)]",
+          size === "sm" ? "size-8 text-xs" : "h-8 px-3.5 text-sm",
+          active || hovered
             ? "text-foreground"
-            : "text-muted-foreground hover:text-foreground",
-          "active:scale-[0.97]"
+            : "text-muted-foreground hover:text-foreground"
         );
 
         const handlers = {
           onMouseEnter: () => setHoverKey(item.key),
           onFocus: () => setHoverKey(item.key),
-          onBlur: () => setHoverKey((current) => (current === item.key ? null : current)),
+          onBlur: () =>
+            setHoverKey((current) => (current === item.key ? null : current)),
         };
 
         if (item.href) {
