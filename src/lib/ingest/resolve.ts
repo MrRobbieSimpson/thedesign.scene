@@ -11,33 +11,103 @@ function hostOf(url: string) {
 }
 
 function platformFromHost(host: string): SourcePlatform {
+  if (host === "x.com" || host === "twitter.com") return "x";
   if (host === "layers.to" || host.endsWith(".layers.to")) return "layers";
   if (host === "handheld.design" || host.endsWith(".handheld.design")) {
     return "handheld";
   }
   if (host === "dezeen.com" || host.endsWith(".dezeen.com")) return "dezeen";
-  if (host === "x.com" || host === "twitter.com") return "x";
+  if (host === "dribbble.com" || host.endsWith(".dribbble.com")) {
+    return "dribbble";
+  }
+  if (host === "behance.net" || host.endsWith(".behance.net")) return "behance";
+  if (host === "awwwards.com" || host.endsWith(".awwwards.com")) {
+    return "awwwards";
+  }
+  if (host === "siteinspire.com" || host.endsWith(".siteinspire.com")) {
+    return "siteinspire";
+  }
+  if (
+    host === "spottedinprod.com" ||
+    host.endsWith(".spottedinprod.com")
+  ) {
+    return "spottedinprod";
+  }
+  if (host === "medium.com" || host.endsWith(".medium.com")) return "medium";
+  if (
+    host === "smashingmagazine.com" ||
+    host.endsWith(".smashingmagazine.com")
+  ) {
+    return "smashing";
+  }
   return "web";
 }
 
-function suggestType(platform: SourcePlatform, host: string): ResolvedImport["type"] {
+function suggestType(
+  platform: SourcePlatform,
+  host: string,
+  pathname: string
+): ResolvedImport["type"] {
   if (platform === "x") return "post";
-  if (platform === "layers") return "visual";
-  if (platform === "handheld" || platform === "dezeen") return "news";
-  if (host.includes("itsnicethat") || host.includes("fastcompany")) return "news";
+
+  // Portfolio / shot / inspiration galleries → visual
+  if (
+    platform === "layers" ||
+    platform === "behance" ||
+    platform === "siteinspire" ||
+    platform === "spottedinprod"
+  ) {
+    return "visual";
+  }
+
+  if (platform === "dribbble") {
+    if (pathname.startsWith("/shots") || pathname.includes("/shots/")) {
+      return "visual";
+    }
+    return "news";
+  }
+
+  if (platform === "awwwards") {
+    if (pathname.includes("/sites/") || pathname.includes("/inspiration")) {
+      return "visual";
+    }
+    return "news";
+  }
+
+  if (
+    platform === "handheld" ||
+    platform === "dezeen" ||
+    platform === "medium" ||
+    platform === "smashing"
+  ) {
+    return "news";
+  }
+
+  if (
+    host.includes("itsnicethat") ||
+    host.includes("fastcompany") ||
+    host.includes("designweek") ||
+    (host.includes("figma.com") && pathname.includes("/blog"))
+  ) {
+    return "news";
+  }
+
+  // Default for unknown design URLs: treat as visual inspiration
   return "visual";
 }
 
-function layersExternalId(url: string) {
+function pathExternalId(url: string) {
   try {
-    const { pathname } = new URL(url);
-    return pathname.replace(/\/+$/, "") || pathname;
+    const { pathname, search } = new URL(url);
+    return `${pathname.replace(/\/+$/, "") || "/"}${search}`;
   } catch {
     return url;
   }
 }
 
-export async function resolveImportUrl(inputUrl: string): Promise<ResolvedImport> {
+export async function resolveImportUrl(
+  inputUrl: string
+): Promise<ResolvedImport> {
   const trimmed = inputUrl.trim();
   if (!trimmed) throw new Error("URL is required");
 
@@ -45,8 +115,10 @@ export async function resolveImportUrl(inputUrl: string): Promise<ResolvedImport
   if (x) {
     const embed = await fetchXOEmbed(x.canonical);
     const title =
-      embed.text?.split("\n").find((line) => line.trim().length > 0)?.slice(0, 120) ??
-      `Post by @${x.handle}`;
+      embed.text
+        ?.split("\n")
+        .find((line) => line.trim().length > 0)
+        ?.slice(0, 120) ?? `Post by @${x.handle}`;
 
     return {
       type: "post",
@@ -66,8 +138,14 @@ export async function resolveImportUrl(inputUrl: string): Promise<ResolvedImport
   const og = await fetchOpenGraph(trimmed);
   const canonical = og.url ?? trimmed;
   const host = hostOf(canonical);
+  let pathname = "/";
+  try {
+    pathname = new URL(canonical).pathname;
+  } catch {
+    // ignore
+  }
   const platform = platformFromHost(host);
-  const type = suggestType(platform, host);
+  const type = suggestType(platform, host, pathname);
 
   return {
     type,
@@ -77,10 +155,7 @@ export async function resolveImportUrl(inputUrl: string): Promise<ResolvedImport
     url: canonical,
     sourcePlatform: platform,
     sourceUrl: canonical,
-    externalId:
-      platform === "layers"
-        ? layersExternalId(canonical)
-        : canonical,
+    externalId: pathExternalId(canonical),
     authorHandle: null,
     authorName: og.siteName,
     sourcePayload: { og },

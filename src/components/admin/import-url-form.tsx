@@ -55,8 +55,9 @@ export function ImportUrlForm({ disabled }: { disabled?: boolean }) {
       <div>
         <h2 className="font-heading text-2xl tracking-tight">Import URL</h2>
         <p className="mt-1 text-sm text-muted-foreground">
-          Paste an X post, Layers project, Handheld issue, Dezeen story, or any
-          design URL. We fetch metadata and save a draft.
+          Paste almost any design URL — Behance, Dribbble, Layers, Siteinspire,
+          Spotted in Prod, Awwwards, Medium, X, Handheld, and more. We fetch
+          metadata and save a draft.
         </p>
       </div>
 

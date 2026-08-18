@@ -1,10 +1,21 @@
 import type { ContentType } from "@/db/schema";
 
+/**
+ * Known source platforms. Unknown sites still import as "web".
+ * Paste any design URL — OG scrape fills the rest.
+ */
 export type SourcePlatform =
   | "x"
   | "layers"
   | "handheld"
   | "dezeen"
+  | "dribbble"
+  | "behance"
+  | "awwwards"
+  | "siteinspire"
+  | "spottedinprod"
+  | "medium"
+  | "smashing"
   | "rss"
   | "web";
 

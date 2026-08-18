@@ -47,6 +47,20 @@ export function sourcePlatformLabel(platform: string | null | undefined) {
       return "Handheld";
     case "dezeen":
       return "Dezeen";
+    case "dribbble":
+      return "Dribbble";
+    case "behance":
+      return "Behance";
+    case "awwwards":
+      return "Awwwards";
+    case "siteinspire":
+      return "Siteinspire";
+    case "spottedinprod":
+      return "Spotted in Prod";
+    case "medium":
+      return "Medium";
+    case "smashing":
+      return "Smashing Magazine";
     case "rss":
       return "RSS";
     case "web":

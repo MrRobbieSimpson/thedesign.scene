@@ -124,4 +124,6 @@ npm run ingest:rss -- --source handheld --limit 10
 npm run ingest:url -- "https://www.handheld.design/p/…"
 ```
 
-Registered feeds live in `src/lib/ingest/sources.ts` — add more anytime.
+Registered feeds live in `src/lib/ingest/sources.ts` (Handheld, Dezeen, Dribbble Stories, Awwwards, Smashing, Medium…).
+
+**Import URL** works for almost any design site via Open Graph: Behance, Layers, Siteinspire, Spotted in Prod, Awwwards sites, X posts, Medium articles, studio sites, etc. Suggested type is picked from the host (visual vs news vs post) and you can override before saving.
