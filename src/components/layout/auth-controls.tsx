@@ -1,7 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { Show, SignInButton, SignUpButton, UserButton, useAuth } from "@clerk/nextjs";
+import {
+  Show,
+  SignInButton,
+  SignUpButton,
+  UserButton,
+  useAuth,
+} from "@clerk/nextjs";
 
 import { WriteButton } from "@/components/writing/write-button";
 import { AnimatedPills } from "@/components/ui/animated-pills";
@@ -10,11 +16,11 @@ import { isClerkPublishableConfigured } from "@/lib/clerk";
 
 function GuestAuthLinks() {
   return (
-    <div className="flex h-7 items-center gap-1 sm:gap-1.5">
+    <div className="flex h-8 items-center gap-1">
       <Button
         variant="ghost"
         size="sm"
-        className="h-7 px-2 sm:px-2.5"
+        className="h-8 px-2.5 text-sm"
         render={<Link href="/sign-in" />}
         nativeButton={false}
       >
@@ -23,11 +29,12 @@ function GuestAuthLinks() {
       <Button
         variant="outline"
         size="sm"
-        className="h-7 px-2 sm:px-2.5"
+        className="h-8 px-2.5 text-sm"
         render={<Link href="/sign-up" />}
         nativeButton={false}
       >
-        Register
+        <span className="sm:hidden">Join</span>
+        <span className="hidden sm:inline">Register</span>
       </Button>
     </div>
   );
@@ -35,13 +42,13 @@ function GuestAuthLinks() {
 
 function SignedInControls() {
   return (
-    <div className="flex h-7 items-center gap-1.5">
+    <div className="flex h-8 items-center gap-1.5">
       <WriteButton />
       <UserButton
         appearance={{
           elements: {
-            rootBox: "flex h-7 w-7 items-center justify-center",
-            avatarBox: "size-7",
+            rootBox: "flex size-8 items-center justify-center",
+            avatarBox: "size-8",
           },
         }}
       />
@@ -52,11 +59,10 @@ function SignedInControls() {
 function ClerkAuthControls() {
   const { isLoaded, isSignedIn } = useAuth();
 
-  // Avoid flashing the wrong state while Clerk hydrates.
   if (!isLoaded) {
     return (
-      <div className="flex h-7 w-8 items-center justify-center" aria-hidden>
-        <span className="size-7 rounded-full bg-muted/60" />
+      <div className="flex size-8 items-center justify-center" aria-hidden>
+        <span className="size-8 rounded-full bg-muted/60" />
       </div>
     );
   }
@@ -66,25 +72,22 @@ function ClerkAuthControls() {
   }
 
   return (
-    <div className="flex h-7 items-center gap-1 sm:gap-1.5">
+    <div className="flex h-8 items-center gap-1">
       <SignInButton mode="modal">
-        <Button variant="ghost" size="sm" className="h-7 px-2 sm:px-2.5">
+        <Button variant="ghost" size="sm" className="h-8 px-2.5 text-sm">
           Sign in
         </Button>
       </SignInButton>
       <SignUpButton mode="modal">
-        <Button variant="outline" size="sm" className="h-7 px-2 sm:px-2.5">
-          Register
+        <Button variant="outline" size="sm" className="h-8 px-2.5 text-sm">
+          <span className="sm:hidden">Join</span>
+          <span className="hidden sm:inline">Register</span>
         </Button>
       </SignUpButton>
     </div>
   );
 }
 
-/**
- * Guest: Sign in / Register.
- * Signed in: Write + avatar only — never both.
- */
 export function AuthControls() {
   if (!isClerkPublishableConfigured()) {
     return <GuestAuthLinks />;

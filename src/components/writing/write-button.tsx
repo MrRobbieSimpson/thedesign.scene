@@ -13,11 +13,11 @@ export function WriteButton() {
       type="button"
       size="sm"
       onClick={() => openWriter()}
-      className="h-7 gap-1.5 px-2.5"
+      aria-label="Start writing"
+      className="h-8 gap-1.5 px-2 sm:px-2.5"
     >
-      <PenLine className="size-3.5" />
+      <PenLine className="size-3.5 shrink-0" />
       <span className="hidden sm:inline">Start writing</span>
-      <span className="sm:hidden">Write</span>
     </Button>
   );
 }

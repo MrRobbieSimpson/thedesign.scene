@@ -67,9 +67,11 @@ export function FeedExplorer({
 
   return (
     <div className="space-y-10">
-      <div className="flex flex-wrap items-center gap-3">
-        <div className="w-fit max-w-full shrink-0">{toolbar}</div>
-        <div className="ml-auto flex items-center gap-3">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="min-w-0 max-w-full overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          {toolbar}
+        </div>
+        <div className="flex h-8 shrink-0 items-center justify-between gap-3 sm:justify-end">
           <p className="text-sm text-muted-foreground">
             {revived.length} selected
           </p>
