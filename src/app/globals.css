@@ -263,6 +263,10 @@
     animation: none;
   }
 
+  .nav-pill-indicator {
+    transition: none !important;
+  }
+
   body {
     transition: none;
   }

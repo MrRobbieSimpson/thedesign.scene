@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Show, SignInButton, UserButton } from "@clerk/nextjs";
 
 import { WriteButton } from "@/components/writing/write-button";
+import { AnimatedPills } from "@/components/ui/animated-pills";
 import { Button } from "@/components/ui/button";
 import { isClerkPublishableConfigured } from "@/lib/clerk";
 
@@ -59,22 +60,16 @@ export function SignedInNav({
 
   return (
     <Show when="signed-in">
-      {items.map((item) => {
-        const active = pathname.startsWith(item.href);
-        return (
-          <Link
-            key={item.href}
-            href={item.href}
-            className={
-              active
-                ? "rounded-full bg-foreground/[0.06] px-3 py-1.5 text-sm text-foreground transition-colors"
-                : "rounded-full px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
-            }
-          >
-            {item.label}
-          </Link>
-        );
-      })}
+      <AnimatedPills
+        variant="ghost"
+        aria-label="Account"
+        items={items.map((item) => ({
+          key: item.href,
+          label: item.label,
+          href: item.href,
+          active: pathname.startsWith(item.href),
+        }))}
+      />
     </Show>
   );
 }
