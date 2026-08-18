@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import { EventsExplorer } from "@/components/events/events-explorer";
 import { getPublishedEvents } from "@/lib/queries";
 
@@ -5,11 +7,15 @@ export const revalidate = 60;
 
 export const metadata = {
   title: "Events",
-  description: "Design events — in person, hybrid, and remote.",
+  description:
+    "Design events worth showing up for — talks, meetups, and conferences.",
 };
 
 export default async function EventsPage() {
   const events = await getPublishedEvents();
+  const upcoming = events.filter(
+    (event) => new Date(event.startDate).getTime() >= Date.now() - 12 * 60 * 60 * 1000
+  );
 
   return (
     <div className="mx-auto max-w-6xl px-6 py-12 sm:py-16">
@@ -22,7 +28,14 @@ export default async function EventsPage() {
         </h1>
         <p className="text-base leading-relaxed text-muted-foreground sm:text-lg">
           Talks, meetups, and conferences — curated with the same taste as the
-          feed. Use Find near me to sort by distance (we only ask when you tap).
+          writing. In person, hybrid, or remote. Use Find near me when you want
+          what’s close.
+        </p>
+        <p className="text-sm text-muted-foreground/80">
+          {upcoming.length} upcoming · also surfaced in the{" "}
+          <Link href="/?type=events" className="underline underline-offset-4">
+            feed
+          </Link>
         </p>
       </section>
 

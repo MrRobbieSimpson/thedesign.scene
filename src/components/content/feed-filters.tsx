@@ -3,35 +3,29 @@
 import { useSearchParams } from "next/navigation";
 
 import { AnimatedPills } from "@/components/ui/animated-pills";
-import { CONTENT_TYPES, type ContentType } from "@/db/schema";
+import { FEED_FILTERS, isFeedFilter, type FeedFilter } from "@/lib/feed-mix";
 
-const filters: { value: ContentType | "all"; label: string }[] = [
-  { value: "all", label: "All" },
-  { value: "article", label: "Articles" },
-  { value: "thought", label: "Thoughts" },
-  { value: "visual", label: "Visual" },
-  { value: "build", label: "Builds" },
-  { value: "news", label: "News" },
-  { value: "post", label: "Posts" },
-];
+const labels: Record<FeedFilter, string> = {
+  all: "All",
+  articles: "Articles",
+  visuals: "Visuals",
+  builds: "Builds",
+  events: "Events",
+};
 
 export function FeedFilters() {
   const searchParams = useSearchParams();
   const raw = searchParams.get("type") ?? "all";
-  const current = (
-    raw === "all" || (CONTENT_TYPES as readonly string[]).includes(raw)
-      ? raw
-      : "all"
-  ) as ContentType | "all";
+  const current: FeedFilter = isFeedFilter(raw) ? raw : "all";
 
   return (
     <AnimatedPills
       className="w-fit max-w-full"
-      items={filters.map((filter) => ({
-        key: filter.value,
-        label: filter.label,
-        href: filter.value === "all" ? "/" : `/?type=${filter.value}`,
-        active: current === filter.value,
+      items={FEED_FILTERS.map((filter) => ({
+        key: filter,
+        label: labels[filter],
+        href: filter === "all" ? "/" : `/?type=${filter}`,
+        active: current === filter,
       }))}
     />
   );

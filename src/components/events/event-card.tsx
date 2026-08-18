@@ -1,27 +1,68 @@
 import Link from "next/link";
-import { ArrowUpRight, MapPin } from "lucide-react";
+import { ArrowUpRight, CalendarDays, MapPin, Monitor, Users } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
-import type { Event } from "@/db/schema";
+import type { Event, EventType } from "@/db/schema";
 import { eventTypeLabel, formatEventRange } from "@/lib/format";
+import { cn } from "@/lib/utils";
 
-export function EventCard({ event }: { event: Event }) {
+function TypeGlyph({ type }: { type: EventType }) {
+  if (type === "remote") return <Monitor className="size-3.5" />;
+  if (type === "hybrid") return <Users className="size-3.5" />;
+  return <MapPin className="size-3.5" />;
+}
+
+export function EventCard({
+  event,
+  featured = false,
+}: {
+  event: Event;
+  featured?: boolean;
+}) {
   const content = (
-    <article className="group flex h-full flex-col justify-between gap-6 rounded-2xl border border-border/70 bg-card p-6 transition-all hover:-translate-y-0.5 hover:border-border hover:shadow-[0_12px_40px_-24px_rgba(0,0,0,0.35)]">
+    <article
+      className={cn(
+        "group flex h-full flex-col justify-between gap-6 rounded-2xl border bg-card transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
+        featured
+          ? "border-foreground/15 p-7 shadow-[0_1px_0_rgba(0,0,0,0.02)] sm:p-8"
+          : "border-border/70 p-6",
+        "hover:-translate-y-0.5 hover:border-foreground/20 hover:shadow-[0_16px_48px_-28px_rgba(0,0,0,0.4)] active:translate-y-0 active:scale-[0.985]"
+      )}
+    >
       <div className="space-y-4">
         <div className="flex flex-wrap items-center gap-2">
-          <Badge variant="secondary">{eventTypeLabel(event.type)}</Badge>
-          <span className="text-sm text-muted-foreground">
+          <Badge
+            variant={featured ? "default" : "secondary"}
+            className={cn(
+              "gap-1.5",
+              featured && "border-0 bg-foreground text-background"
+            )}
+          >
+            <TypeGlyph type={event.type} />
+            {eventTypeLabel(event.type)}
+          </Badge>
+          <span className="inline-flex items-center gap-1.5 text-sm text-muted-foreground">
+            <CalendarDays className="size-3.5" />
             {formatEventRange(event.startDate, event.endDate)}
           </span>
         </div>
 
         <div className="space-y-2">
-          <h3 className="font-heading text-2xl leading-snug tracking-tight">
+          <h3
+            className={cn(
+              "font-heading tracking-tight",
+              featured ? "text-3xl leading-snug" : "text-2xl leading-snug"
+            )}
+          >
             {event.title}
           </h3>
           {event.description ? (
-            <p className="text-sm leading-relaxed text-muted-foreground">
+            <p
+              className={cn(
+                "leading-relaxed text-muted-foreground",
+                featured ? "text-[0.95rem]" : "text-sm"
+              )}
+            >
               {event.description}
             </p>
           ) : null}
@@ -29,12 +70,12 @@ export function EventCard({ event }: { event: Event }) {
       </div>
 
       <div className="flex items-center justify-between gap-3 text-sm text-muted-foreground">
-        <span className="inline-flex items-center gap-1.5">
+        <span className="inline-flex min-w-0 items-center gap-1.5">
           <MapPin className="size-3.5 shrink-0" />
-          {event.location ?? "TBA"}
+          <span className="truncate">{event.location ?? "Location TBA"}</span>
         </span>
         {event.url ? (
-          <span className="inline-flex items-center gap-1 font-medium transition-colors group-hover:text-foreground">
+          <span className="inline-flex shrink-0 items-center gap-1 font-medium transition-colors group-hover:text-foreground">
             Details
             <ArrowUpRight className="size-3.5" />
           </span>

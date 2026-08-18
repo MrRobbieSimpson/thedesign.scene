@@ -160,19 +160,19 @@ function ArticleCard({
     <Link
       href={contentHref(item)}
       className={cn(
-        "group flex h-full flex-col justify-between rounded-2xl border border-border/70 bg-card shadow-[0_1px_0_rgba(0,0,0,0.02)] transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
-        density === "comfortable" ? "p-8" : densityPad(density),
-        "hover:-translate-y-0.5 hover:border-border hover:shadow-[0_16px_48px_-28px_rgba(0,0,0,0.4)] active:translate-y-0 active:scale-[0.985]"
+        "group flex h-full flex-col justify-between rounded-2xl border border-foreground/12 bg-card shadow-[0_1px_0_rgba(0,0,0,0.02)] transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
+        density === "comfortable" ? "p-8 sm:p-10" : densityPad(density),
+        "hover:-translate-y-0.5 hover:border-foreground/25 hover:shadow-[0_20px_56px_-28px_rgba(0,0,0,0.5)] active:translate-y-0 active:scale-[0.985]"
       )}
     >
       <div className={cn(density === "compact" ? "space-y-3" : "space-y-5")}>
         <div className="flex items-center justify-between gap-3">
-          <Badge variant="secondary" className="gap-1.5">
+          <Badge className="gap-1.5 border-0 bg-foreground text-background">
             <TypeIcon type="article" />
             {contentTypeLabel("article")}
           </Badge>
           {item.featured && density !== "compact" ? (
-            <span className="text-[11px] font-medium tracking-wide text-muted-foreground uppercase">
+            <span className="text-[11px] font-medium tracking-[0.14em] text-muted-foreground uppercase">
               Featured
             </span>
           ) : null}
@@ -224,14 +224,14 @@ function ThoughtCard({
     <Link
       href={contentHref(item)}
       className={cn(
-        "group flex h-full flex-col justify-between rounded-2xl border border-border/70 bg-card shadow-[0_1px_0_rgba(0,0,0,0.02)] transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
-        densityPad(density),
-        "hover:-translate-y-0.5 hover:border-border hover:shadow-[0_12px_40px_-24px_rgba(0,0,0,0.35)] active:translate-y-0 active:scale-[0.985]"
+        "group flex h-full flex-col justify-between rounded-2xl border border-foreground/10 bg-card shadow-[0_1px_0_rgba(0,0,0,0.02)] transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
+        density === "comfortable" ? "p-7 sm:p-8" : densityPad(density),
+        "hover:-translate-y-0.5 hover:border-foreground/20 hover:shadow-[0_16px_48px_-28px_rgba(0,0,0,0.4)] active:translate-y-0 active:scale-[0.985]"
       )}
     >
       <div className={cn(density === "compact" ? "space-y-3" : "space-y-5")}>
         <div className="flex items-center justify-between gap-3">
-          <Badge variant="secondary" className="gap-1.5">
+          <Badge className="gap-1.5 border-0 bg-foreground/90 text-background">
             <TypeIcon type="thought" />
             {contentTypeLabel("thought")}
           </Badge>
@@ -395,7 +395,7 @@ function BuildCard({
         )}
         <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-card via-card/40 to-transparent" />
         <div className="absolute top-3 left-3 flex items-center gap-2">
-          <Badge className="gap-1.5 border-0 bg-background/90 text-foreground backdrop-blur-md">
+          <Badge className="gap-1.5 border-0 bg-foreground text-background backdrop-blur-md">
             <TypeIcon type="build" />
             {contentTypeLabel("build")}
           </Badge>
@@ -444,83 +444,53 @@ function BuildCard({
 function NewsCard({
   item,
   density,
-  priority = false,
 }: {
   item: ContentWithMaker;
   density: CardDensity;
   priority?: boolean;
 }) {
+  // Quieter treatment — secondary to editorial, builds, and events.
   return (
     <Link
       href={contentHref(item)}
       className={cn(
-        "group flex h-full flex-col overflow-hidden rounded-2xl border border-border/70 bg-card shadow-[0_1px_0_rgba(0,0,0,0.02)] transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
-        "hover:-translate-y-0.5 hover:border-border hover:shadow-[0_18px_50px_-28px_rgba(0,0,0,0.45)] active:translate-y-0 active:scale-[0.985]"
+        "group flex h-full flex-col justify-between rounded-2xl border border-border/50 bg-muted/20 transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
+        density === "compact" ? "p-4" : "p-5",
+        "hover:border-border/80 hover:bg-muted/35 active:scale-[0.99]"
       )}
     >
-      <div
-        className={cn(
-          "relative overflow-hidden bg-muted",
-          density === "mosaic"
-            ? "aspect-[4/5]"
-            : density === "compact"
-              ? "aspect-[16/10]"
-              : "aspect-[16/9]"
-        )}
-      >
-        {item.image ? (
-          <Image
-            src={item.image}
-            alt={item.title}
-            fill
-            priority={priority}
-            sizes="(max-width: 768px) 100vw, 50vw"
-            className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]"
-          />
-        ) : (
-          <div className="flex h-full items-center justify-center">
-            <Newspaper className="size-8 opacity-40" />
-          </div>
-        )}
-        <div className="absolute top-3 left-3 flex flex-wrap gap-2">
-          <Badge className="gap-1.5 border-0 bg-background/90 text-foreground backdrop-blur-md">
+      <div className="space-y-3">
+        <div className="flex flex-wrap items-center gap-2">
+          <Badge variant="outline" className="gap-1.5 text-muted-foreground">
             <TypeIcon type="news" />
-            {contentTypeLabel("news")}
+            Brief
           </Badge>
           {item.sourcePlatform ? (
-            <Badge
-              variant="secondary"
-              className="border-0 bg-background/80 backdrop-blur-md"
-            >
+            <span className="text-[11px] tracking-wide text-muted-foreground/80 uppercase">
               {sourcePlatformLabel(item.sourcePlatform)}
-            </Badge>
+            </span>
           ) : null}
         </div>
+        <h3
+          className={cn(
+            "font-heading text-balance text-foreground/90",
+            density === "compact" ? "text-sm leading-snug" : "text-lg leading-snug"
+          )}
+        >
+          {item.title}
+        </h3>
+        {item.excerpt ? (
+          <p className="line-clamp-2 text-xs leading-relaxed text-muted-foreground">
+            {item.excerpt}
+          </p>
+        ) : null}
       </div>
-
-      <div className="flex flex-1 flex-col gap-4 p-5">
-        <div className="space-y-2">
-          <h3
-            className={cn(
-              "font-heading text-balance",
-              density === "compact" ? "text-sm leading-snug" : "text-xl leading-snug"
-            )}
-          >
-            {item.title}
-          </h3>
-          {item.excerpt ? (
-            <p className="line-clamp-3 text-sm leading-relaxed text-muted-foreground">
-              {item.excerpt}
-            </p>
-          ) : null}
-        </div>
-        <div className="mt-auto flex items-center justify-between gap-3">
-          <Attribution item={item} date={item.publishedAt} />
-          <span className="inline-flex items-center gap-1 text-xs font-medium text-muted-foreground transition-colors group-hover:text-foreground">
-            Read
-            <ArrowUpRight className="size-3.5" />
-          </span>
-        </div>
+      <div className="mt-5 flex items-center justify-between gap-3">
+        <Attribution item={item} date={item.publishedAt} />
+        <span className="inline-flex items-center gap-1 text-xs text-muted-foreground transition-colors group-hover:text-foreground">
+          Open
+          <ArrowUpRight className="size-3.5" />
+        </span>
       </div>
     </Link>
   );
@@ -529,86 +499,51 @@ function NewsCard({
 function PostCard({
   item,
   density,
-  priority = false,
 }: {
   item: ContentWithMaker;
   density: CardDensity;
   priority?: boolean;
 }) {
+  // Quiet secondary treatment — never competes with editorial.
   return (
     <Link
       href={contentHref(item)}
       className={cn(
-        "group flex h-full flex-col overflow-hidden rounded-2xl border border-border/70 bg-card shadow-[0_1px_0_rgba(0,0,0,0.02)] transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
-        "hover:-translate-y-0.5 hover:border-border hover:shadow-[0_12px_40px_-24px_rgba(0,0,0,0.35)] active:translate-y-0 active:scale-[0.985]"
+        "group flex h-full flex-col justify-between rounded-2xl border border-border/50 bg-muted/15 transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
+        density === "compact" ? "p-4" : "p-5",
+        "hover:border-border/80 hover:bg-muted/30 active:scale-[0.99]"
       )}
     >
-      {item.image ? (
-        <div
-          className={cn(
-            "relative overflow-hidden bg-muted",
-            density === "compact" ? "aspect-[5/4]" : "aspect-[4/3]"
-          )}
-        >
-          <Image
-            src={item.image}
-            alt={item.title}
-            fill
-            priority={priority}
-            sizes="(max-width: 768px) 100vw, 50vw"
-            className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]"
-          />
-          <div className="absolute top-3 left-3 flex gap-2">
-            <Badge className="gap-1.5 border-0 bg-background/90 text-foreground backdrop-blur-md">
-              <TypeIcon type="post" />
-              {contentTypeLabel("post")}
-            </Badge>
-            <Badge
-              variant="secondary"
-              className="border-0 bg-background/80 backdrop-blur-md"
-            >
-              {sourcePlatformLabel(item.sourcePlatform) ?? "X"}
-            </Badge>
-          </div>
-        </div>
-      ) : null}
-
-      <div className="flex flex-1 flex-col gap-4 p-5">
-        {!item.image ? (
-          <div className="flex items-center gap-2">
-            <Badge variant="secondary" className="gap-1.5">
-              <TypeIcon type="post" />
-              {contentTypeLabel("post")}
-            </Badge>
-            <Badge variant="outline">
-              {sourcePlatformLabel(item.sourcePlatform) ?? "X"}
-            </Badge>
-          </div>
-        ) : null}
-
-        <div className="space-y-3">
-          <h3
-            className={cn(
-              "font-heading text-balance",
-              density === "compact" ? "text-sm leading-snug" : "text-xl leading-snug"
-            )}
-          >
-            {item.title}
-          </h3>
-          {item.excerpt ? (
-            <p className="line-clamp-4 text-sm leading-relaxed text-muted-foreground">
-              {item.excerpt}
-            </p>
-          ) : null}
-        </div>
-
-        <div className="mt-auto flex items-center justify-between gap-3 border-t border-border/60 pt-4">
-          <Attribution item={item} date={item.publishedAt} />
-          <span className="inline-flex items-center gap-1 text-xs font-medium text-muted-foreground transition-colors group-hover:text-foreground">
-            View on X
-            <ArrowUpRight className="size-3.5" />
+      <div className="space-y-3">
+        <div className="flex flex-wrap items-center gap-2">
+          <Badge variant="outline" className="gap-1.5 text-muted-foreground">
+            <TypeIcon type="post" />
+            Note
+          </Badge>
+          <span className="text-[11px] tracking-wide text-muted-foreground/80 uppercase">
+            {sourcePlatformLabel(item.sourcePlatform) ?? "X"}
           </span>
         </div>
+        <h3
+          className={cn(
+            "font-heading text-balance text-foreground/90",
+            density === "compact" ? "text-sm leading-snug" : "text-base leading-snug"
+          )}
+        >
+          {item.title}
+        </h3>
+        {item.excerpt ? (
+          <p className="line-clamp-3 text-xs leading-relaxed text-muted-foreground">
+            {item.excerpt}
+          </p>
+        ) : null}
+      </div>
+      <div className="mt-5 flex items-center justify-between gap-3 border-t border-border/40 pt-3">
+        <Attribution item={item} date={item.publishedAt} />
+        <span className="inline-flex items-center gap-1 text-xs text-muted-foreground transition-colors group-hover:text-foreground">
+          View
+          <ArrowUpRight className="size-3.5" />
+        </span>
       </div>
     </Link>
   );

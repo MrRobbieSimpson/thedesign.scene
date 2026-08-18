@@ -10,12 +10,12 @@ import {
   type ContentWithMaker,
 } from "@/lib/demo-data";
 
-const FEED_LIMIT = 60;
+const FEED_POOL_LIMIT = 120;
 const FEED_REVALIDATE_SECONDS = 60;
 
 async function fetchPublishedContent(
   type: ContentType | "all" = "all",
-  limit = FEED_LIMIT
+  limit = FEED_POOL_LIMIT
 ): Promise<ContentWithMaker[]> {
   if (!isDatabaseConfigured() || !db) {
     return filterDemoContent(type).slice(0, limit);
@@ -30,6 +30,7 @@ async function fetchPublishedContent(
     where: and(...conditions),
     with: { maker: true },
     orderBy: (fields, { desc: d }) => [
+      d(fields.featured),
       d(fields.publishedAt),
       d(fields.createdAt),
     ],
@@ -39,15 +40,20 @@ async function fetchPublishedContent(
   return rows;
 }
 
-/** Cached feed query — keeps Neon off the critical path for most requests. */
+/** Cached feed pool — mix/curate in feed-mix.ts rather than dumping chronologically. */
 export async function getPublishedContent(
   type: ContentType | "all" = "all"
 ): Promise<ContentWithMaker[]> {
   return unstable_cache(
     () => fetchPublishedContent(type),
-    ["published-content", type],
+    ["published-content", type, "v2"],
     { revalidate: FEED_REVALIDATE_SECONDS, tags: ["content"] }
   )();
+}
+
+/** All published types for the curated home mix. */
+export async function getPublishedContentPool(): Promise<ContentWithMaker[]> {
+  return getPublishedContent("all");
 }
 
 export async function getAllContent(): Promise<ContentWithMaker[]> {

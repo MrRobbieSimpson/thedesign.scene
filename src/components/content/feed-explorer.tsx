@@ -3,16 +3,19 @@
 import { useEffect, useMemo, useState } from "react";
 
 import { ContentCard } from "@/components/content/content-card";
+import { FeedEventCard } from "@/components/content/feed-event-card";
 import {
   FEED_LAYOUT_STORAGE_KEY,
   isFeedLayout,
   type FeedLayout,
 } from "@/components/content/feed-layout";
 import { FeedLayoutSwitcher } from "@/components/content/feed-layout-switcher";
+import type { Event } from "@/db/schema";
 import type { ContentWithMaker } from "@/lib/demo-data";
+import type { FeedItem } from "@/lib/feed-mix";
 import { cn } from "@/lib/utils";
 
-function reviveItem(item: ContentWithMaker): ContentWithMaker {
+function reviveContent(item: ContentWithMaker): ContentWithMaker {
   return {
     ...item,
     publishedAt: item.publishedAt ? new Date(item.publishedAt) : null,
@@ -21,15 +24,32 @@ function reviveItem(item: ContentWithMaker): ContentWithMaker {
   };
 }
 
+function reviveEvent(event: Event): Event {
+  return {
+    ...event,
+    startDate: new Date(event.startDate),
+    endDate: event.endDate ? new Date(event.endDate) : null,
+    createdAt: new Date(event.createdAt),
+    updatedAt: new Date(event.updatedAt),
+  };
+}
+
+function reviveFeedItem(item: FeedItem): FeedItem {
+  if (item.kind === "event") {
+    return { ...item, item: reviveEvent(item.item) };
+  }
+  return { ...item, item: reviveContent(item.item) };
+}
+
 export function FeedExplorer({
   items,
   toolbar,
 }: {
-  items: ContentWithMaker[];
+  items: FeedItem[];
   toolbar?: React.ReactNode;
 }) {
   const [layout, setLayout] = useState<FeedLayout>("big");
-  const revived = useMemo(() => items.map(reviveItem), [items]);
+  const revived = useMemo(() => items.map(reviveFeedItem), [items]);
 
   useEffect(() => {
     const stored = window.localStorage.getItem(FEED_LAYOUT_STORAGE_KEY);
@@ -47,7 +67,8 @@ export function FeedExplorer({
         <div className="w-fit max-w-full shrink-0">{toolbar}</div>
         <div className="ml-auto flex items-center gap-3">
           <p className="text-sm text-muted-foreground">
-            {revived.length} {revived.length === 1 ? "piece" : "pieces"}
+            {revived.length} curated{" "}
+            {revived.length === 1 ? "piece" : "pieces"}
           </p>
           <FeedLayoutSwitcher value={layout} onChange={onLayoutChange} />
         </div>
@@ -58,11 +79,33 @@ export function FeedExplorer({
   );
 }
 
+function densityFor(layout: FeedLayout) {
+  if (layout === "small") return "compact" as const;
+  if (layout === "mosaic") return "mosaic" as const;
+  return "comfortable" as const;
+}
+
+function shouldSpan(item: FeedItem, layout: FeedLayout) {
+  if (layout !== "big") return false;
+  if (item.kind === "event") return true;
+  if (
+    (item.item.type === "article" || item.item.type === "thought") &&
+    item.item.featured
+  ) {
+    return true;
+  }
+  if (item.item.type === "article" && !item.item.featured) {
+    // Lead articles still get room to breathe in big layout.
+    return Boolean(item.item.excerpt && item.item.excerpt.length > 120);
+  }
+  return false;
+}
+
 function FeedGridLayout({
   items,
   layout,
 }: {
-  items: ContentWithMaker[];
+  items: FeedItem[];
   layout: FeedLayout;
 }) {
   if (items.length === 0) {
@@ -70,11 +113,13 @@ function FeedGridLayout({
       <div className="rounded-2xl border border-dashed border-border/80 px-6 py-20 text-center">
         <p className="font-heading text-2xl tracking-tight">Nothing here yet</p>
         <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
-          Published articles, visuals, builds, news, and posts will appear here.
+          Featured writing, visuals, builds, and events will appear here.
         </p>
       </div>
     );
   }
+
+  const density = densityFor(layout);
 
   if (layout === "mosaic") {
     return (
@@ -87,11 +132,7 @@ function FeedGridLayout({
               index % 7 === 0 && "sm:translate-y-1"
             )}
           >
-            <ContentCard
-              item={item}
-              density="mosaic"
-              priority={index < 3}
-            />
+            <FeedItemCard item={item} density={density} priority={index < 3} />
           </div>
         ))}
       </div>
@@ -102,10 +143,10 @@ function FeedGridLayout({
     return (
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {items.map((item, index) => (
-          <ContentCard
+          <FeedItemCard
             key={item.id}
             item={item}
-            density="compact"
+            density={density}
             priority={index < 6}
           />
         ))}
@@ -118,22 +159,32 @@ function FeedGridLayout({
       {items.map((item, index) => (
         <div
           key={item.id}
-          className={
-            (item.type === "article" ||
-              item.type === "thought" ||
-              item.type === "news") &&
-            item.featured
-              ? "md:col-span-2"
-              : undefined
-          }
+          className={shouldSpan(item, layout) ? "md:col-span-2" : undefined}
         >
-          <ContentCard
+          <FeedItemCard
             item={item}
-            density="comfortable"
+            density={density}
             priority={index < 4}
           />
         </div>
       ))}
     </div>
+  );
+}
+
+function FeedItemCard({
+  item,
+  density,
+  priority,
+}: {
+  item: FeedItem;
+  density: "comfortable" | "compact" | "mosaic";
+  priority?: boolean;
+}) {
+  if (item.kind === "event") {
+    return <FeedEventCard event={item.item} density={density} />;
+  }
+  return (
+    <ContentCard item={item.item} density={density} priority={priority} />
   );
 }

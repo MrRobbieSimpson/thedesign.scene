@@ -2,8 +2,8 @@ import { Suspense } from "react";
 
 import { FeedExplorer } from "@/components/content/feed-explorer";
 import { FeedFilters } from "@/components/content/feed-filters";
-import { CONTENT_TYPES, type ContentType } from "@/db/schema";
-import { getPublishedContent } from "@/lib/queries";
+import { filterFeedItems, isFeedFilter, type FeedFilter } from "@/lib/feed-mix";
+import { getPublishedContentPool, getPublishedEvents } from "@/lib/queries";
 
 /** Soft ISR — feed stays fresh without a Neon hit on every request. */
 export const revalidate = 60;
@@ -15,13 +15,20 @@ type HomeProps = {
 export default async function HomePage({ searchParams }: HomeProps) {
   const params = await searchParams;
   const rawType = params.type ?? "all";
-  const type = (
-    rawType === "all" || (CONTENT_TYPES as readonly string[]).includes(rawType)
-      ? rawType
-      : "all"
-  ) as ContentType | "all";
+  const filter: FeedFilter = isFeedFilter(rawType) ? rawType : "all";
 
-  const items = await getPublishedContent(type);
+  const [content, events] = await Promise.all([
+    getPublishedContentPool(),
+    getPublishedEvents(),
+  ]);
+
+  const items = filterFeedItems(filter, content, events);
+
+  const editorialCount = items.filter(
+    (item) =>
+      item.kind === "content" &&
+      (item.item.type === "article" || item.item.type === "thought")
+  ).length;
 
   return (
     <div className="mx-auto max-w-6xl px-6 py-12 sm:py-16">
@@ -33,9 +40,16 @@ export default async function HomePage({ searchParams }: HomeProps) {
           Design worth sitting with.
         </h1>
         <p className="text-base leading-relaxed text-muted-foreground sm:text-lg">
-          Editorial writing first — plus visuals, builds, news, and posts.
-          Quality over quantity.
+          Writing first — then visuals, builds, and events worth showing up for.
+          News stays selective. Quality over quantity.
         </p>
+        {filter === "all" ? (
+          <p className="text-sm text-muted-foreground/80">
+            {editorialCount} editorial{" "}
+            {editorialCount === 1 ? "piece" : "pieces"} in this mix · featured
+            writing leads
+          </p>
+        ) : null}
       </section>
 
       <FeedExplorer
