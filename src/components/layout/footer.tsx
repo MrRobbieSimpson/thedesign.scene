@@ -12,6 +12,17 @@ export function Footer() {
             A calm curation of thoughts, visuals, builds, news, posts, and
             design events — quality over quantity.
           </p>
+          <p className="pt-1 text-sm text-muted-foreground/80">
+            Created by{" "}
+            <a
+              href="https://x.com/robbothecreat0r"
+              target="_blank"
+              rel="noreferrer"
+              className="underline-offset-4 transition-colors hover:text-foreground hover:underline"
+            >
+              robbothecreat0r
+            </a>
+          </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-muted-foreground">
