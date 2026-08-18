@@ -47,7 +47,13 @@ export function ThemeToggle() {
 
   if (!mounted) {
     return (
-      <Button variant="ghost" size="icon-sm" aria-label="Toggle theme" disabled>
+      <Button
+        variant="ghost"
+        size="icon-sm"
+        className="size-7"
+        aria-label="Toggle theme"
+        disabled
+      >
         <Sun className="size-4 opacity-0" />
       </Button>
     );
@@ -62,7 +68,7 @@ export function ThemeToggle() {
       size="icon-sm"
       aria-label={label}
       title={label}
-      className="group/theme relative"
+      className="group/theme relative size-7 shrink-0"
       onClick={() =>
         runWithThemeTransition(() => setTheme(isDark ? "light" : "dark"))
       }

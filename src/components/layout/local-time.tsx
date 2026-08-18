@@ -11,7 +11,6 @@ export function LocalTime() {
   useEffect(() => {
     setNow(new Date());
     const id = window.setInterval(() => setNow(new Date()), 30_000);
-    // Align to the next minute boundary for cleaner updates
     const msToNextMinute = 60_000 - (Date.now() % 60_000);
     const align = window.setTimeout(() => {
       setNow(new Date());
@@ -25,7 +24,7 @@ export function LocalTime() {
   if (!now) {
     return (
       <span
-        className="hidden w-[4.5rem] sm:inline-block"
+        className="hidden h-7 w-[5.5rem] sm:inline-flex"
         aria-hidden
       />
     );
@@ -45,9 +44,10 @@ export function LocalTime() {
     <time
       dateTime={now.toISOString()}
       title={zone ? `Local time (${zone})` : "Local time"}
-      className="hidden tabular-nums text-[11px] tracking-wide text-muted-foreground/70 sm:inline"
+      className="hidden h-7 items-center tabular-nums text-[11px] leading-none tracking-wide text-muted-foreground/70 sm:inline-flex"
     >
       {time}
+      {zone ? <span className="ml-1">{zone}</span> : null}
     </time>
   );
 }

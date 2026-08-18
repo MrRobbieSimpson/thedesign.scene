@@ -30,16 +30,16 @@ export function Header() {
     <header className="sticky top-0 z-40 border-b border-border/60 bg-background/80 backdrop-blur-xl">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-6">
         <div className="flex min-w-0 items-center gap-5 lg:gap-8">
-          <Link href="/" className="group flex shrink-0 items-center gap-2.5">
+          <Link href="/" className="group flex h-7 shrink-0 items-center gap-2.5">
             <span className="flex size-7 items-center justify-center rounded-lg bg-foreground text-[0.65rem] font-semibold tracking-tight text-background transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.04] group-active:scale-[0.97]">
               td
             </span>
-            <span className="font-sans text-lg font-medium tracking-tight transition-opacity duration-300 group-hover:opacity-80 sm:text-xl">
+            <span className="font-sans text-lg font-medium leading-none tracking-tight transition-opacity duration-300 group-hover:opacity-80 sm:text-xl">
               thedesign.scene
             </span>
           </Link>
 
-          <nav className="hidden items-center gap-1 md:flex">
+          <nav className="hidden h-7 items-center gap-1 md:flex">
             <AnimatedPills
               variant="ghost"
               aria-label="Primary"
@@ -57,7 +57,7 @@ export function Header() {
           </nav>
         </div>
 
-        <div className="flex shrink-0 items-center gap-3">
+        <div className="flex h-7 shrink-0 items-center gap-2">
           <LocalTime />
           <ThemeToggle />
           <AuthControls />

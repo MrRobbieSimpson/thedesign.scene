@@ -11,10 +11,11 @@ import { isClerkPublishableConfigured } from "@/lib/clerk";
 
 function GuestAuthLinks() {
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex h-7 items-center gap-1.5">
       <Button
         variant="ghost"
         size="sm"
+        className="h-7"
         render={<Link href="/sign-in" />}
         nativeButton={false}
       >
@@ -23,6 +24,7 @@ function GuestAuthLinks() {
       <Button
         variant="outline"
         size="sm"
+        className="h-7"
         render={<Link href="/sign-up" />}
         nativeButton={false}
       >
@@ -47,28 +49,31 @@ export function AuthControls() {
   return (
     <>
       <Show when="signed-out" fallback={<GuestAuthLinks />}>
-        <div className="flex items-center gap-2">
+        <div className="flex h-7 items-center gap-1.5">
           <SignInButton mode="modal">
-            <Button variant="ghost" size="sm">
+            <Button variant="ghost" size="sm" className="h-7">
               Sign in
             </Button>
           </SignInButton>
           <SignUpButton mode="modal">
-            <Button variant="outline" size="sm">
+            <Button variant="outline" size="sm" className="h-7">
               Register
             </Button>
           </SignUpButton>
         </div>
       </Show>
       <Show when="signed-in">
-        <WriteButton />
-        <UserButton
-          appearance={{
-            elements: {
-              avatarBox: "size-8",
-            },
-          }}
-        />
+        <div className="flex h-7 items-center gap-1.5">
+          <WriteButton />
+          <UserButton
+            appearance={{
+              elements: {
+                rootBox: "flex h-7 items-center",
+                avatarBox: "size-7",
+              },
+            }}
+          />
+        </div>
       </Show>
     </>
   );
