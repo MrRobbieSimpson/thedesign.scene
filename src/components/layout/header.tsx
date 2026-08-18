@@ -22,7 +22,7 @@ export function Header() {
             <span className="flex size-7 items-center justify-center rounded-lg bg-foreground text-[0.65rem] font-semibold tracking-tight text-background transition-transform group-hover:scale-[1.03]">
               td
             </span>
-            <span className="font-heading text-lg tracking-tight sm:text-xl">
+            <span className="font-sans text-lg font-medium tracking-tight sm:text-xl">
               thedesign.scene
             </span>
           </Link>
