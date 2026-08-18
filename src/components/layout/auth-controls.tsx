@@ -1,8 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
-import { Show, SignInButton, SignUpButton, UserButton } from "@clerk/nextjs";
+import { Show, SignInButton, SignUpButton, UserButton, useAuth } from "@clerk/nextjs";
 
 import { WriteButton } from "@/components/writing/write-button";
 import { AnimatedPills } from "@/components/ui/animated-pills";
@@ -11,11 +10,11 @@ import { isClerkPublishableConfigured } from "@/lib/clerk";
 
 function GuestAuthLinks() {
   return (
-    <div className="flex h-7 items-center gap-1.5">
+    <div className="flex h-7 items-center gap-1 sm:gap-1.5">
       <Button
         variant="ghost"
         size="sm"
-        className="h-7"
+        className="h-7 px-2 sm:px-2.5"
         render={<Link href="/sign-in" />}
         nativeButton={false}
       >
@@ -24,7 +23,7 @@ function GuestAuthLinks() {
       <Button
         variant="outline"
         size="sm"
-        className="h-7"
+        className="h-7 px-2 sm:px-2.5"
         render={<Link href="/sign-up" />}
         nativeButton={false}
       >
@@ -34,49 +33,63 @@ function GuestAuthLinks() {
   );
 }
 
-/**
- * Always show Sign in / Register for guests.
- * Prefer Clerk modal buttons once hydrated; fall back to routes.
- */
-export function AuthControls() {
-  const [ready, setReady] = useState(false);
-  useEffect(() => setReady(true), []);
+function SignedInControls() {
+  return (
+    <div className="flex h-7 items-center gap-1.5">
+      <WriteButton />
+      <UserButton
+        appearance={{
+          elements: {
+            rootBox: "flex h-7 w-7 items-center justify-center",
+            avatarBox: "size-7",
+          },
+        }}
+      />
+    </div>
+  );
+}
 
-  if (!isClerkPublishableConfigured() || !ready) {
-    return <GuestAuthLinks />;
+function ClerkAuthControls() {
+  const { isLoaded, isSignedIn } = useAuth();
+
+  // Avoid flashing the wrong state while Clerk hydrates.
+  if (!isLoaded) {
+    return (
+      <div className="flex h-7 w-8 items-center justify-center" aria-hidden>
+        <span className="size-7 rounded-full bg-muted/60" />
+      </div>
+    );
+  }
+
+  if (isSignedIn) {
+    return <SignedInControls />;
   }
 
   return (
-    <>
-      <Show when="signed-out" fallback={<GuestAuthLinks />}>
-        <div className="flex h-7 items-center gap-1.5">
-          <SignInButton mode="modal">
-            <Button variant="ghost" size="sm" className="h-7">
-              Sign in
-            </Button>
-          </SignInButton>
-          <SignUpButton mode="modal">
-            <Button variant="outline" size="sm" className="h-7">
-              Register
-            </Button>
-          </SignUpButton>
-        </div>
-      </Show>
-      <Show when="signed-in">
-        <div className="flex h-7 items-center gap-1.5">
-          <WriteButton />
-          <UserButton
-            appearance={{
-              elements: {
-                rootBox: "flex h-7 items-center",
-                avatarBox: "size-7",
-              },
-            }}
-          />
-        </div>
-      </Show>
-    </>
+    <div className="flex h-7 items-center gap-1 sm:gap-1.5">
+      <SignInButton mode="modal">
+        <Button variant="ghost" size="sm" className="h-7 px-2 sm:px-2.5">
+          Sign in
+        </Button>
+      </SignInButton>
+      <SignUpButton mode="modal">
+        <Button variant="outline" size="sm" className="h-7 px-2 sm:px-2.5">
+          Register
+        </Button>
+      </SignUpButton>
+    </div>
   );
+}
+
+/**
+ * Guest: Sign in / Register.
+ * Signed in: Write + avatar only — never both.
+ */
+export function AuthControls() {
+  if (!isClerkPublishableConfigured()) {
+    return <GuestAuthLinks />;
+  }
+  return <ClerkAuthControls />;
 }
 
 export function SignedInNav({

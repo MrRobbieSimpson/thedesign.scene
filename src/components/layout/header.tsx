@@ -10,6 +10,7 @@ import {
 import { LocalTime } from "@/components/layout/local-time";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { AnimatedPills } from "@/components/ui/animated-pills";
+import { cn } from "@/lib/utils";
 
 const nav = [
   { href: "/", label: "Feed" },
@@ -28,16 +29,43 @@ export function Header() {
 
   return (
     <header className="sticky top-0 z-40 border-b border-border/60 bg-background/80 backdrop-blur-xl">
-      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-6">
-        <div className="flex min-w-0 items-center gap-5 lg:gap-8">
-          <Link href="/" className="group flex h-7 shrink-0 items-center gap-2.5">
-            <span className="flex size-7 items-center justify-center rounded-lg bg-foreground text-[0.65rem] font-semibold tracking-tight text-background transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.04] group-active:scale-[0.97]">
+      <div className="mx-auto flex h-14 max-w-6xl items-center justify-between gap-2 px-4 sm:h-16 sm:gap-4 sm:px-6">
+        <div className="flex min-w-0 flex-1 items-center gap-3 sm:gap-5 lg:gap-8">
+          <Link
+            href="/"
+            className="group flex h-7 min-w-0 shrink-0 items-center gap-2 sm:gap-2.5"
+          >
+            <span className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-foreground text-[0.65rem] font-semibold tracking-tight text-background transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.04] group-active:scale-[0.97]">
               td
             </span>
-            <span className="font-sans text-lg font-medium leading-none tracking-tight transition-opacity duration-300 group-hover:opacity-80 sm:text-xl">
+            <span className="hidden truncate font-sans text-lg font-medium leading-none tracking-tight transition-opacity duration-300 group-hover:opacity-80 min-[400px]:inline sm:text-xl">
               thedesign.scene
             </span>
           </Link>
+
+          {/* Mobile primary links */}
+          <nav className="flex items-center gap-0.5 md:hidden">
+            {nav.map((item) => {
+              const active =
+                item.href === "/"
+                  ? pathname === "/"
+                  : pathname.startsWith(item.href);
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={cn(
+                    "rounded-full px-2.5 py-1 text-sm transition-colors",
+                    active
+                      ? "bg-foreground/[0.07] text-foreground"
+                      : "text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  {item.label}
+                </Link>
+              );
+            })}
+          </nav>
 
           <nav className="hidden h-7 items-center gap-1 md:flex">
             <AnimatedPills
@@ -57,7 +85,7 @@ export function Header() {
           </nav>
         </div>
 
-        <div className="flex h-7 shrink-0 items-center gap-2">
+        <div className="flex h-7 shrink-0 items-center gap-1 sm:gap-2">
           <LocalTime />
           <ThemeToggle />
           <AuthControls />
