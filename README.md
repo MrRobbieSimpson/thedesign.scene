@@ -1,36 +1,126 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# thedesign.scene
 
-## Getting Started
+A curated design platform for thoughts, visuals, builds, news, posts, and events.
 
-First, run the development server:
+Phase 1 is public-only (no auth): a polished feed, content detail pages, events, and a simple unprotected admin.
+
+## Stack
+
+- **Next.js 15** (App Router) + TypeScript
+- **Tailwind CSS** + **shadcn/ui**
+- **Drizzle ORM** + **PostgreSQL** (Neon / Supabase ready)
+- **Lucide** icons
+- **next-themes** for dark mode
+
+## Getting started
 
 ```bash
+cd scene
+npm install
+cp .env.example .env.local
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Without `DATABASE_URL`, the app runs on **demo data** so you can explore the UI immediately. Admin writes stay disabled until Postgres is connected.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Database (Neon or Supabase)
 
-## Learn More
+1. Create a Postgres database and copy the connection string into `.env.local`:
 
-To learn more about Next.js, take a look at the following resources:
+```env
+DATABASE_URL=postgresql://user:pass@host/db?sslmode=require
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+2. Push the schema and seed sample content:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+npm run db:push
+npm run db:seed
+```
 
-## Deploy on Vercel
+Useful commands:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+| Script | Purpose |
+| --- | --- |
+| `npm run db:generate` | Generate SQL migrations from the schema |
+| `npm run db:migrate` | Apply migrations |
+| `npm run db:push` | Push schema directly (great for local/dev) |
+| `npm run db:studio` | Open Drizzle Studio |
+| `npm run db:seed` | Insert demo makers, content, and events |
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Project structure
+
+```
+src/
+  app/                 # App Router pages
+    page.tsx           # Public feed
+    content/[id]/      # Content detail
+    events/            # Events list
+    admin/             # Create / publish content
+  components/
+    content/           # Feed cards & filters
+    events/
+    layout/            # Header + footer
+    admin/
+    ui/                # shadcn primitives
+  db/
+    schema.ts          # Drizzle schema
+    seed.ts
+  lib/
+    queries.ts         # Data access (+ demo fallback)
+    demo-data.ts
+```
+
+## Schema
+
+- **makers** — name, handle, bio, avatar, website
+- **content** — type (`thought` | `visual` | `build` | `news` | `post`), title, url, excerpt, image, status, featured, source metadata (`sourcePlatform`, `sourceUrl`, `externalId`, `authorHandle`…), belongs to maker
+- **events** — title, description, dates, location, type (`in-person` | `hybrid` | `remote`), status
+
+## Design notes
+
+Editorial, calm, and premium — inspired by recent.design, handheld.design, and spottedinprod.com:
+
+- Geist Sans throughout (tight, modern heading weight)
+- Generous spacing and soft borders
+- Distinct card treatments per content type
+- First-class light / dark themes
+
+## Phase 1 routes
+
+| Route | Description |
+| --- | --- |
+| `/` | Published feed (All / Thoughts / Visual / Builds / News / Posts) |
+| `/content/[id]` | Reading / viewing experience |
+| `/events` | Published events |
+| `/admin` | Import URL, browse RSS, create + publish (unprotected) |
+
+## Curating content
+
+thedesign.scene is editorial — imports land as **drafts** until you publish.
+
+### Admin
+
+1. Open `/admin`
+2. **Import URL** — paste an X status, Layers project, Handheld issue, Dezeen story, or any URL
+3. **Browse RSS** — load Handheld or Dezeen, select items, import as drafts
+4. Publish from the list
+
+### CLI
+
+```bash
+# Preview RSS (no DB required)
+npm run ingest:rss -- --source handheld --limit 8 --dry-run
+npm run ingest:rss -- --source dezeen --limit 10 --dry-run
+
+# Preview a single URL
+npm run ingest:url -- "https://x.com/user/status/123" --dry-run
+
+# Insert drafts (requires DATABASE_URL + migrations)
+npm run ingest:rss -- --source handheld --limit 10
+npm run ingest:url -- "https://www.handheld.design/p/…"
+```
+
+Registered feeds live in `src/lib/ingest/sources.ts` — add more anytime.
