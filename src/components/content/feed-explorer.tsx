@@ -13,7 +13,6 @@ import { FeedLayoutSwitcher } from "@/components/content/feed-layout-switcher";
 import type { Event } from "@/db/schema";
 import type { ContentWithMaker } from "@/lib/demo-data";
 import type { FeedItem } from "@/lib/feed-mix";
-import { cn } from "@/lib/utils";
 
 function reviveContent(item: ContentWithMaker): ContentWithMaker {
   return {
