@@ -54,12 +54,15 @@ export function ThemeToggle() {
   }
 
   const isDark = resolvedTheme === "dark";
+  const label = isDark ? "Turn the lights on" : "Turn the lights off";
 
   return (
     <Button
       variant="ghost"
       size="icon-sm"
-      aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
+      aria-label={label}
+      title={label}
+      className="group/theme relative"
       onClick={() =>
         runWithThemeTransition(() => setTheme(isDark ? "light" : "dark"))
       }
@@ -79,6 +82,12 @@ export function ThemeToggle() {
               : "scale-100 rotate-0 opacity-100"
           }`}
         />
+      </span>
+      <span
+        role="tooltip"
+        className="pointer-events-none absolute top-full left-1/2 z-50 mt-2 -translate-x-1/2 whitespace-nowrap rounded-full border border-border/70 bg-popover px-2.5 py-1 text-[11px] font-medium tracking-wide text-popover-foreground opacity-0 shadow-sm transition-[opacity,transform] duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover/theme:translate-y-0 group-hover/theme:opacity-100 group-focus-visible/theme:opacity-100 translate-y-0.5"
+      >
+        {label}
       </span>
     </Button>
   );
