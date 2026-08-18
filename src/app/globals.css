@@ -130,6 +130,24 @@
   body {
     @apply bg-background font-sans text-foreground;
     font-feature-settings: "ss01" on, "cv11" on;
+    transition:
+      background-color 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+      color 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  /* Soft theme crossfade across surfaces (opt-in while toggling) */
+  html.theme-transition,
+  html.theme-transition *,
+  html.theme-transition *::before,
+  html.theme-transition *::after {
+    transition:
+      background-color 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+      color 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+      border-color 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+      fill 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+      stroke 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+      box-shadow 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+      opacity 0.35s cubic-bezier(0.22, 1, 0.36, 1) !important;
   }
 
   /* Heading style = Geist + weight/tracking (not a second family) */
@@ -213,5 +231,52 @@
 
 .article-prose hr {
   @apply border-border/70;
+}
+
+/* Page click-through: soft fade + slight rise */
+@keyframes page-enter {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.page-enter {
+  animation: page-enter 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Theme toggle: calm crossfade when View Transitions API is available */
+@supports (view-transition-name: none) {
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation-duration: 0.4s;
+    animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page-enter {
+    animation: none;
+  }
+
+  body {
+    transition: none;
+  }
+
+  html.theme-transition,
+  html.theme-transition *,
+  html.theme-transition *::before,
+  html.theme-transition *::after {
+    transition: none !important;
+  }
+
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none !important;
+  }
 }
 

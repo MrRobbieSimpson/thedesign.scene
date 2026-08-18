@@ -46,9 +46,9 @@ export default function RootLayout({
         <body className={`${geistSans.className} min-h-dvh antialiased`}>
           <ThemeProvider
             attribute="class"
-            defaultTheme="system"
-            enableSystem
-            disableTransitionOnChange
+            defaultTheme="dark"
+            enableSystem={false}
+            disableTransitionOnChange={false}
           >
             <WritingProvider>
               <CursorSpotlight />

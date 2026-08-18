@@ -158,9 +158,9 @@ function ArticleCard({
     <Link
       href={contentHref(item)}
       className={cn(
-        "group flex h-full flex-col justify-between rounded-2xl border border-border/70 bg-card shadow-[0_1px_0_rgba(0,0,0,0.02)] transition-all",
+        "group flex h-full flex-col justify-between rounded-2xl border border-border/70 bg-card shadow-[0_1px_0_rgba(0,0,0,0.02)] transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
         density === "comfortable" ? "p-8" : densityPad(density),
-        "hover:-translate-y-0.5 hover:border-border hover:shadow-[0_16px_48px_-28px_rgba(0,0,0,0.4)]"
+        "hover:-translate-y-0.5 hover:border-border hover:shadow-[0_16px_48px_-28px_rgba(0,0,0,0.4)] active:translate-y-0 active:scale-[0.985]"
       )}
     >
       <div className={cn(density === "compact" ? "space-y-3" : "space-y-5")}>
@@ -222,9 +222,9 @@ function ThoughtCard({
     <Link
       href={contentHref(item)}
       className={cn(
-        "group flex h-full flex-col justify-between rounded-2xl border border-border/70 bg-card shadow-[0_1px_0_rgba(0,0,0,0.02)] transition-all",
+        "group flex h-full flex-col justify-between rounded-2xl border border-border/70 bg-card shadow-[0_1px_0_rgba(0,0,0,0.02)] transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
         densityPad(density),
-        "hover:-translate-y-0.5 hover:border-border hover:shadow-[0_12px_40px_-24px_rgba(0,0,0,0.35)]"
+        "hover:-translate-y-0.5 hover:border-border hover:shadow-[0_12px_40px_-24px_rgba(0,0,0,0.35)] active:translate-y-0 active:scale-[0.985]"
       )}
     >
       <div className={cn(density === "compact" ? "space-y-3" : "space-y-5")}>
@@ -283,8 +283,8 @@ function VisualCard({
     <Link
       href={contentHref(item)}
       className={cn(
-        "group flex h-full flex-col overflow-hidden rounded-2xl border border-border/70 bg-card shadow-[0_1px_0_rgba(0,0,0,0.02)] transition-all",
-        "hover:-translate-y-0.5 hover:border-border hover:shadow-[0_18px_50px_-28px_rgba(0,0,0,0.45)]"
+        "group flex h-full flex-col overflow-hidden rounded-2xl border border-border/70 bg-card shadow-[0_1px_0_rgba(0,0,0,0.02)] transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
+        "hover:-translate-y-0.5 hover:border-border hover:shadow-[0_18px_50px_-28px_rgba(0,0,0,0.45)] active:translate-y-0 active:scale-[0.985]"
       )}
     >
       <div
@@ -362,8 +362,8 @@ function BuildCard({
     <Link
       href={contentHref(item)}
       className={cn(
-        "group relative flex h-full flex-col overflow-hidden rounded-2xl border border-border/70 bg-card shadow-[0_1px_0_rgba(0,0,0,0.02)] transition-all",
-        "hover:-translate-y-0.5 hover:border-border hover:shadow-[0_18px_50px_-28px_rgba(0,0,0,0.45)]"
+        "group relative flex h-full flex-col overflow-hidden rounded-2xl border border-border/70 bg-card shadow-[0_1px_0_rgba(0,0,0,0.02)] transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
+        "hover:-translate-y-0.5 hover:border-border hover:shadow-[0_18px_50px_-28px_rgba(0,0,0,0.45)] active:translate-y-0 active:scale-[0.985]"
       )}
     >
       <div
@@ -444,8 +444,8 @@ function NewsCard({
     <Link
       href={contentHref(item)}
       className={cn(
-        "group flex h-full flex-col overflow-hidden rounded-2xl border border-border/70 bg-card shadow-[0_1px_0_rgba(0,0,0,0.02)] transition-all",
-        "hover:-translate-y-0.5 hover:border-border hover:shadow-[0_18px_50px_-28px_rgba(0,0,0,0.45)]"
+        "group flex h-full flex-col overflow-hidden rounded-2xl border border-border/70 bg-card shadow-[0_1px_0_rgba(0,0,0,0.02)] transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
+        "hover:-translate-y-0.5 hover:border-border hover:shadow-[0_18px_50px_-28px_rgba(0,0,0,0.45)] active:translate-y-0 active:scale-[0.985]"
       )}
     >
       <div
@@ -526,8 +526,8 @@ function PostCard({
     <Link
       href={contentHref(item)}
       className={cn(
-        "group flex h-full flex-col overflow-hidden rounded-2xl border border-border/70 bg-card shadow-[0_1px_0_rgba(0,0,0,0.02)] transition-all",
-        "hover:-translate-y-0.5 hover:border-border hover:shadow-[0_12px_40px_-24px_rgba(0,0,0,0.35)]"
+        "group flex h-full flex-col overflow-hidden rounded-2xl border border-border/70 bg-card shadow-[0_1px_0_rgba(0,0,0,0.02)] transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
+        "hover:-translate-y-0.5 hover:border-border hover:shadow-[0_12px_40px_-24px_rgba(0,0,0,0.35)] active:translate-y-0 active:scale-[0.985]"
       )}
     >
       {item.image ? (
