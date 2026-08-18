@@ -1,7 +1,14 @@
 import { unstable_cache } from "next/cache";
-import { and, eq } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 
-import { content, events, type ContentType, type Event } from "@/db/schema";
+import {
+  content,
+  events,
+  makers,
+  profiles,
+  type ContentType,
+  type Event,
+} from "@/db/schema";
 import { db, isDatabaseConfigured } from "@/db";
 import {
   demoEvents,
@@ -157,6 +164,35 @@ export async function getMakers() {
   return db.query.makers.findMany({
     orderBy: (fields, { asc }) => [asc(fields.name)],
   });
+}
+
+/**
+ * Registered designers = local profiles created after Clerk sign-up.
+ * Falls back to curated makers count when DB is offline.
+ */
+export async function getRegisteredDesignerCount(): Promise<number> {
+  if (!isDatabaseConfigured() || !db) {
+    return demoMakers.length;
+  }
+
+  return unstable_cache(
+    async () => {
+      const [profileRow] = await db!
+        .select({ count: sql<number>`count(*)::int` })
+        .from(profiles);
+      const registered = Number(profileRow?.count ?? 0);
+      if (registered > 0) return registered;
+
+      // Before the first sign-ups, surface curated makers so the scene
+      // still feels inhabited.
+      const [makerRow] = await db!
+        .select({ count: sql<number>`count(*)::int` })
+        .from(makers);
+      return Number(makerRow?.count ?? 0);
+    },
+    ["registered-designer-count", "v1"],
+    { revalidate: 30, tags: ["profiles", "makers"] }
+  )();
 }
 
 export async function getContentBySlug(

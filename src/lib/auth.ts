@@ -1,5 +1,6 @@
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { eq } from "drizzle-orm";
+import { revalidateTag } from "next/cache";
 
 import { db } from "@/db";
 import { profiles, type Profile } from "@/db/schema";
@@ -52,6 +53,7 @@ export async function getOrCreateProfile(): Promise<Profile | null> {
     })
     .returning();
 
+  revalidateTag("profiles");
   return created;
 }
 

@@ -3,6 +3,7 @@ import { ClerkProvider } from "@clerk/nextjs";
 import { Geist, Geist_Mono } from "next/font/google";
 
 import { DeferredUi } from "@/components/deferred-ui";
+import { EnsureProfile } from "@/components/ensure-profile";
 import { Footer } from "@/components/layout/footer";
 import { Header } from "@/components/layout/header";
 import { ThemeProvider } from "@/components/theme-provider";
@@ -48,6 +49,7 @@ export default function RootLayout({
       disableTransitionOnChange={false}
     >
       <WritingProvider>
+        <EnsureProfile />
         <SiteStage>
           <Header />
           <main className="flex-1">{children}</main>

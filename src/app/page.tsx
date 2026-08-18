@@ -3,7 +3,11 @@ import { Suspense } from "react";
 import { FeedExplorer } from "@/components/content/feed-explorer";
 import { FeedFilters } from "@/components/content/feed-filters";
 import { filterFeedItems, isFeedFilter, type FeedFilter } from "@/lib/feed-mix";
-import { getPublishedContentPool, getPublishedEvents } from "@/lib/queries";
+import {
+  getPublishedContentPool,
+  getPublishedEvents,
+  getRegisteredDesignerCount,
+} from "@/lib/queries";
 
 /** Soft ISR — feed stays fresh without a Neon hit on every request. */
 export const revalidate = 60;
@@ -17,9 +21,10 @@ export default async function HomePage({ searchParams }: HomeProps) {
   const rawType = params.type ?? "all";
   const filter: FeedFilter = isFeedFilter(rawType) ? rawType : "all";
 
-  const [content, events] = await Promise.all([
+  const [content, events, designers] = await Promise.all([
     getPublishedContentPool(),
     getPublishedEvents(),
+    getRegisteredDesignerCount(),
   ]);
 
   const items = filterFeedItems(filter, content, events);
@@ -43,13 +48,19 @@ export default async function HomePage({ searchParams }: HomeProps) {
           Writing first — then visuals, builds, and events worth showing up for.
           News stays selective. Quality over quantity.
         </p>
-        {filter === "all" ? (
-          <p className="text-sm text-muted-foreground/80">
-            {editorialCount} editorial{" "}
-            {editorialCount === 1 ? "piece" : "pieces"} in this mix · featured
-            writing leads
-          </p>
-        ) : null}
+        <p className="text-sm text-muted-foreground/80">
+          <span className="font-medium tabular-nums text-foreground/90">
+            {designers.toLocaleString()}
+          </span>{" "}
+          {designers === 1 ? "designer" : "designers"} registered
+          {filter === "all" ? (
+            <>
+              {" "}
+              · {editorialCount} editorial{" "}
+              {editorialCount === 1 ? "piece" : "pieces"} in this mix
+            </>
+          ) : null}
+        </p>
       </section>
 
       <FeedExplorer
