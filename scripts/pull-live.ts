@@ -15,6 +15,10 @@ import {
   eventNeedsDates,
   resolveEventUrl,
 } from "../src/lib/ingest/event-resolve";
+import {
+  allDesignerXStatusUrls,
+  classifyXWriting,
+} from "../src/lib/ingest/designer-writers";
 import { resolveImportUrl } from "../src/lib/ingest/resolve";
 import { fetchRssCandidates } from "../src/lib/ingest/rss";
 import { FEED_SOURCES } from "../src/lib/ingest/sources";
@@ -23,27 +27,30 @@ config({ path: ".env.local" });
 
 /** Real article / story URLs (not homepages) */
 const ARTICLE_URLS = [
-  // Handheld issues = real editorial
   "https://www.handheld.design/p/calming-color-theory-design-picks",
   "https://www.handheld.design/p/colour-craft-and-catharsis-design",
-  // Known design writing
   "https://www.smashingmagazine.com/2024/10/guide-designing-accessible-web-experiences/",
   "https://css-tricks.com/a-complete-guide-to-css-cascade-layers/",
+  "https://bradfrost.com/blog/post/atomic-web-design/",
+  "https://www.nngroup.com/articles/design-thinking/",
 ];
 
-/** Real X status URLs with design craft */
-const X_STATUS_URLS = [
-  "https://x.com/notevenclose99/status/2038861297089995081",
-  "https://x.com/HephraUI/status/2038889715667996963",
-  "https://x.com/nickbakeddesign/status/2038367912311062831",
-  "https://x.com/marcelkargul/status/2089067498108813322",
-  "https://x.com/figma/status/2088386933810663907",
-  "https://x.com/rehanxahmed/status/2089566717311942661",
-  "https://x.com/Anwuriii/status/1953354542692639111",
-  "https://x.com/uiuxbyvicko/status/2087569993206534580",
-  "https://x.com/brian_lovin/status/2080401424631140760",
-  "https://x.com/joshpuckett/status/2065871351265837335",
-];
+/** Designer / craft status URLs (X) — expanded via designer-writers.ts */
+const X_STATUS_URLS = Array.from(
+  new Set([
+    ...allDesignerXStatusUrls(),
+    "https://x.com/notevenclose99/status/2038861297089995081",
+    "https://x.com/HephraUI/status/2038889715667996963",
+    "https://x.com/nickbakeddesign/status/2038367912311062831",
+    "https://x.com/marcelkargul/status/2089067498108813322",
+    "https://x.com/figma/status/2088386933810663907",
+    "https://x.com/rehanxahmed/status/2089566717311942661",
+    "https://x.com/Anwuriii/status/1953354542692639111",
+    "https://x.com/uiuxbyvicko/status/2087569993206534580",
+    "https://x.com/brian_lovin/status/2080401424631140760",
+    "https://x.com/joshpuckett/status/2065871351265837335",
+  ])
+);
 
 const EVENT_URLS = [
   "https://config.figma.com/",
@@ -82,17 +89,17 @@ async function main() {
 
   console.log("=== Individual RSS articles / projects ===");
   for (const source of FEED_SOURCES) {
-    // Skip noisy Medium tag feed — UX Collective is better for writing
-    if (source.id === "medium-product-design") {
-      console.log(`\nskip ${source.name} (too noisy)`);
-      continue;
-    }
-    const limit = ["dezeen", "smashing", "behance", "uxdesign", "handheld"].includes(
-      source.id
-    )
-      ? 15
-      : 10;
-    console.log(`\n${source.name} (limit ${limit})…`);
+    // Writing sources get higher limits; news stays capped.
+    const limit = source.writing
+      ? 14
+      : source.defaultType === "news"
+        ? 4
+        : source.defaultType === "visual"
+          ? 8
+          : 8;
+    console.log(
+      `\n${source.name} → ${source.defaultType} (limit ${limit}${source.writing ? ", writing" : ""})…`
+    );
     try {
       const items = await fetchRssCandidates(source.feedUrl, limit);
       for (const item of items) {
@@ -154,8 +161,12 @@ async function main() {
         skipped += 1;
         continue;
       }
+      const type =
+        resolved.type === "visual" || resolved.type === "news"
+          ? "article"
+          : resolved.type;
       await db.insert(content).values({
-        type: resolved.type === "visual" ? "news" : resolved.type,
+        type,
         title: decodeTitle(resolved.title),
         excerpt: resolved.excerpt,
         image: resolved.image,
@@ -177,7 +188,7 @@ async function main() {
     }
   }
 
-  console.log("\n=== X design posts ===");
+  console.log("\n=== Designer writing on X ===");
   for (const xUrl of X_STATUS_URLS) {
     try {
       const resolved = await resolveImportUrl(xUrl);
@@ -194,8 +205,9 @@ async function main() {
         skipped += 1;
         continue;
       }
+      const type = classifyXWriting(resolved.excerpt);
       await db.insert(content).values({
-        type: "post",
+        type,
         title: decodeTitle(resolved.title),
         excerpt: resolved.excerpt,
         image: resolved.image,
@@ -206,12 +218,12 @@ async function main() {
         authorHandle: resolved.authorHandle,
         authorName: resolved.authorName,
         status: "published",
-        featured: true,
+        featured: type === "thought",
         publishedAt: new Date(),
         sourcePayload: resolved.sourcePayload,
       });
       created += 1;
-      console.log(`  ✓ @${resolved.authorHandle}`);
+      console.log(`  ✓ @${resolved.authorHandle} → ${type}`);
     } catch (error) {
       errors.push(
         `${xUrl}: ${error instanceof Error ? error.message : "failed"}`

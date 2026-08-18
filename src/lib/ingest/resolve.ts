@@ -1,3 +1,4 @@
+import { classifyXWriting } from "@/lib/ingest/designer-writers";
 import { fetchOpenGraph } from "@/lib/ingest/og";
 import { fetchXOEmbed, parseXStatusUrl } from "@/lib/ingest/oembed-x";
 import type { ResolvedImport, SourcePlatform } from "@/lib/ingest/types";
@@ -48,6 +49,7 @@ function suggestType(
   host: string,
   pathname: string
 ): ResolvedImport["type"] {
+  // X typing is decided after oEmbed (length → thought vs post).
   if (platform === "x") return "post";
 
   // Portfolio / shot / inspiration galleries → visual
@@ -64,30 +66,46 @@ function suggestType(
     if (pathname.startsWith("/shots") || pathname.includes("/shots/")) {
       return "visual";
     }
-    return "news";
+    return "article";
   }
 
   if (platform === "awwwards") {
     if (pathname.includes("/sites/") || pathname.includes("/inspiration")) {
       return "visual";
     }
-    return "news";
+    return "article";
   }
 
+  // Writing pubs & designer essays → article (not news)
   if (
     platform === "handheld" ||
-    platform === "dezeen" ||
     platform === "medium" ||
-    platform === "smashing"
+    platform === "smashing" ||
+    host.includes("itsnicethat") ||
+    host.includes("nngroup") ||
+    host.includes("bradfrost") ||
+    host.includes("joshwcomeau") ||
+    host.includes("sarasoueidan") ||
+    host.includes("adactio") ||
+    host.includes("maggieappleton") ||
+    host.includes("matthewstrom") ||
+    host.includes("robinrendle") ||
+    host.includes("vanschneider") ||
+    host.includes("css-tricks") ||
+    (host.includes("figma.com") && pathname.includes("/blog")) ||
+    pathname.includes("/blog") ||
+    pathname.includes("/articles") ||
+    pathname.includes("/essay")
   ) {
-    return "news";
+    return "article";
   }
 
   if (
-    host.includes("itsnicethat") ||
+    platform === "dezeen" ||
     host.includes("fastcompany") ||
     host.includes("designweek") ||
-    (host.includes("figma.com") && pathname.includes("/blog"))
+    host.includes("designboom") ||
+    host.includes("creativebloq")
   ) {
     return "news";
   }
@@ -121,7 +139,7 @@ export async function resolveImportUrl(
         ?.slice(0, 120) ?? `Post by @${x.handle}`;
 
     return {
-      type: "post",
+      type: classifyXWriting(embed.text),
       title,
       excerpt: embed.text,
       image: null,

@@ -1,4 +1,5 @@
 import type { ContentType } from "@/db/schema";
+import { WRITER_FEEDS } from "@/lib/ingest/designer-writers";
 import type { SourcePlatform } from "@/lib/ingest/types";
 
 export type FeedSource = {
@@ -9,31 +10,33 @@ export type FeedSource = {
   defaultType: ContentType;
   siteUrl: string;
   description?: string;
+  /** When true, pull script treats this as writing-first (higher limit). */
+  writing?: boolean;
 };
 
-/**
- * Curated RSS sources — design news, writing, and visual inspiration.
- * Non-RSS sites (Layers, Siteinspire, Spottedinprod…) use Import URL / OG.
- */
-export const FEED_SOURCES: FeedSource[] = [
-  {
-    id: "handheld",
-    name: "Handheld",
-    feedUrl: "https://www.handheld.design/feed",
-    platform: "handheld",
-    defaultType: "news",
-    siteUrl: "https://www.handheld.design",
-    description: "Mobile craft & ranked design picks",
-  },
-  {
-    id: "dezeen",
-    name: "Dezeen",
-    feedUrl: "https://www.dezeen.com/feed/",
-    platform: "dezeen",
-    defaultType: "news",
-    siteUrl: "https://www.dezeen.com",
-    description: "Architecture & design news",
-  },
+function platformForWriter(id: string): SourcePlatform {
+  if (id === "smashing") return "smashing";
+  if (id === "uxdesign" || id === "medium-product-design") return "medium";
+  if (id === "handheld") return "handheld";
+  if (id === "dribbble-stories") return "dribbble";
+  if (id === "figma-blog") return "web";
+  return "web";
+}
+
+/** Writing-first feeds from curated designers & pubs. */
+const WRITING_SOURCES: FeedSource[] = WRITER_FEEDS.map((feed) => ({
+  id: feed.id,
+  name: feed.name,
+  feedUrl: feed.feedUrl,
+  platform: platformForWriter(feed.id),
+  defaultType: feed.defaultType,
+  siteUrl: feed.siteUrl,
+  description: feed.description,
+  writing: true,
+}));
+
+/** Visual / news feeds — keep selective; writing sources own the editorial lane. */
+const OTHER_SOURCES: FeedSource[] = [
   {
     id: "behance",
     name: "Behance Projects",
@@ -44,49 +47,23 @@ export const FEED_SOURCES: FeedSource[] = [
     description: "Creative project showcases",
   },
   {
-    id: "dribbble-stories",
-    name: "Dribbble Stories",
-    feedUrl: "https://dribbble.com/stories.rss",
-    platform: "dribbble",
-    defaultType: "news",
-    siteUrl: "https://dribbble.com/stories",
-    description: "Editorial from the Dribbble community",
-  },
-  {
     id: "awwwards",
     name: "Awwwards Blog",
     feedUrl: "https://www.awwwards.com/blog/feed/",
     platform: "awwwards",
-    defaultType: "news",
+    defaultType: "article",
     siteUrl: "https://www.awwwards.com/blog/",
-    description: "Web design awards & inspiration",
+    description: "Web design awards & craft notes",
+    writing: true,
   },
   {
-    id: "smashing",
-    name: "Smashing Magazine",
-    feedUrl: "https://www.smashingmagazine.com/feed/",
-    platform: "smashing",
+    id: "dezeen",
+    name: "Dezeen",
+    feedUrl: "https://www.dezeen.com/feed/",
+    platform: "dezeen",
     defaultType: "news",
-    siteUrl: "https://www.smashingmagazine.com",
-    description: "Design & front-end articles",
-  },
-  {
-    id: "uxdesign",
-    name: "UX Collective",
-    feedUrl: "https://uxdesign.cc/feed",
-    platform: "medium",
-    defaultType: "news",
-    siteUrl: "https://uxdesign.cc",
-    description: "UX & product design writing",
-  },
-  {
-    id: "css-tricks",
-    name: "CSS-Tricks",
-    feedUrl: "https://css-tricks.com/feed/",
-    platform: "web",
-    defaultType: "news",
-    siteUrl: "https://css-tricks.com",
-    description: "CSS, UI engineering, craft",
+    siteUrl: "https://www.dezeen.com",
+    description: "Architecture & design news (selective)",
   },
   {
     id: "designboom",
@@ -95,16 +72,7 @@ export const FEED_SOURCES: FeedSource[] = [
     platform: "web",
     defaultType: "news",
     siteUrl: "https://www.designboom.com",
-    description: "Art, architecture & design",
-  },
-  {
-    id: "creativebloq",
-    name: "Creative Bloq",
-    feedUrl: "https://www.creativebloq.com/feed",
-    platform: "web",
-    defaultType: "news",
-    siteUrl: "https://www.creativebloq.com",
-    description: "Design news & inspiration",
+    description: "Art & design news (selective)",
   },
   {
     id: "sidebar",
@@ -113,28 +81,24 @@ export const FEED_SOURCES: FeedSource[] = [
     platform: "web",
     defaultType: "news",
     siteUrl: "https://sidebar.io",
-    description: "Daily design links",
+    description: "Daily design links (cap hard)",
   },
-  {
-    id: "webdesignerdepot",
-    name: "Webdesigner Depot",
-    feedUrl: "https://www.webdesignerdepot.com/feed/",
-    platform: "web",
-    defaultType: "news",
-    siteUrl: "https://www.webdesignerdepot.com",
-    description: "Web design resources & news",
-  },
-  {
-    id: "medium-product-design",
-    name: "Medium · Product Design",
-    feedUrl: "https://medium.com/feed/tag/product-design",
-    platform: "medium",
-    defaultType: "news",
-    siteUrl: "https://medium.com/tag/product-design",
-    description: "Tagged product-design writing",
-  },
+];
+
+/**
+ * Curated RSS sources — writing first, then visuals & selective news.
+ */
+export const FEED_SOURCES: FeedSource[] = [
+  ...WRITING_SOURCES,
+  ...OTHER_SOURCES.filter(
+    (source) => !WRITING_SOURCES.some((writing) => writing.id === source.id)
+  ),
 ];
 
 export function getFeedSource(id: string) {
   return FEED_SOURCES.find((source) => source.id === id) ?? null;
+}
+
+export function getWritingSources() {
+  return FEED_SOURCES.filter((source) => source.writing);
 }
