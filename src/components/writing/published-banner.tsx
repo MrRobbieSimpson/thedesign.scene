@@ -15,10 +15,10 @@ export function PublishedBanner({
   if (!visible) return null;
 
   return (
-    <div className="mb-8 rounded-2xl border border-foreground/15 bg-muted/30 px-5 py-4">
+    <div className="mb-10 rounded-2xl border border-border/50 bg-muted/20 px-5 py-4">
       <div className="flex items-start justify-between gap-3">
         <div className="space-y-1.5">
-          <p className="font-heading text-lg tracking-tight">Published</p>
+          <p className="font-heading text-base tracking-tight">Published</p>
           <p className="text-sm text-muted-foreground">
             It’s live on the feed
             {portfolioHandle ? (

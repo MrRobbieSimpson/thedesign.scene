@@ -14,6 +14,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 
+/** Match reading column — editorial, not full-bleed. */
+const COLUMN = "max-w-[40.625rem]"; // ~650px
+
 function estimateMinutes(body: string) {
   const words = body.trim().split(/\s+/).filter(Boolean).length;
   return Math.max(1, Math.round(words / 200));
@@ -40,7 +43,6 @@ export function WritingStudio() {
     [draft.body]
   );
 
-  // Hydrate when opening / switching drafts (not on every autosave setDraft)
   useEffect(() => {
     if (!open) return;
     setDraftId(draft.id);
@@ -52,7 +54,7 @@ export function WritingStudio() {
     setStatus("idle");
     setMessage(null);
     setPublishOpen(false);
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: only rehydrate on open / draft id
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [draft.id, open]);
 
   useEffect(() => {
@@ -200,61 +202,63 @@ export function WritingStudio() {
       .slice(0, 40)
       .join(" ");
 
+  const statusLine = pending ? (
+    <span className="inline-flex items-center gap-1.5">
+      <Loader2 className="size-3 animate-spin" />
+      Saving…
+    </span>
+  ) : status === "saved" ? (
+    <span className="inline-flex items-center gap-1.5 text-foreground/60">
+      <Check className="size-3" />
+      {message}
+    </span>
+  ) : status === "error" ? (
+    <span className="text-destructive">{message}</span>
+  ) : (
+    <span>
+      {wordCount} words · ~{minutes} min to sit with
+    </span>
+  );
+
   return (
     <div
       className={cn(
-        "fixed inset-0 z-[120] flex items-stretch justify-center",
+        "fixed inset-0 z-[120] flex items-center justify-center",
         "transition-[opacity,backdrop-filter] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
         visible
-          ? "bg-background/55 opacity-100 backdrop-blur-md"
+          ? "bg-background/80 opacity-100 backdrop-blur-md dark:bg-background/85"
           : "bg-background/0 opacity-0 backdrop-blur-0"
       )}
       role="dialog"
       aria-modal="true"
       aria-label="Writing studio"
     >
+      {/* Soft vignette — column is the focus */}
       <div
         className={cn(
-          "pointer-events-none absolute inset-0 bg-foreground/[0.03] transition-opacity duration-500",
-          visible ? "opacity-100" : "opacity-0"
+          "pointer-events-none absolute inset-0 transition-opacity duration-500",
+          visible ? "opacity-100" : "opacity-0",
+          "bg-[radial-gradient(ellipse_at_center,transparent_0%,transparent_42%,oklch(0_0_0/0.12)_100%)]",
+          "dark:bg-[radial-gradient(ellipse_at_center,transparent_0%,transparent_40%,oklch(0_0_0/0.45)_100%)]"
         )}
       />
 
       <div
         className={cn(
-          "relative z-10 flex h-full w-full max-w-3xl flex-col px-4 py-4 sm:px-8 sm:py-8",
+          "relative z-10 flex h-[min(100dvh,920px)] w-full flex-col px-4 py-5 sm:px-6 sm:py-8",
+          COLUMN,
           "transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
           visible
             ? "translate-y-0 scale-100 opacity-100"
-            : "translate-y-6 scale-[0.97] opacity-0"
+            : "translate-y-5 scale-[0.98] opacity-0"
         )}
       >
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-3 text-sm text-muted-foreground">
-            <span className="font-medium tracking-tight text-foreground/80">
-              Writing
-            </span>
-            <span className="text-border">·</span>
-            {pending ? (
-              <span className="inline-flex items-center gap-1.5">
-                <Loader2 className="size-3.5 animate-spin" />
-                Saving…
-              </span>
-            ) : status === "saved" ? (
-              <span className="inline-flex items-center gap-1.5 text-foreground/70">
-                <Check className="size-3.5" />
-                {message}
-              </span>
-            ) : status === "error" ? (
-              <span className="text-destructive">{message}</span>
-            ) : (
-              <span>
-                {wordCount} words · ~{minutes} min to sit with
-              </span>
-            )}
-          </div>
-
-          <div className="flex flex-wrap items-center gap-2">
+        {/* Quiet chrome — whispers until you need it */}
+        <div className="mb-3 flex items-center justify-between gap-3 px-1">
+          <p className="min-w-0 truncate text-xs text-muted-foreground/70">
+            {statusLine}
+          </p>
+          <div className="flex shrink-0 items-center gap-0.5 opacity-70 transition-opacity hover:opacity-100 focus-within:opacity-100">
             <ThemeToggle />
             {!preview ? (
               <Button
@@ -263,11 +267,13 @@ export function WritingStudio() {
                 size="sm"
                 onClick={() => setDetails((value) => !value)}
                 disabled={pending}
-                className="gap-1.5"
+                className="h-8 gap-1.5 px-2 text-xs text-muted-foreground"
                 aria-pressed={details}
               >
                 <Settings2 className="size-3.5" />
-                {details ? "Writing" : "Details"}
+                <span className="hidden sm:inline">
+                  {details ? "Writing" : "Details"}
+                </span>
               </Button>
             ) : null}
             <Button
@@ -276,14 +282,35 @@ export function WritingStudio() {
               size="sm"
               onClick={() => setPreview((value) => !value)}
               disabled={pending}
-              className="gap-1.5"
+              className="h-8 gap-1.5 px-2 text-xs text-muted-foreground"
             >
               {preview ? (
                 <PenLine className="size-3.5" />
               ) : (
                 <Eye className="size-3.5" />
               )}
-              {preview ? "Edit" : "Preview"}
+              <span className="hidden sm:inline">
+                {preview ? "Edit" : "Preview"}
+              </span>
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => persist("draft")}
+              disabled={pending}
+              className="h-8 px-2 text-xs text-muted-foreground"
+            >
+              Save
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              onClick={requestPublish}
+              disabled={pending || (!draft.title.trim() && !draft.body.trim())}
+              className="h-8 px-3 text-xs"
+            >
+              Publish
             </Button>
             <Button
               type="button"
@@ -291,34 +318,18 @@ export function WritingStudio() {
               size="sm"
               onClick={requestClose}
               disabled={pending}
+              className="h-8 px-2 text-muted-foreground"
+              aria-label="Close"
             >
-              <X className="size-4" />
-              <span className="sr-only sm:not-sr-only sm:ml-1">Close</span>
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => persist("draft")}
-              disabled={pending}
-            >
-              Save draft
-            </Button>
-            <Button
-              type="button"
-              size="sm"
-              onClick={requestPublish}
-              disabled={pending || (!draft.title.trim() && !draft.body.trim())}
-            >
-              Publish
+              <X className="size-3.5" />
             </Button>
           </div>
         </div>
 
         <div
           className={cn(
-            "relative flex min-h-0 flex-1 flex-col overflow-hidden rounded-[1.5rem] border border-border/70 bg-card shadow-[0_30px_80px_-40px_rgba(0,0,0,0.45)]",
-            "ring-1 ring-foreground/[0.04]"
+            "relative flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border border-border/50 bg-card",
+            "shadow-[0_24px_80px_-40px_rgba(0,0,0,0.55)] ring-1 ring-foreground/[0.03]"
           )}
         >
           <PublishDialog
@@ -328,9 +339,10 @@ export function WritingStudio() {
             onConfirm={() => persist("published")}
           />
 
-          <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-6 py-8 sm:px-12 sm:py-12">
+          <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-6 py-10 sm:px-10 sm:py-14">
             {preview ? (
-              <div className="mx-auto w-full max-w-[40.625rem] space-y-6">
+              /* Exact reading shell */
+              <div className="reading-surface mx-auto w-full space-y-6">
                 <p className="text-sm text-muted-foreground">
                   ~{minutes} min to sit with
                 </p>
@@ -347,14 +359,14 @@ export function WritingStudio() {
                   <img
                     src={cover.trim()}
                     alt=""
-                    className="aspect-[16/10] w-full rounded-2xl border border-border/60 object-cover"
+                    className="mt-4 aspect-[16/10] w-full rounded-2xl border border-border/60 object-cover"
                   />
                 ) : null}
                 {draft.body ? (
-                  <>
+                  <div className="mt-6">
                     <ArticleBody markdown={draft.body} />
                     <ArticleEnd />
-                  </>
+                  </div>
                 ) : (
                   <p className="text-muted-foreground">
                     Nothing to preview yet.
@@ -362,7 +374,7 @@ export function WritingStudio() {
                 )}
               </div>
             ) : (
-              <>
+              <div className="mx-auto flex w-full flex-1 flex-col">
                 <textarea
                   ref={titleRef}
                   value={draft.title}
@@ -371,7 +383,7 @@ export function WritingStudio() {
                   }
                   placeholder="Title"
                   rows={1}
-                  className="font-heading mb-4 w-full resize-none border-0 bg-transparent text-3xl leading-tight tracking-tight text-foreground outline-none placeholder:text-muted-foreground/40 sm:text-4xl"
+                  className="font-heading mb-6 w-full resize-none border-0 bg-transparent text-4xl leading-[1.15] tracking-tight text-foreground outline-none placeholder:text-muted-foreground/35 sm:text-5xl"
                   onInput={(event) => {
                     const el = event.currentTarget;
                     el.style.height = "auto";
@@ -379,7 +391,7 @@ export function WritingStudio() {
                   }}
                 />
                 {details ? (
-                  <div className="mb-6 space-y-3">
+                  <div className="mb-8 space-y-3 border-b border-border/40 pb-8">
                     <Input
                       value={excerpt}
                       onChange={(event) => {
@@ -387,7 +399,7 @@ export function WritingStudio() {
                         setDirty(true);
                       }}
                       placeholder="Optional deck / excerpt"
-                      className="border-0 bg-muted/30"
+                      className="border-0 bg-muted/25"
                     />
                     <Input
                       value={cover}
@@ -396,7 +408,7 @@ export function WritingStudio() {
                         setDirty(true);
                       }}
                       placeholder="Optional cover image URL"
-                      className="border-0 bg-muted/30"
+                      className="border-0 bg-muted/25"
                     />
                   </div>
                 ) : null}
@@ -406,16 +418,14 @@ export function WritingStudio() {
                     updateDraft({ body: event.target.value })
                   }
                   placeholder="Start writing… Markdown welcome."
-                  className="min-h-[45vh] w-full flex-1 resize-none border-0 bg-transparent text-[1.125rem] leading-[1.8] text-foreground/90 outline-none placeholder:text-muted-foreground/35"
+                  className="min-h-[50vh] w-full flex-1 resize-none border-0 bg-transparent font-serif text-[1.275rem] leading-[1.85] text-foreground/90 outline-none placeholder:font-sans placeholder:text-[1.05rem] placeholder:text-muted-foreground/35"
                 />
-              </>
+              </div>
             )}
           </div>
 
-          <div className="flex items-center justify-between border-t border-border/60 px-6 py-3 text-xs text-muted-foreground sm:px-12">
-            <span>
-              Autosaves · {">"} pull quote · [^1] footnote · ⌘S · ⌘⏎ · Esc
-            </span>
+          <div className="flex items-center justify-between border-t border-border/40 px-6 py-2.5 text-[11px] text-muted-foreground/60 sm:px-10">
+            <span>Autosaves · ⌘S · ⌘⏎ publish · Esc</span>
             <button
               type="button"
               className="transition-colors hover:text-foreground"

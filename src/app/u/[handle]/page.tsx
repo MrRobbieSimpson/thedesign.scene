@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowUpRight } from "lucide-react";
 
-import { FeedGrid } from "@/components/content/feed-grid";
+import { PortfolioWork } from "@/components/writing/portfolio-work";
 import { WriteButton } from "@/components/writing/write-button";
 import { Badge } from "@/components/ui/badge";
 import { getClerkUserId } from "@/lib/auth";
@@ -45,26 +45,26 @@ export default async function PortfolioPage({ params }: PortfolioPageProps) {
   const initial = displayName.replace("@", "").charAt(0).toUpperCase();
 
   return (
-    <div className="mx-auto max-w-6xl px-6 py-12 sm:py-16">
-      <section className="mb-12 flex flex-col gap-6 border-b border-border/60 pb-12 sm:flex-row sm:items-end sm:justify-between">
+    <div className="mx-auto max-w-[45rem] px-5 py-14 sm:px-6 sm:py-20">
+      <section className="mb-14 space-y-8 border-b border-border/50 pb-14">
         <div className="flex items-start gap-5">
           {profile.avatarUrl ? (
             <Image
               src={profile.avatarUrl}
               alt={displayName}
-              width={88}
-              height={88}
-              className="size-20 rounded-full object-cover ring-1 ring-border sm:size-22"
+              width={80}
+              height={80}
+              className="size-16 rounded-full object-cover ring-1 ring-border sm:size-20"
             />
           ) : (
-            <span className="flex size-20 items-center justify-center rounded-full bg-muted text-xl font-medium sm:size-22">
+            <span className="flex size-16 items-center justify-center rounded-full bg-muted text-lg font-medium sm:size-20">
               {initial}
             </span>
           )}
-          <div className="space-y-3">
-            <div className="space-y-2">
+          <div className="min-w-0 space-y-3 pt-1">
+            <div className="space-y-1.5">
               <div className="flex flex-wrap items-center gap-2.5">
-                <h1 className="font-heading text-4xl tracking-tight">
+                <h1 className="font-heading text-3xl tracking-tight sm:text-4xl">
                   {displayName}
                 </h1>
                 {guestTerm ? (
@@ -72,27 +72,31 @@ export default async function PortfolioPage({ params }: PortfolioPageProps) {
                 ) : null}
               </div>
               {profile.handle ? (
-                <p className="text-muted-foreground">@{profile.handle}</p>
+                <p className="text-sm text-muted-foreground">
+                  @{profile.handle}
+                </p>
               ) : null}
             </div>
             {profile.bio ? (
-              <p className="max-w-xl text-base leading-relaxed text-muted-foreground">
+              <p className="max-w-prose text-[0.95rem] leading-relaxed text-muted-foreground">
                 {profile.bio}
               </p>
             ) : null}
             {profile.location ? (
-              <p className="text-sm text-muted-foreground">{profile.location}</p>
+              <p className="text-sm text-muted-foreground/80">
+                {profile.location}
+              </p>
             ) : null}
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-4">
+        <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-muted-foreground">
           {profile.website ? (
             <Link
               href={profile.website}
               target="_blank"
               rel="noreferrer"
-              className="inline-flex items-center gap-1 text-sm text-muted-foreground transition-colors hover:text-foreground"
+              className="inline-flex items-center gap-1 transition-colors hover:text-foreground"
             >
               Website
               <ArrowUpRight className="size-3.5" />
@@ -103,7 +107,7 @@ export default async function PortfolioPage({ params }: PortfolioPageProps) {
               href={`https://x.com/${profile.xHandle}`}
               target="_blank"
               rel="noreferrer"
-              className="inline-flex items-center gap-1 text-sm text-muted-foreground transition-colors hover:text-foreground"
+              className="inline-flex items-center gap-1 transition-colors hover:text-foreground"
             >
               @{profile.xHandle}
               <ArrowUpRight className="size-3.5" />
@@ -112,7 +116,7 @@ export default async function PortfolioPage({ params }: PortfolioPageProps) {
           {isOwner ? (
             <Link
               href="/settings/profile"
-              className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+              className="transition-colors hover:text-foreground"
             >
               Edit profile
             </Link>
@@ -121,7 +125,7 @@ export default async function PortfolioPage({ params }: PortfolioPageProps) {
       </section>
 
       {guestTerm?.intro ? (
-        <aside className="mb-10 rounded-2xl border border-border/70 bg-muted/25 px-5 py-4 text-sm leading-relaxed text-muted-foreground">
+        <aside className="mb-12 rounded-2xl border border-border/60 bg-muted/20 px-5 py-4 text-sm leading-relaxed text-muted-foreground">
           <p className="mb-1 text-[11px] font-medium tracking-[0.14em] text-muted-foreground/80 uppercase">
             {guestTerm.label}
           </p>
@@ -129,15 +133,15 @@ export default async function PortfolioPage({ params }: PortfolioPageProps) {
         </aside>
       ) : null}
 
-      <div className="mb-6 flex items-end justify-between gap-3">
-        <h2 className="font-heading text-2xl tracking-tight">Work</h2>
-        <p className="text-sm text-muted-foreground">
+      <div className="mb-8 flex items-end justify-between gap-3">
+        <h2 className="font-heading text-xl tracking-tight">Work</h2>
+        <p className="text-xs text-muted-foreground/70">
           {items.length} {items.length === 1 ? "piece" : "pieces"}
         </p>
       </div>
 
       {items.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-border/80 px-6 py-16 text-center">
+        <div className="rounded-2xl border border-dashed border-border/70 px-6 py-20 text-center">
           <p className="font-heading text-2xl tracking-tight">
             {isOwner ? "Your first piece belongs here" : "Nothing published yet"}
           </p>
@@ -153,7 +157,7 @@ export default async function PortfolioPage({ params }: PortfolioPageProps) {
           ) : null}
         </div>
       ) : (
-        <FeedGrid items={items} />
+        <PortfolioWork items={items} />
       )}
     </div>
   );

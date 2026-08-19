@@ -124,16 +124,25 @@ export default async function ArticlePage({
       </div>
 
       <header className="space-y-6">
-        <div className="flex flex-wrap items-center gap-3">
-          <Badge variant="secondary">{contentTypeLabel("article")}</Badge>
-          {item.featured ? <Badge variant="outline">Featured</Badge> : null}
+        <div className="flex flex-wrap items-center gap-2.5">
+          <Badge
+            variant="secondary"
+            className="text-[11px] font-normal tracking-wide"
+          >
+            {contentTypeLabel("article")}
+          </Badge>
+          {item.featured ? (
+            <Badge variant="outline" className="text-[11px] font-normal">
+              Featured
+            </Badge>
+          ) : null}
           {item.publishedAt ? (
-            <span className="text-sm text-muted-foreground">
+            <span className="text-xs text-muted-foreground/75">
               {formatPublishedDate(item.publishedAt)}
             </span>
           ) : null}
           {sitWith ? (
-            <span className="text-sm text-muted-foreground">{sitWith}</span>
+            <span className="text-xs text-muted-foreground/75">{sitWith}</span>
           ) : null}
         </div>
 
