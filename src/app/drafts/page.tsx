@@ -43,6 +43,8 @@ function ArticleRow({
           id={draft.id}
           title={draft.title}
           body={draft.body ?? ""}
+          excerpt={draft.excerpt}
+          image={draft.image}
         />
         <form
           action={async () => {

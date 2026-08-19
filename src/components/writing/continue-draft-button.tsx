@@ -7,10 +7,14 @@ export function ContinueDraftButton({
   id,
   title,
   body,
+  excerpt,
+  image,
 }: {
   id: string;
   title: string;
   body: string;
+  excerpt?: string | null;
+  image?: string | null;
 }) {
   const { openWriter } = useWriting();
 
@@ -18,7 +22,15 @@ export function ContinueDraftButton({
     <Button
       type="button"
       size="sm"
-      onClick={() => openWriter({ id, title, body })}
+      onClick={() =>
+        openWriter({
+          id,
+          title,
+          body,
+          excerpt: excerpt ?? "",
+          image: image ?? "",
+        })
+      }
     >
       Continue
     </Button>

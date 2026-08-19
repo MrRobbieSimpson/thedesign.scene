@@ -9,10 +9,12 @@ import {
   useState,
 } from "react";
 
-type WritingDraft = {
+export type WritingDraft = {
   id?: string;
   title: string;
   body: string;
+  excerpt?: string;
+  image?: string;
 };
 
 type WritingContextValue = {
@@ -36,9 +38,10 @@ export function WritingProvider({ children }: { children: React.ReactNode }) {
       id: next?.id,
       title: next?.title ?? "",
       body: next?.body ?? "",
+      excerpt: next?.excerpt ?? "",
+      image: next?.image ?? "",
     });
     setOpen(true);
-    // Allow CSS enter transition after mount
     requestAnimationFrame(() => {
       requestAnimationFrame(() => setVisible(true));
     });
@@ -57,15 +60,6 @@ export function WritingProvider({ children }: { children: React.ReactNode }) {
       document.body.style.overflow = previous;
     };
   }, [open]);
-
-  useEffect(() => {
-    if (!open) return;
-    const onKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") closeWriter();
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [open, closeWriter]);
 
   const value = useMemo(
     () => ({ open, visible, draft, openWriter, closeWriter, setDraft }),

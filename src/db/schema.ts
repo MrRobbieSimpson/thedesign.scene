@@ -196,6 +196,29 @@ export const saves = pgTable(
   ]
 );
 
+/** Private “I sat with this” — attention, not a like. No public counts. */
+export const sitsWith = pgTable(
+  "sits_with",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    profileId: uuid("profile_id")
+      .notNull()
+      .references(() => profiles.id, { onDelete: "cascade" }),
+    contentId: uuid("content_id")
+      .notNull()
+      .references(() => content.id, { onDelete: "cascade" }),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    uniqueIndex("sits_with_profile_content_uidx").on(
+      table.profileId,
+      table.contentId
+    ),
+  ]
+);
+
 export const scenes = pgTable("scenes", {
   id: uuid("id").defaultRandom().primaryKey(),
   profileId: uuid("profile_id")
@@ -283,11 +306,13 @@ export const contentRelations = relations(content, ({ one, many }) => ({
     references: [profiles.id],
   }),
   saves: many(saves),
+  sitsWith: many(sitsWith),
   sceneItems: many(sceneItems),
 }));
 
 export const profilesRelations = relations(profiles, ({ many, one }) => ({
   saves: many(saves),
+  sitsWith: many(sitsWith),
   scenes: many(scenes),
   articles: many(content),
   guestTerms: many(guestTerms),
@@ -304,6 +329,17 @@ export const savesRelations = relations(saves, ({ one }) => ({
   }),
   content: one(content, {
     fields: [saves.contentId],
+    references: [content.id],
+  }),
+}));
+
+export const sitsWithRelations = relations(sitsWith, ({ one }) => ({
+  profile: one(profiles, {
+    fields: [sitsWith.profileId],
+    references: [profiles.id],
+  }),
+  content: one(content, {
+    fields: [sitsWith.contentId],
     references: [content.id],
   }),
 }));

@@ -9,6 +9,8 @@ import { ArticleEnd } from "@/components/reading/article-end";
 import { CopyLink } from "@/components/reading/copy-link";
 import { FocusToggle } from "@/components/reading/focus-toggle";
 import { MoreFromWriter } from "@/components/reading/more-from-writer";
+import { ReadingProgress } from "@/components/reading/reading-progress";
+import { SitWithButton } from "@/components/reading/sit-with-button";
 import { SaveButton } from "@/components/save-button";
 import { Badge } from "@/components/ui/badge";
 import { PublishedBanner } from "@/components/writing/published-banner";
@@ -83,7 +85,12 @@ export default async function ArticlePage({
       : [];
 
   return (
-    <article className="reading-surface mx-auto max-w-[40.625rem] px-5 py-16 sm:px-6 sm:py-24">
+    <article
+      id="article-reading"
+      className="reading-surface mx-auto max-w-[40.625rem] px-5 py-16 sm:px-6 sm:py-24"
+    >
+      <ReadingProgress targetId="article-reading" />
+
       {justPublished ? (
         <PublishedBanner
           portfolioHandle={portfolioHandle}
@@ -223,7 +230,14 @@ export default async function ArticlePage({
         </div>
       ) : null}
 
-      {item.body ? <ArticleEnd /> : null}
+      {item.body ? (
+        <>
+          <ArticleEnd />
+          <div className="mt-8 flex justify-center">
+            <SitWithButton contentId={item.id} />
+          </div>
+        </>
+      ) : null}
 
       {authorBio && authorName ? (
         <aside

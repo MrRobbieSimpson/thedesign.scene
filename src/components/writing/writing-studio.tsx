@@ -2,10 +2,12 @@
 
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Check, Eye, Loader2, PenLine, X } from "lucide-react";
+import { Check, Eye, Loader2, PenLine, Settings2, X } from "lucide-react";
 
 import { saveArticleDraft } from "@/app/actions/write";
 import { ArticleBody } from "@/components/content/article-body";
+import { ArticleEnd } from "@/components/reading/article-end";
+import { PublishDialog } from "@/components/writing/publish-dialog";
 import { useWriting } from "@/components/writing/writing-context";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,8 +27,10 @@ export function WritingStudio() {
   const [message, setMessage] = useState<string | null>(null);
   const [draftId, setDraftId] = useState<string | undefined>(draft.id);
   const [preview, setPreview] = useState(false);
-  const [excerpt, setExcerpt] = useState("");
-  const [cover, setCover] = useState("");
+  const [details, setDetails] = useState(false);
+  const [publishOpen, setPublishOpen] = useState(false);
+  const [excerpt, setExcerpt] = useState(draft.excerpt ?? "");
+  const [cover, setCover] = useState(draft.image ?? "");
   const [dirty, setDirty] = useState(false);
 
   const minutes = useMemo(() => estimateMinutes(draft.body), [draft.body]);
@@ -35,21 +39,31 @@ export function WritingStudio() {
     [draft.body]
   );
 
+  // Hydrate when opening / switching drafts (not on every autosave setDraft)
   useEffect(() => {
+    if (!open) return;
     setDraftId(draft.id);
-  }, [draft.id]);
+    setExcerpt(draft.excerpt ?? "");
+    setCover(draft.image ?? "");
+    setPreview(false);
+    setDetails(Boolean(draft.excerpt?.trim() || draft.image?.trim()));
+    setDirty(false);
+    setStatus("idle");
+    setMessage(null);
+    setPublishOpen(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: only rehydrate on open / draft id
+  }, [draft.id, open]);
 
   useEffect(() => {
-    if (!visible) return;
+    if (!visible || preview) return;
     const timer = window.setTimeout(() => {
       titleRef.current?.focus();
     }, 380);
     return () => window.clearTimeout(timer);
-  }, [visible]);
+  }, [visible, preview]);
 
-  // Debounced autosave for drafts with content
   useEffect(() => {
-    if (!open || !dirty || preview) return;
+    if (!open || !dirty || preview || publishOpen) return;
     if (!draft.title.trim() && !draft.body.trim()) return;
     const timer = window.setTimeout(() => {
       startTransition(async () => {
@@ -63,7 +77,12 @@ export function WritingStudio() {
         });
         if (result.ok) {
           setDraftId(result.id);
-          setDraft({ ...draft, id: result.id });
+          setDraft({
+            ...draft,
+            id: result.id,
+            excerpt,
+            image: cover,
+          });
           setStatus("saved");
           setMessage("Draft saved");
           setDirty(false);
@@ -71,15 +90,29 @@ export function WritingStudio() {
       });
     }, 2500);
     return () => window.clearTimeout(timer);
-  }, [draft, draftId, dirty, excerpt, cover, open, preview, setDraft]);
+  }, [
+    draft,
+    draftId,
+    dirty,
+    excerpt,
+    cover,
+    open,
+    preview,
+    publishOpen,
+    setDraft,
+  ]);
 
   function updateDraft(next: Partial<{ title: string; body: string }>) {
-    setDraft({ ...draft, ...next });
+    setDraft({ ...draft, ...next, excerpt, image: cover });
     setDirty(true);
     setStatus("idle");
   }
 
   function requestClose() {
+    if (publishOpen) {
+      setPublishOpen(false);
+      return;
+    }
     if (dirty && (draft.title.trim() || draft.body.trim())) {
       const ok = window.confirm("Discard unsaved changes?");
       if (!ok) return;
@@ -105,11 +138,17 @@ export function WritingStudio() {
         return;
       }
       setDraftId(result.id);
-      setDraft({ ...draft, id: result.id });
+      setDraft({
+        ...draft,
+        id: result.id,
+        excerpt,
+        image: cover,
+      });
       setDirty(false);
       setStatus("saved");
       setMessage(nextStatus === "published" ? "Published." : "Draft saved");
       if (nextStatus === "published" && result.slug) {
+        setPublishOpen(false);
         closeWriter();
         router.push(`/article/${result.slug}?published=1`);
         router.refresh();
@@ -119,9 +158,7 @@ export function WritingStudio() {
 
   function requestPublish() {
     if (!draft.title.trim() && !draft.body.trim()) return;
-    const ok = window.confirm("Publish this to the scene?");
-    if (!ok) return;
-    persist("published");
+    setPublishOpen(true);
   }
 
   useEffect(() => {
@@ -131,12 +168,13 @@ export function WritingStudio() {
       const meta = event.metaKey || event.ctrlKey;
       if (meta && event.key.toLowerCase() === "s") {
         event.preventDefault();
-        persist("draft");
+        if (!publishOpen) persist("draft");
         return;
       }
       if (meta && event.key === "Enter") {
         event.preventDefault();
-        requestPublish();
+        if (publishOpen) persist("published");
+        else requestPublish();
         return;
       }
       if (event.key === "Escape") {
@@ -147,10 +185,19 @@ export function WritingStudio() {
 
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- latest draft via re-subscribe
-  }, [open, draft, draftId, excerpt, cover, dirty, pending]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, draft, draftId, excerpt, cover, dirty, pending, publishOpen]);
 
   if (!open) return null;
+
+  const deck =
+    excerpt.trim() ||
+    draft.body
+      .replace(/[#>*_`~\-\[\]\(\)!]/g, " ")
+      .split(/\s+/)
+      .filter(Boolean)
+      .slice(0, 40)
+      .join(" ");
 
   return (
     <div
@@ -207,6 +254,20 @@ export function WritingStudio() {
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
+            {!preview ? (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => setDetails((value) => !value)}
+                disabled={pending}
+                className="gap-1.5"
+                aria-pressed={details}
+              >
+                <Settings2 className="size-3.5" />
+                {details ? "Writing" : "Details"}
+              </Button>
+            ) : null}
             <Button
               type="button"
               variant="ghost"
@@ -254,30 +315,31 @@ export function WritingStudio() {
 
         <div
           className={cn(
-            "flex min-h-0 flex-1 flex-col overflow-hidden rounded-[1.5rem] border border-border/70 bg-card shadow-[0_30px_80px_-40px_rgba(0,0,0,0.45)]",
+            "relative flex min-h-0 flex-1 flex-col overflow-hidden rounded-[1.5rem] border border-border/70 bg-card shadow-[0_30px_80px_-40px_rgba(0,0,0,0.45)]",
             "ring-1 ring-foreground/[0.04]"
           )}
         >
+          <PublishDialog
+            open={publishOpen}
+            pending={pending}
+            onCancel={() => setPublishOpen(false)}
+            onConfirm={() => persist("published")}
+          />
+
           <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-6 py-8 sm:px-12 sm:py-12">
             {preview ? (
               <div className="mx-auto w-full max-w-[40.625rem] space-y-6">
                 <p className="text-sm text-muted-foreground">
                   ~{minutes} min to sit with
                 </p>
-                <h1 className="font-heading text-3xl leading-[1.15] tracking-tight text-balance sm:text-4xl">
+                <h1 className="font-heading text-4xl leading-[1.15] tracking-tight text-balance sm:text-5xl">
                   {draft.title.trim() || "Untitled"}
                 </h1>
-                {(excerpt || draft.body) && (
+                {deck ? (
                   <p className="text-lg leading-relaxed text-muted-foreground text-pretty sm:text-xl">
-                    {excerpt ||
-                      draft.body
-                        .replace(/[#>*_`~\-\[\]\(\)!]/g, " ")
-                        .split(/\s+/)
-                        .filter(Boolean)
-                        .slice(0, 40)
-                        .join(" ")}
+                    {deck}
                   </p>
-                )}
+                ) : null}
                 {cover.trim() ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
@@ -287,7 +349,10 @@ export function WritingStudio() {
                   />
                 ) : null}
                 {draft.body ? (
-                  <ArticleBody markdown={draft.body} />
+                  <>
+                    <ArticleBody markdown={draft.body} />
+                    <ArticleEnd />
+                  </>
                 ) : (
                   <p className="text-muted-foreground">
                     Nothing to preview yet.
@@ -311,26 +376,28 @@ export function WritingStudio() {
                     el.style.height = `${el.scrollHeight}px`;
                   }}
                 />
-                <div className="mb-6 space-y-3">
-                  <Input
-                    value={excerpt}
-                    onChange={(event) => {
-                      setExcerpt(event.target.value);
-                      setDirty(true);
-                    }}
-                    placeholder="Optional deck / excerpt"
-                    className="border-0 bg-muted/30"
-                  />
-                  <Input
-                    value={cover}
-                    onChange={(event) => {
-                      setCover(event.target.value);
-                      setDirty(true);
-                    }}
-                    placeholder="Optional cover image URL"
-                    className="border-0 bg-muted/30"
-                  />
-                </div>
+                {details ? (
+                  <div className="mb-6 space-y-3">
+                    <Input
+                      value={excerpt}
+                      onChange={(event) => {
+                        setExcerpt(event.target.value);
+                        setDirty(true);
+                      }}
+                      placeholder="Optional deck / excerpt"
+                      className="border-0 bg-muted/30"
+                    />
+                    <Input
+                      value={cover}
+                      onChange={(event) => {
+                        setCover(event.target.value);
+                        setDirty(true);
+                      }}
+                      placeholder="Optional cover image URL"
+                      className="border-0 bg-muted/30"
+                    />
+                  </div>
+                ) : null}
                 <textarea
                   value={draft.body}
                   onChange={(event) =>
