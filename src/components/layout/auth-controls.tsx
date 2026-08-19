@@ -8,6 +8,7 @@ import {
   UserButton,
   useAuth,
 } from "@clerk/nextjs";
+import { Pencil, UserRound } from "lucide-react";
 
 import { WriteButton } from "@/components/writing/write-button";
 import { AnimatedPills } from "@/components/ui/animated-pills";
@@ -51,7 +52,20 @@ function SignedInControls() {
             avatarBox: "size-8",
           },
         }}
-      />
+      >
+        <UserButton.MenuItems>
+          <UserButton.Link
+            label="My portfolio"
+            href="/me"
+            labelIcon={<UserRound className="size-4" />}
+          />
+          <UserButton.Link
+            label="Edit profile"
+            href="/settings/profile"
+            labelIcon={<Pencil className="size-4" />}
+          />
+        </UserButton.MenuItems>
+      </UserButton>
     </div>
   );
 }

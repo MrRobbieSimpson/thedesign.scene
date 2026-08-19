@@ -37,8 +37,10 @@ export default async function AdminPage() {
         </p>
         <h1 className="font-heading text-4xl tracking-tight">Curate</h1>
         <p className="max-w-xl text-muted-foreground">
-          Import design links and conferences, then publish with taste. Auth
-          comes later — keep this private in production.
+          Editorial back office — import links, publish with taste, feature
+          picks with notes, manage events, and set the monthly guest editor.
+          Currently open to any signed-in account; tighten to an allowlist when
+          you’re ready.
         </p>
       </section>
 

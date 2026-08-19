@@ -12,6 +12,7 @@ const isProtectedRoute = createRouteMatcher([
   "/scenes(.*)",
   "/drafts(.*)",
   "/settings(.*)",
+  "/me",
 ]);
 
 export default hasClerk
