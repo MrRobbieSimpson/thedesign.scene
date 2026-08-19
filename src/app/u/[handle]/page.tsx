@@ -138,10 +138,12 @@ export default async function PortfolioPage({ params }: PortfolioPageProps) {
 
       {items.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-border/80 px-6 py-16 text-center">
-          <p className="font-heading text-2xl tracking-tight">Nothing published yet</p>
+          <p className="font-heading text-2xl tracking-tight">
+            {isOwner ? "Your first piece belongs here" : "Nothing published yet"}
+          </p>
           <p className="mx-auto mt-2 max-w-sm text-sm text-muted-foreground">
             {isOwner
-              ? "Your published writing will live here."
+              ? "Write something worth sitting with — it’ll show up on this portfolio."
               : "Check back soon."}
           </p>
           {isOwner ? (

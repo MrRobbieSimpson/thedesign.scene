@@ -73,8 +73,6 @@ export function WritingStudio() {
     return () => window.clearTimeout(timer);
   }, [draft, draftId, dirty, excerpt, cover, open, preview, setDraft]);
 
-  if (!open) return null;
-
   function updateDraft(next: Partial<{ title: string; body: string }>) {
     setDraft({ ...draft, ...next });
     setDirty(true);
@@ -110,7 +108,7 @@ export function WritingStudio() {
       setDraft({ ...draft, id: result.id });
       setDirty(false);
       setStatus("saved");
-      setMessage(nextStatus === "published" ? "Published." : "Draft saved.");
+      setMessage(nextStatus === "published" ? "Published." : "Draft saved");
       if (nextStatus === "published" && result.slug) {
         closeWriter();
         router.push(`/article/${result.slug}?published=1`);
@@ -118,6 +116,41 @@ export function WritingStudio() {
       }
     });
   }
+
+  function requestPublish() {
+    if (!draft.title.trim() && !draft.body.trim()) return;
+    const ok = window.confirm("Publish this to the scene?");
+    if (!ok) return;
+    persist("published");
+  }
+
+  useEffect(() => {
+    if (!open) return;
+
+    function onKeyDown(event: KeyboardEvent) {
+      const meta = event.metaKey || event.ctrlKey;
+      if (meta && event.key.toLowerCase() === "s") {
+        event.preventDefault();
+        persist("draft");
+        return;
+      }
+      if (meta && event.key === "Enter") {
+        event.preventDefault();
+        requestPublish();
+        return;
+      }
+      if (event.key === "Escape") {
+        event.preventDefault();
+        requestClose();
+      }
+    }
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- latest draft via re-subscribe
+  }, [open, draft, draftId, excerpt, cover, dirty, pending]);
+
+  if (!open) return null;
 
   return (
     <div
@@ -211,7 +244,7 @@ export function WritingStudio() {
             <Button
               type="button"
               size="sm"
-              onClick={() => persist("published")}
+              onClick={requestPublish}
               disabled={pending || (!draft.title.trim() && !draft.body.trim())}
             >
               Publish
@@ -298,7 +331,7 @@ export function WritingStudio() {
           </div>
 
           <div className="flex items-center justify-between border-t border-border/60 px-6 py-3 text-xs text-muted-foreground sm:px-12">
-            <span>Autosaves · Markdown · Esc to close</span>
+            <span>Autosaves · ⌘S draft · ⌘⏎ publish · Esc</span>
             <button
               type="button"
               className="transition-colors hover:text-foreground"

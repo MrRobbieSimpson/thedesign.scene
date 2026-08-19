@@ -85,7 +85,7 @@ export async function getPublishedContent(
 ): Promise<ContentWithMaker[]> {
   const rows = await unstable_cache(
     () => fetchPublishedContent(type),
-    ["published-content", type, "v6"],
+    ["published-content", type, "v7"],
     { revalidate: FEED_REVALIDATE_SECONDS, tags: ["content"] }
   )();
   return rows.map(reviveContent);

@@ -47,7 +47,7 @@ export default async function ProfileSettingsPage({
 
       {params.saved ? (
         <p className="mb-6 rounded-xl border border-border/70 bg-muted/30 px-4 py-3 text-sm text-muted-foreground">
-          Profile saved.
+          Profile updated.
           {profile.handle ? (
             <>
               {" "}

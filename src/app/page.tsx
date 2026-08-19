@@ -3,7 +3,13 @@ import { Suspense } from "react";
 import { FeedExplorer } from "@/components/content/feed-explorer";
 import { FeedFilters } from "@/components/content/feed-filters";
 import { GuestEditorStrip } from "@/components/home/guest-editor-strip";
-import { filterFeedItems, isFeedFilter, type FeedFilter } from "@/lib/feed-mix";
+import { LiveFromX } from "@/components/home/live-from-x";
+import {
+  filterFeedItems,
+  isFeedFilter,
+  pickLiveFromX,
+  type FeedFilter,
+} from "@/lib/feed-mix";
 import {
   getCurrentGuestEditor,
   getPublishedContentPool,
@@ -31,6 +37,7 @@ export default async function HomePage({ searchParams }: HomeProps) {
   ]);
 
   const items = filterFeedItems(filter, content, events);
+  const liveFromX = filter === "all" ? pickLiveFromX(content, 4) : [];
 
   const editorialCount = items.filter(
     (item) =>
@@ -70,8 +77,7 @@ export default async function HomePage({ searchParams }: HomeProps) {
                   · {featuredCount} editor{" "}
                   {featuredCount === 1 ? "pick" : "picks"}
                 </>
-              ) : null}
-              {" "}
+              ) : null}{" "}
               · {editorialCount} editorial
             </>
           ) : null}
@@ -93,6 +99,8 @@ export default async function HomePage({ searchParams }: HomeProps) {
           </Suspense>
         }
       />
+
+      {liveFromX.length > 0 ? <LiveFromX items={liveFromX} /> : null}
     </div>
   );
 }

@@ -35,7 +35,7 @@ const MIX_TARGET = 22;
 /**
  * Absolute caps for the curated “All” feed (after featured picks).
  * Hierarchy: Featured → Articles/Thoughts → Visuals → Events → News.
- * Builds retired (retyped as visuals). Average X posts excluded unless featured.
+ * Builds retired (retyped as visuals). X posts live in a secondary strip — never All.
  */
 const CAPS = {
   featuredEditorial: 6,
@@ -194,15 +194,13 @@ export function curateHomeFeed(
     .sort(sortQuality)
     .slice(0, CAPS.featuredOther);
 
-  const featuredPost = content
-    .filter((item) => item.featured && item.type === "post")
-    .sort(sortQuality)
-    .slice(0, 1);
-
+  // X posts never enter the main selection — see LiveFromX strip.
   const used = new Set(
-    [...featuredEditorial, ...featuredOther, ...featuredPost].map((i) => i.id)
+    [...featuredEditorial, ...featuredOther].map((i) => i.id)
   );
-  const remaining = content.filter((item) => !used.has(item.id));
+  const remaining = content.filter(
+    (item) => !used.has(item.id) && effectiveType(item) !== "post"
+  );
 
   const editorial = takeByTypes(
     remaining,
@@ -239,9 +237,37 @@ export function curateHomeFeed(
   return [
     ...toContentItems(featuredEditorial),
     ...toContentItems(featuredOther),
-    ...toContentItems(featuredPost),
     ...mixed,
   ].slice(0, target);
+}
+
+function liveFromXScore(item: ContentWithMaker) {
+  const text = `${item.title}\n${item.excerpt ?? ""}`.trim();
+  let score = Math.min(text.length, 280);
+  if (/\?/.test(text)) score += 20;
+  if ((item.excerpt?.split(/\s+/).length ?? 0) >= 18) score += 30;
+  if (/pic\.twitter\.com|t\.co\//i.test(text) && text.length < 120) score -= 40;
+  if (/✨|🤓|😉/.test(text)) score -= 25;
+  return score;
+}
+
+/** Quiet secondary surface — a few recent craft notes from X. */
+export function pickLiveFromX(
+  content: ContentWithMaker[],
+  count = 4
+): ContentWithMaker[] {
+  return content
+    .filter((item) => item.type === "post")
+    .filter((item) => {
+      const text = `${item.title}\n${item.excerpt ?? ""}`.trim();
+      return text.length >= 50;
+    })
+    .sort((a, b) => {
+      const score = liveFromXScore(b) - liveFromXScore(a);
+      if (score !== 0) return score;
+      return publishedAtMs(b) - publishedAtMs(a);
+    })
+    .slice(0, Math.max(0, count));
 }
 
 export function filterFeedItems(

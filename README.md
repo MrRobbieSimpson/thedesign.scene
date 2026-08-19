@@ -1,8 +1,8 @@
 # thedesign.scene
 
-A curated design platform for thoughts, visuals, builds, news, posts, and events.
+A curated design platform for writing, visuals, and events — quality over quantity.
 
-Phase 1 is public-only (no auth): a polished feed, content detail pages, events, and a simple unprotected admin.
+Editor’s selection on the home feed, designer portfolios, guest editors, and a weekly digest.
 
 ## Stack
 
@@ -105,7 +105,7 @@ Editorial, calm, and premium — inspired by recent.design, handheld.design, and
 
 | Route | Description |
 | --- | --- |
-| `/` | Published feed (All / Thoughts / Visual / Builds / News / Posts) |
+| `/` | Curated feed (All / Articles / Visuals / Events) · Notes from X secondary |
 | `/content/[id]` | Reading / viewing experience |
 | `/events` | Published events |
 | `/admin` | Import URL, browse RSS, create + publish (unprotected) |

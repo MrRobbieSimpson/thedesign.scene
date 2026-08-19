@@ -41,7 +41,7 @@ A calm, writing-first scene — quality over quantity, curation over aggregation
 - Registered designers count still low (product loop works; growth is invite/story)
 - Digest won’t send until `RESEND_API_KEY` + `DIGEST_FROM_EMAIL` (+ preferred `CRON_SECRET`)
 - Guest editors need at least one real term created in Admin
-- X still in main mix only when featured — secondary “Live from X” not built yet
+- X posts moved out of All into quiet “Notes from X” strip (shipped)
 
 ---
 
@@ -200,14 +200,14 @@ Editor-note habit             Invite & onboarding
 
 ## Next — scene density (after Now)
 
-### A. Live from X (secondary surface)
+### A. Live from X (secondary surface) — shipped
 
 **Intent:** Keep craft chatter without polluting the main selection.
 
-**Approach**
-- Exclude non-featured `post` from All (mostly already)
-- Add footer of home or `/live` : *Live from X* — 3–5 recent craft posts, visually quieter, clearly secondary
-- Label: *Notes from X* · *Not the main selection*
+**Shipped**
+- Non-featured (and featured) `post` excluded from All
+- Home footer strip: *Notes from X* — 4 recent notes, quieter cards
+- Ingest no longer auto-features X / pull-live imports
 
 **Microcopy**
 - *A few notes from X — separate from the editor’s selection.*

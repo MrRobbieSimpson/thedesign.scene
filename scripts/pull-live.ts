@@ -176,7 +176,7 @@ async function main() {
         externalId: resolved.externalId,
         authorName: resolved.authorName,
         status: "published",
-        featured: true,
+        featured: false,
         publishedAt: new Date(),
       });
       created += 1;
@@ -218,7 +218,7 @@ async function main() {
         authorHandle: resolved.authorHandle,
         authorName: resolved.authorName,
         status: "published",
-        featured: type === "thought",
+        featured: false,
         publishedAt: new Date(),
         sourcePayload: resolved.sourcePayload,
       });

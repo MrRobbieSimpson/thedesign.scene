@@ -8,6 +8,7 @@ import { EditorNote } from "@/components/content/editor-note";
 import { FocusToggle } from "@/components/reading/focus-toggle";
 import { SaveButton } from "@/components/save-button";
 import { Badge } from "@/components/ui/badge";
+import { PublishedBanner } from "@/components/writing/published-banner";
 import { contentTypeLabel, formatPublishedDate } from "@/lib/format";
 import { getContentBySlug } from "@/lib/queries";
 
@@ -58,29 +59,15 @@ export default async function ArticlePage({
   const authorBio = maker?.bio ?? profile?.bio ?? null;
   const portfolioHandle = profile?.handle ?? null;
   const justPublished = published === "1";
+  const needsBio = justPublished && Boolean(profile) && !profile?.bio?.trim();
 
   return (
     <article className="mx-auto max-w-[42rem] px-6 py-12 sm:py-16">
       {justPublished ? (
-        <div className="mb-8 rounded-2xl border border-foreground/15 bg-muted/30 px-5 py-4">
-          <p className="font-heading text-lg tracking-tight">Published</p>
-          <p className="mt-1 text-sm text-muted-foreground">
-            It’s live on the feed
-            {portfolioHandle ? (
-              <>
-                {" "}
-                and on your{" "}
-                <Link
-                  href={`/u/${portfolioHandle}`}
-                  className="font-medium text-foreground underline-offset-4 hover:underline"
-                >
-                  portfolio
-                </Link>
-              </>
-            ) : null}
-            .
-          </p>
-        </div>
+        <PublishedBanner
+          portfolioHandle={portfolioHandle}
+          needsBio={needsBio}
+        />
       ) : null}
 
       <div

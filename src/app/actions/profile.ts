@@ -22,7 +22,12 @@ export async function updateMyProfile(
   const displayName =
     String(formData.get("displayName") ?? "").trim() || null;
   const bio = String(formData.get("bio") ?? "").trim() || null;
-  const website = String(formData.get("website") ?? "").trim() || null;
+  const websiteRaw = String(formData.get("website") ?? "").trim();
+  const website = websiteRaw
+    ? /^https?:\/\//i.test(websiteRaw)
+      ? websiteRaw
+      : `https://${websiteRaw}`
+    : null;
   const xHandle =
     String(formData.get("xHandle") ?? "")
       .trim()

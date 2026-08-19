@@ -22,9 +22,16 @@ export function ContentForm({
   const [pending, startTransition] = useTransition();
   const [type, setType] = useState<string>("article");
   const [featured, setFeatured] = useState(false);
+  const [editorNote, setEditorNote] = useState("");
 
   function onSubmit(formData: FormData) {
     setMessage(null);
+    if (featured && !editorNote.trim()) {
+      const proceed = window.confirm(
+        "This pick has no “Why this is here” note. Feature it anyway?"
+      );
+      if (!proceed) return;
+    }
     startTransition(async () => {
       const result = await createContent(formData);
       setError(!result.ok);
@@ -36,6 +43,7 @@ export function ContentForm({
         form?.reset();
         setType("article");
         setFeatured(false);
+        setEditorNote("");
       }
     });
   }
@@ -212,11 +220,19 @@ export function ContentForm({
             <Textarea
               id="editorNote"
               name="editorNote"
+              value={editorNote}
+              onChange={(event) => setEditorNote(event.target.value)}
               disabled={disabled || pending}
               placeholder="One or two calm sentences on why this belongs in the scene…"
               rows={2}
               maxLength={280}
             />
+            {!editorNote.trim() ? (
+              <p className="text-xs text-muted-foreground">
+                Strongly encouraged for editor’s picks — turns Featured into a
+                reason, not a flag.
+              </p>
+            ) : null}
           </div>
         ) : null}
       </div>
