@@ -21,12 +21,14 @@ export function FeedEventCard({
   const inner = (
     <article
       className={cn(
-        "group relative flex h-full flex-col justify-between overflow-hidden rounded-2xl border border-foreground/10 bg-gradient-to-br from-card via-card to-muted/40 shadow-[0_1px_0_rgba(0,0,0,0.02)] transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
-        compact ? "p-4" : "p-6 sm:p-7",
+        "event-ticket group relative flex h-full flex-col justify-between rounded-2xl border border-foreground/10 bg-gradient-to-br from-card via-card to-muted/40 shadow-[0_1px_0_rgba(0,0,0,0.02)] transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
+        compact ? "py-4 pr-4 pl-9" : "py-6 pr-6 pl-10 sm:py-7 sm:pr-7 sm:pl-11",
         "hover:-translate-y-0.5 hover:border-foreground/20 hover:shadow-[0_18px_50px_-28px_rgba(0,0,0,0.45)] active:translate-y-0 active:scale-[0.985]"
       )}
     >
-      <div className={cn(compact ? "space-y-3" : "space-y-5")}>
+      <span aria-hidden className="event-ticket-stub" />
+
+      <div className={cn("relative", compact ? "space-y-3" : "space-y-5")}>
         <div className="flex flex-wrap items-center gap-2">
           <Badge className="gap-1.5 border-0 bg-foreground text-background">
             <CalendarDays className="size-3.5" />
@@ -57,7 +59,7 @@ export function FeedEventCard({
 
       <div
         className={cn(
-          "flex items-center justify-between gap-3 text-sm text-muted-foreground",
+          "relative flex items-center justify-between gap-3 text-sm text-muted-foreground",
           compact ? "mt-4" : "mt-8"
         )}
       >

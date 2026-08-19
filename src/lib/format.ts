@@ -7,6 +7,18 @@ export function formatPublishedDate(date: Date | null | undefined) {
   return format(date, "MMM d, yyyy");
 }
 
+/** Quiet reading estimate — never “min read” urgency. */
+export function formatSitWithTime(minutes: number | null | undefined) {
+  if (!minutes || minutes < 1) return null;
+  return `~${minutes} min to sit with`;
+}
+
+/** Compact variant for cards and attribution rows. */
+export function formatSitWithTimeShort(minutes: number | null | undefined) {
+  if (!minutes || minutes < 1) return null;
+  return `~${minutes} min`;
+}
+
 export function formatRelativeDate(date: Date | null | undefined) {
   if (!date) return null;
   return formatDistanceToNowStrict(date, { addSuffix: true });

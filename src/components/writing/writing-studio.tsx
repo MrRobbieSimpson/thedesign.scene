@@ -201,7 +201,7 @@ export function WritingStudio() {
               <span className="text-destructive">{message}</span>
             ) : (
               <span>
-                {wordCount} words · ~{minutes} min
+                {wordCount} words · ~{minutes} min to sit with
               </span>
             )}
           </div>
@@ -260,12 +260,15 @@ export function WritingStudio() {
         >
           <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-6 py-8 sm:px-12 sm:py-12">
             {preview ? (
-              <div className="space-y-6">
-                <h1 className="font-heading text-3xl leading-tight tracking-tight sm:text-4xl">
+              <div className="mx-auto w-full max-w-[40rem] space-y-6 sm:max-w-[42rem]">
+                <p className="text-sm text-muted-foreground">
+                  ~{minutes} min to sit with
+                </p>
+                <h1 className="font-heading text-3xl leading-[1.15] tracking-tight text-balance sm:text-4xl">
                   {draft.title.trim() || "Untitled"}
                 </h1>
                 {(excerpt || draft.body) && (
-                  <p className="text-lg leading-relaxed text-muted-foreground">
+                  <p className="text-lg leading-relaxed text-muted-foreground text-pretty sm:text-xl">
                     {excerpt ||
                       draft.body
                         .replace(/[#>*_`~\-\[\]\(\)!]/g, " ")
@@ -275,10 +278,20 @@ export function WritingStudio() {
                         .join(" ")}
                   </p>
                 )}
+                {cover.trim() ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={cover.trim()}
+                    alt=""
+                    className="aspect-[16/10] w-full rounded-2xl border border-border/60 object-cover"
+                  />
+                ) : null}
                 {draft.body ? (
                   <ArticleBody markdown={draft.body} />
                 ) : (
-                  <p className="text-muted-foreground">Nothing to preview yet.</p>
+                  <p className="text-muted-foreground">
+                    Nothing to preview yet.
+                  </p>
                 )}
               </div>
             ) : (
@@ -331,7 +344,9 @@ export function WritingStudio() {
           </div>
 
           <div className="flex items-center justify-between border-t border-border/60 px-6 py-3 text-xs text-muted-foreground sm:px-12">
-            <span>Autosaves · ⌘S draft · ⌘⏎ publish · Esc</span>
+            <span>
+              Autosaves · {">"} pull quote · [^1] footnote · ⌘S · ⌘⏎ · Esc
+            </span>
             <button
               type="button"
               className="transition-colors hover:text-foreground"

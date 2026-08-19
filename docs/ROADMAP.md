@@ -270,11 +270,11 @@ Editor-note habit             Invite & onboarding
 
 ## Design tokens (keep consistent)
 
-- Type: Geist — headings medium, tight tracking; body ~1.125rem / ~1.8  
-- Color: near-monochrome; ink badges for Articles; muted panels for notes  
-- Space: prefer `gap-8` / `py-16` over dense grids on All  
-- Motion: soft 300ms cubic-bezier; respect `prefers-reduced-motion`  
-- Words: *selected*, *editor’s pick*, *worth sitting with* — not *trending* / *for you*
+- Type: Geist Sans for UI + headings; **Source Serif 4** for `.article-prose` body (~1.2rem / 1.8)  
+- Color: warm paper light + soft ink dark (OKLCH hue ~55–85); muted panels for notes  
+- Space: prefer `gap-8` / `py-16` over dense grids on All; article measure ~40–42rem  
+- Motion: soft 400ms cubic-bezier(0.22,1,0.36,1); respect `prefers-reduced-motion`  
+- Words: *selected*, *editor’s pick*, *sit with*, *worth sitting with* — not *trending* / *for you* / *min read*
 
 ---
 

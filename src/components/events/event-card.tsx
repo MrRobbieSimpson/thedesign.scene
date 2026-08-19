@@ -22,14 +22,16 @@ export function EventCard({
   const content = (
     <article
       className={cn(
-        "group flex h-full flex-col justify-between gap-6 rounded-2xl border bg-card transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
+        "event-ticket group relative flex h-full flex-col justify-between gap-6 rounded-2xl border bg-card transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
         featured
-          ? "border-foreground/15 p-7 shadow-[0_1px_0_rgba(0,0,0,0.02)] sm:p-8"
-          : "border-border/70 p-6",
+          ? "border-foreground/15 py-7 pr-7 pl-10 shadow-[0_1px_0_rgba(0,0,0,0.02)] sm:py-8 sm:pr-8 sm:pl-11"
+          : "border-border/70 py-6 pr-6 pl-10",
         "hover:-translate-y-0.5 hover:border-foreground/20 hover:shadow-[0_16px_48px_-28px_rgba(0,0,0,0.4)] active:translate-y-0 active:scale-[0.985]"
       )}
     >
-      <div className="space-y-4">
+      <span aria-hidden className="event-ticket-stub" />
+
+      <div className="relative space-y-4">
         <div className="flex flex-wrap items-center gap-2">
           <Badge
             variant={featured ? "default" : "secondary"}
@@ -69,7 +71,7 @@ export function EventCard({
         </div>
       </div>
 
-      <div className="flex items-center justify-between gap-3 text-sm text-muted-foreground">
+      <div className="relative flex items-center justify-between gap-3 text-sm text-muted-foreground">
         <span className="inline-flex min-w-0 items-center gap-1.5">
           <MapPin className="size-3.5 shrink-0" />
           <span className="truncate">{event.location ?? "Location TBA"}</span>
@@ -86,7 +88,7 @@ export function EventCard({
 
   if (event.url) {
     return (
-      <Link href={event.url} target="_blank" rel="noreferrer">
+      <Link href={event.url} target="_blank" rel="noreferrer" className="block">
         {content}
       </Link>
     );

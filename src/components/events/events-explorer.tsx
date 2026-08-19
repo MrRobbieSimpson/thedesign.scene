@@ -244,7 +244,7 @@ export function EventsExplorer({ events }: EventsExplorerProps) {
                 className={cn("relative", highlight && "md:col-span-2")}
               >
                 {nearMe && nearBelfast && isBelfastDesignEvent(event) ? (
-                  <span className="absolute top-4 left-4 z-10 rounded-full border border-border/70 bg-background/90 px-2.5 py-1 text-[11px] font-medium backdrop-blur-md">
+                  <span className="absolute top-4 left-10 z-20 rounded-full border border-border/70 bg-background/90 px-2.5 py-1 text-[11px] font-medium backdrop-blur-md">
                     Belfast Design
                   </span>
                 ) : null}

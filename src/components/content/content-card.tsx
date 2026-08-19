@@ -14,6 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import {
   contentTypeLabel,
   formatPublishedDate,
+  formatSitWithTimeShort,
   sourcePlatformLabel,
 } from "@/lib/format";
 import type { ContentWithMaker } from "@/lib/demo-data";
@@ -113,7 +114,7 @@ function Attribution({
         {item.readingTimeMinutes ? (
           <>
             <span className="mx-1.5 text-border">·</span>
-            {item.readingTimeMinutes} min
+            {formatSitWithTimeShort(item.readingTimeMinutes)}
           </>
         ) : null}
       </span>

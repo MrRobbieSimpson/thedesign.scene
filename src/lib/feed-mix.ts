@@ -85,18 +85,87 @@ function sortQuality(a: ContentWithMaker, b: ContentWithMaker) {
   return publishedAtMs(b) - publishedAtMs(a);
 }
 
+/**
+ * Stable author key for diversity — prefer profile/maker ids, then handle/name.
+ * Keeps “Robin Rendle × N” from flooding the curated All mix.
+ */
+export function authorKey(item: ContentWithMaker): string {
+  if (item.authorProfileId) return `profile:${item.authorProfileId}`;
+  if (item.authorProfile?.id) return `profile:${item.authorProfile.id}`;
+  if (item.makerId) return `maker:${item.makerId}`;
+  if (item.maker?.id) return `maker:${item.maker.id}`;
+
+  const handle = (
+    item.authorHandle ??
+    item.authorProfile?.handle ??
+    item.maker?.handle ??
+    ""
+  )
+    .trim()
+    .replace(/^@/, "")
+    .toLowerCase();
+  if (handle) return `handle:${handle}`;
+
+  const name = (
+    item.authorName ??
+    item.authorProfile?.displayName ??
+    item.maker?.name ??
+    ""
+  )
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, " ");
+  if (name) return `name:${name}`;
+
+  return `item:${item.id}`;
+}
+
+/** Keep first N items per author (already-sorted pools). */
+function diversifyAuthors(
+  items: ContentWithMaker[],
+  maxPerAuthor = 1,
+  seen: Set<string> = new Set()
+): ContentWithMaker[] {
+  const out: ContentWithMaker[] = [];
+  const counts = new Map<string, number>();
+
+  for (const key of seen) counts.set(key, maxPerAuthor);
+
+  for (const item of items) {
+    const key = authorKey(item);
+    const used = counts.get(key) ?? 0;
+    if (used >= maxPerAuthor) continue;
+    counts.set(key, used + 1);
+    seen.add(key);
+    out.push(item);
+  }
+
+  return out;
+}
+
 function takeByTypes(
   pool: ContentWithMaker[],
   types: ContentType[],
   count: number,
-  predicate?: (item: ContentWithMaker) => boolean
+  predicate?: (item: ContentWithMaker) => boolean,
+  options?: { maxPerAuthor?: number; seenAuthors?: Set<string> }
 ) {
   const allowed = new Set(types);
-  return pool
+  const ranked = pool
     .filter((item) => allowed.has(effectiveType(item)))
     .filter((item) => (predicate ? predicate(item) : true))
-    .sort(sortQuality)
-    .slice(0, Math.max(0, count));
+    .sort(sortQuality);
+
+  const diversified =
+    options?.maxPerAuthor != null
+      ? diversifyAuthors(
+          ranked,
+          options.maxPerAuthor,
+          options.seenAuthors ?? new Set()
+        )
+      : ranked;
+
+  return diversified.slice(0, Math.max(0, count));
 }
 
 function upcomingEvents(events: Event[], count: number) {
@@ -172,27 +241,35 @@ function interleaveEditorialFirst(buckets: {
 
 /**
  * Premium home mix — tight, featured-led, writing-first.
+ * Max one piece per author across the whole All selection.
  */
 export function curateHomeFeed(
   content: ContentWithMaker[],
   events: Event[],
   target = MIX_TARGET
 ): FeedItem[] {
+  const seenAuthors = new Set<string>();
+
   const featuredEditorial = takeByTypes(
     content.filter((item) => item.featured),
     ["article", "thought"],
-    CAPS.featuredEditorial
+    CAPS.featuredEditorial,
+    undefined,
+    { maxPerAuthor: 1, seenAuthors }
   );
 
-  const featuredOther = content
-    .filter(
-      (item) =>
-        item.featured &&
-        !featuredEditorial.some((f) => f.id === item.id) &&
-        effectiveType(item) !== "post"
-    )
-    .sort(sortQuality)
-    .slice(0, CAPS.featuredOther);
+  const featuredOther = diversifyAuthors(
+    content
+      .filter(
+        (item) =>
+          item.featured &&
+          !featuredEditorial.some((f) => f.id === item.id) &&
+          effectiveType(item) !== "post"
+      )
+      .sort(sortQuality),
+    1,
+    seenAuthors
+  ).slice(0, CAPS.featuredOther);
 
   // X posts never enter the main selection — see LiveFromX strip.
   const used = new Set(
@@ -206,7 +283,8 @@ export function curateHomeFeed(
     remaining,
     ["article", "thought"],
     CAPS.editorial,
-    (item) => hasSubstance(item) || item.featured
+    (item) => hasSubstance(item) || item.featured,
+    { maxPerAuthor: 1, seenAuthors }
   );
   editorial.forEach((item) => used.add(item.id));
 
@@ -214,7 +292,8 @@ export function curateHomeFeed(
     remaining.filter((item) => !used.has(item.id)),
     ["visual", "build"],
     CAPS.visuals,
-    (item) => hasImage(item)
+    (item) => hasImage(item),
+    { maxPerAuthor: 1, seenAuthors }
   );
   visuals.forEach((item) => used.add(item.id));
 
@@ -222,7 +301,8 @@ export function curateHomeFeed(
     remaining.filter((item) => !used.has(item.id)),
     ["news"],
     CAPS.news,
-    (item) => hasSubstance(item)
+    (item) => hasSubstance(item),
+    { maxPerAuthor: 1, seenAuthors }
   );
 
   const eventPicks = upcomingEvents(events, CAPS.events);
@@ -256,7 +336,7 @@ export function pickLiveFromX(
   content: ContentWithMaker[],
   count = 4
 ): ContentWithMaker[] {
-  return content
+  const ranked = content
     .filter((item) => item.type === "post")
     .filter((item) => {
       const text = `${item.title}\n${item.excerpt ?? ""}`.trim();
@@ -266,8 +346,9 @@ export function pickLiveFromX(
       const score = liveFromXScore(b) - liveFromXScore(a);
       if (score !== 0) return score;
       return publishedAtMs(b) - publishedAtMs(a);
-    })
-    .slice(0, Math.max(0, count));
+    });
+
+  return diversifyAuthors(ranked, 1).slice(0, Math.max(0, count));
 }
 
 export function filterFeedItems(
@@ -279,14 +360,25 @@ export function filterFeedItems(
     case "all":
       return curateHomeFeed(content, events);
     case "articles":
+      // Slightly looser than All — still avoid a single-writer flood.
       return toContentItems(
-        takeByTypes(content, ["article", "thought"], 28, (item) =>
-          Boolean(item.featured || hasSubstance(item))
+        takeByTypes(
+          content,
+          ["article", "thought"],
+          28,
+          (item) => Boolean(item.featured || hasSubstance(item)),
+          { maxPerAuthor: 2 }
         )
       );
     case "visuals":
       return toContentItems(
-        takeByTypes(content, ["visual", "build"], 24, (item) => hasImage(item))
+        takeByTypes(
+          content,
+          ["visual", "build"],
+          24,
+          (item) => hasImage(item),
+          { maxPerAuthor: 2 }
+        )
       );
     case "events":
       return toEventItems(upcomingEvents(events, 24));

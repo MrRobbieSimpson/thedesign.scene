@@ -5,14 +5,26 @@ import { ArrowLeft } from "lucide-react";
 
 import { ArticleBody } from "@/components/content/article-body";
 import { EditorNote } from "@/components/content/editor-note";
+import { ArticleEnd } from "@/components/reading/article-end";
+import { CopyLink } from "@/components/reading/copy-link";
 import { FocusToggle } from "@/components/reading/focus-toggle";
+import { MoreFromWriter } from "@/components/reading/more-from-writer";
 import { SaveButton } from "@/components/save-button";
 import { Badge } from "@/components/ui/badge";
 import { PublishedBanner } from "@/components/writing/published-banner";
-import { contentTypeLabel, formatPublishedDate } from "@/lib/format";
-import { getContentBySlug } from "@/lib/queries";
+import {
+  contentTypeLabel,
+  formatPublishedDate,
+  formatSitWithTime,
+} from "@/lib/format";
+import {
+  getContentBySlug,
+  getPublishedContentByProfile,
+} from "@/lib/queries";
 
 export const dynamic = "force-dynamic";
+
+const SITE_ORIGIN = "https://thedesign-scene.vercel.app";
 
 type ArticlePageProps = {
   params: Promise<{ slug: string }>;
@@ -60,9 +72,18 @@ export default async function ArticlePage({
   const portfolioHandle = profile?.handle ?? null;
   const justPublished = published === "1";
   const needsBio = justPublished && Boolean(profile) && !profile?.bio?.trim();
+  const articleUrl = `${SITE_ORIGIN}/article/${item.slug}`;
+  const sitWith = formatSitWithTime(item.readingTimeMinutes);
+
+  const related =
+    profile?.id != null
+      ? (await getPublishedContentByProfile(profile.id))
+          .filter((row) => row.id !== item.id)
+          .slice(0, 3)
+      : [];
 
   return (
-    <article className="mx-auto max-w-[42rem] px-6 py-12 sm:py-16">
+    <article className="reading-surface mx-auto max-w-[40rem] px-6 py-12 sm:max-w-[42rem] sm:py-16">
       {justPublished ? (
         <PublishedBanner
           portfolioHandle={portfolioHandle}
@@ -81,10 +102,11 @@ export default async function ArticlePage({
           <ArrowLeft className="size-4" />
           Back to feed
         </Link>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
           <FocusToggle />
+          <CopyLink url={articleUrl} />
           <a
-            href={`https://x.com/intent/tweet?text=${encodeURIComponent(item.title)}&url=${encodeURIComponent(`https://thedesign-scene.vercel.app/article/${item.slug}`)}`}
+            href={`https://x.com/intent/tweet?text=${encodeURIComponent(item.title)}&url=${encodeURIComponent(articleUrl)}`}
             target="_blank"
             rel="noreferrer"
             className="text-sm text-muted-foreground transition-colors hover:text-foreground"
@@ -103,10 +125,8 @@ export default async function ArticlePage({
               {formatPublishedDate(item.publishedAt)}
             </span>
           ) : null}
-          {item.readingTimeMinutes ? (
-            <span className="text-sm text-muted-foreground">
-              {item.readingTimeMinutes} min read
-            </span>
+          {sitWith ? (
+            <span className="text-sm text-muted-foreground">{sitWith}</span>
           ) : null}
         </div>
 
@@ -115,7 +135,7 @@ export default async function ArticlePage({
         </h1>
 
         {item.excerpt ? (
-          <p className="text-lg leading-relaxed text-muted-foreground text-pretty">
+          <p className="text-lg leading-relaxed text-muted-foreground text-pretty sm:text-xl sm:leading-relaxed">
             {item.excerpt}
           </p>
         ) : null}
@@ -124,7 +144,10 @@ export default async function ArticlePage({
           <EditorNote note={item.editorNote} />
         ) : null}
 
-        <div className="flex flex-wrap items-center justify-between gap-4 border-y border-border/60 py-5">
+        <div
+          className="flex flex-wrap items-center justify-between gap-4 border-y border-border/60 py-5"
+          data-hide-on-focus
+        >
           {authorName ? (
             authorHref ? (
               <Link
@@ -182,7 +205,7 @@ export default async function ArticlePage({
       </header>
 
       {item.image ? (
-        <div className="relative mt-10 aspect-[16/10] overflow-hidden rounded-2xl border border-border/70 bg-muted">
+        <div className="relative mt-10 aspect-[16/10] overflow-hidden rounded-2xl border border-border/60 bg-muted">
           <Image
             src={item.image}
             alt={item.title}
@@ -200,17 +223,19 @@ export default async function ArticlePage({
         </div>
       ) : null}
 
+      {item.body ? <ArticleEnd /> : null}
+
       {authorBio && authorName ? (
-        <aside className="mt-16 rounded-2xl border border-border/70 bg-muted/30 p-6">
-          <p className="text-xs font-medium tracking-[0.14em] text-muted-foreground uppercase">
+        <aside
+          className="mt-12 rounded-2xl border border-border/70 bg-muted/25 p-6"
+          data-hide-on-focus
+        >
+          <p className="text-[11px] font-medium tracking-[0.14em] text-muted-foreground uppercase">
             About the author
           </p>
           <div className="mt-4 space-y-1">
             {authorHref ? (
-              <Link
-                href={authorHref}
-                className="font-medium hover:underline"
-              >
+              <Link href={authorHref} className="font-medium hover:underline">
                 {authorName}
               </Link>
             ) : (
@@ -222,6 +247,10 @@ export default async function ArticlePage({
           </div>
         </aside>
       ) : null}
+
+      <div data-hide-on-focus>
+        <MoreFromWriter items={related} authorName={authorName} />
+      </div>
     </article>
   );
 }
