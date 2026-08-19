@@ -4,12 +4,12 @@ import {
   ArrowUpRight,
   AtSign,
   BookOpen,
-  Layers,
   Lightbulb,
   Newspaper,
   Sparkles,
 } from "lucide-react";
 
+import { EditorNote } from "@/components/content/editor-note";
 import { Badge } from "@/components/ui/badge";
 import {
   contentTypeLabel,
@@ -49,7 +49,8 @@ function TypeIcon({ type }: { type: ContentWithMaker["type"] }) {
     case "visual":
       return <Sparkles className={className} />;
     case "build":
-      return <Layers className={className} />;
+      // Legacy — treated as visual in the product.
+      return <Sparkles className={className} />;
     case "news":
       return <Newspaper className={className} />;
     case "post":
@@ -69,19 +70,29 @@ function Attribution({
   item: ContentWithMaker;
   date?: Date | null;
 }) {
+  const profile = item.authorProfile;
   const name =
     item.maker?.name ??
+    profile?.displayName ??
+    (profile?.handle ? `@${profile.handle}` : null) ??
     (item.authorHandle ? `@${item.authorHandle}` : null) ??
     item.authorName ??
     sourcePlatformLabel(item.sourcePlatform) ??
     "thedesign.scene";
 
+  const avatar = item.maker?.avatar ?? profile?.avatarUrl ?? null;
+  const href = item.maker?.handle
+    ? `/maker/${item.maker.handle}`
+    : profile?.handle
+      ? `/u/${profile.handle}`
+      : null;
+
   const inner = (
     <div className="flex items-center gap-2.5 text-sm text-muted-foreground">
-      {item.maker?.avatar ? (
+      {avatar ? (
         <Image
-          src={item.maker.avatar}
-          alt={item.maker.name}
+          src={avatar}
+          alt={name}
           width={22}
           height={22}
           className="size-[22px] rounded-full object-cover ring-1 ring-border"
@@ -109,10 +120,10 @@ function Attribution({
     </div>
   );
 
-  if (item.maker?.handle) {
+  if (href) {
     return (
       <Link
-        href={`/maker/${item.maker.handle}`}
+        href={href}
         onClick={(event) => event.stopPropagation()}
         className="transition-colors hover:text-foreground"
       >
@@ -141,7 +152,7 @@ export function ContentCard({
     case "visual":
       return <VisualCard item={item} density={density} priority={priority} />;
     case "build":
-      return <BuildCard item={item} density={density} priority={priority} />;
+      return <VisualCard item={item} density={density} priority={priority} />;
     case "news":
       return <NewsCard item={item} density={density} priority={priority} />;
     case "post":
@@ -203,6 +214,9 @@ function ArticleCard({
             >
               {item.excerpt}
             </p>
+          ) : null}
+          {item.featured && item.editorNote && density !== "compact" ? (
+            <EditorNote note={item.editorNote} />
           ) : null}
         </div>
       </div>
@@ -266,6 +280,9 @@ function ThoughtCard({
             <p className={cn("text-muted-foreground", densityExcerpt(density))}>
               {item.excerpt}
             </p>
+          ) : null}
+          {item.featured && item.editorNote && density !== "compact" ? (
+            <EditorNote note={item.editorNote} />
           ) : null}
         </div>
       </div>
@@ -358,94 +375,12 @@ function VisualCard({
               {item.excerpt}
             </p>
           ) : null}
+          {item.featured && item.editorNote && density !== "compact" ? (
+            <EditorNote note={item.editorNote} />
+          ) : null}
         </div>
         <div className="mt-auto">
           <Attribution item={item} date={item.publishedAt} />
-        </div>
-      </div>
-    </Link>
-  );
-}
-
-function BuildCard({
-  item,
-  density,
-  priority = false,
-}: {
-  item: ContentWithMaker;
-  density: CardDensity;
-  priority?: boolean;
-}) {
-  return (
-    <Link
-      href={contentHref(item)}
-      className={cn(
-        "group relative flex h-full flex-col overflow-hidden rounded-2xl border border-border/70 bg-card shadow-[0_1px_0_rgba(0,0,0,0.02)] transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
-        "hover:-translate-y-0.5 hover:border-border hover:shadow-[0_18px_50px_-28px_rgba(0,0,0,0.45)] active:translate-y-0 active:scale-[0.985]"
-      )}
-    >
-      <div
-        className={cn(
-          "relative overflow-hidden bg-muted",
-          density === "compact" ? "aspect-[16/11]" : "aspect-[16/10]"
-        )}
-      >
-        {item.image ? (
-          <Image
-            src={item.image}
-            alt={item.title}
-            fill
-            priority={priority}
-            sizes="(max-width: 768px) 100vw, 50vw"
-            className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]"
-          />
-        ) : (
-          <div className="flex h-full items-center justify-center bg-gradient-to-br from-muted to-secondary">
-            <Layers className="size-8 opacity-40" />
-          </div>
-        )}
-        <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-card via-card/40 to-transparent" />
-        <div className="absolute top-3 left-3 flex items-center gap-2">
-          <Badge className="gap-1.5 border-0 bg-foreground text-background backdrop-blur-md">
-            <TypeIcon type="build" />
-            {contentTypeLabel("build")}
-          </Badge>
-          {item.featured ? (
-            <Badge
-              variant="secondary"
-              className="border-0 bg-background/80 backdrop-blur-md"
-            >
-              Featured
-            </Badge>
-          ) : null}
-        </div>
-      </div>
-
-      <div className="flex flex-1 flex-col gap-4 px-5 pt-1 pb-5">
-        <div className="space-y-2">
-          <h3
-            className={cn(
-              "font-heading text-balance",
-              density === "compact" ? "text-sm leading-snug" : "text-xl leading-snug"
-            )}
-          >
-            {item.title}
-          </h3>
-          {item.excerpt ? (
-            <p className="line-clamp-2 text-sm leading-relaxed text-muted-foreground">
-              {item.excerpt}
-            </p>
-          ) : null}
-        </div>
-
-        <div className="mt-auto flex items-center justify-between gap-3">
-          <Attribution item={item} date={item.publishedAt} />
-          {item.url ? (
-            <span className="inline-flex items-center gap-1 text-xs font-medium text-muted-foreground transition-colors group-hover:text-foreground">
-              Visit
-              <ArrowUpRight className="size-3.5" />
-            </span>
-          ) : null}
         </div>
       </div>
     </Link>
@@ -460,7 +395,7 @@ function NewsCard({
   density: CardDensity;
   priority?: boolean;
 }) {
-  // Quieter treatment — secondary to editorial, builds, and events.
+  // Quieter treatment — secondary to editorial and events.
   return (
     <Link
       href={contentHref(item)}

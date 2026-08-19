@@ -1,11 +1,17 @@
 import { ContentForm } from "@/components/admin/content-form";
 import { ContentList } from "@/components/admin/content-list";
 import { EventList } from "@/components/admin/event-list";
+import { GuestEditorForm } from "@/components/admin/guest-editor-form";
 import { ImportEventForm } from "@/components/admin/import-event-form";
 import { ImportRssPanel } from "@/components/admin/import-rss-panel";
 import { ImportUrlForm } from "@/components/admin/import-url-form";
 import { isDatabaseConfigured } from "@/db";
-import { getAllContent, getAllEvents, getMakers } from "@/lib/queries";
+import {
+  getAllContent,
+  getAllEvents,
+  getMakers,
+  getProfiles,
+} from "@/lib/queries";
 
 export const dynamic = "force-dynamic";
 
@@ -15,10 +21,11 @@ export const metadata = {
 };
 
 export default async function AdminPage() {
-  const [items, eventItems, makers] = await Promise.all([
+  const [items, eventItems, makers, profiles] = await Promise.all([
     getAllContent(),
     getAllEvents(),
     getMakers(),
+    getProfiles(),
   ]);
   const dbReady = isDatabaseConfigured();
 
@@ -53,6 +60,7 @@ export default async function AdminPage() {
         <ImportUrlForm disabled={!dbReady} />
         <ImportRssPanel disabled={!dbReady} />
         <ContentForm disabled={!dbReady} makers={makers} />
+        <GuestEditorForm disabled={!dbReady} profiles={profiles} />
 
         <section className="space-y-4">
           <div className="flex items-end justify-between gap-3">

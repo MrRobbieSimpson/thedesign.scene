@@ -33,7 +33,7 @@ export const metadata: Metadata = {
     template: "%s · thedesign.scene",
   },
   description:
-    "A calm curation of articles, thoughts, visuals, builds, news, posts, and design events.",
+    "A calm curation of writing, visuals, and design events — quality over quantity.",
 };
 
 export default function RootLayout({

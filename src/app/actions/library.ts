@@ -56,7 +56,7 @@ export async function getSavedContent() {
   const rows = await db.query.saves.findMany({
     where: eq(saves.profileId, profile.id),
     with: {
-      content: { with: { maker: true } },
+      content: { with: { maker: true, authorProfile: true } },
     },
     orderBy: [desc(saves.createdAt)],
   });
@@ -107,7 +107,7 @@ export async function getSceneById(id: string) {
       items: {
         orderBy: [asc(sceneItems.position)],
         with: {
-          content: { with: { maker: true } },
+          content: { with: { maker: true, authorProfile: true } },
         },
       },
     },

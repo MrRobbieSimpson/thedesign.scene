@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { CONTENT_TYPES, type Maker } from "@/db/schema";
+import { PUBLIC_CONTENT_TYPES, type Maker } from "@/db/schema";
 import { contentTypeLabel } from "@/lib/format";
 
 export function ContentForm({
@@ -21,6 +21,7 @@ export function ContentForm({
   const [error, setError] = useState(false);
   const [pending, startTransition] = useTransition();
   const [type, setType] = useState<string>("article");
+  const [featured, setFeatured] = useState(false);
 
   function onSubmit(formData: FormData) {
     setMessage(null);
@@ -34,6 +35,7 @@ export function ContentForm({
         ) as HTMLFormElement | null;
         form?.reset();
         setType("article");
+        setFeatured(false);
       }
     });
   }
@@ -74,7 +76,7 @@ export function ContentForm({
             onChange={(event) => setType(event.target.value)}
             className="h-8 w-full rounded-lg border border-input bg-transparent px-2.5 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 dark:bg-input/30"
           >
-            {CONTENT_TYPES.map((value) => (
+            {PUBLIC_CONTENT_TYPES.map((value) => (
               <option key={value} value={value}>
                 {contentTypeLabel(value)}
               </option>
@@ -196,11 +198,27 @@ export function ContentForm({
           <input
             type="checkbox"
             name="featured"
+            checked={featured}
+            onChange={(event) => setFeatured(event.target.checked)}
             disabled={disabled || pending}
             className="size-4 rounded border-input"
           />
-          Featured
+          Editor’s pick
         </label>
+
+        {featured ? (
+          <div className="space-y-2 sm:col-span-2">
+            <Label htmlFor="editorNote">Why this is here</Label>
+            <Textarea
+              id="editorNote"
+              name="editorNote"
+              disabled={disabled || pending}
+              placeholder="One or two calm sentences on why this belongs in the scene…"
+              rows={2}
+              maxLength={280}
+            />
+          </div>
+        ) : null}
       </div>
 
       <div className="flex items-center justify-between gap-3">

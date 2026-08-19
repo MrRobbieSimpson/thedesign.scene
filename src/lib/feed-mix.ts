@@ -5,7 +5,6 @@ import type { ContentWithMaker } from "@/lib/demo-data";
 export const FEED_FILTERS = [
   "all",
   "articles",
-  "builds",
   "visuals",
   "events",
 ] as const;
@@ -35,18 +34,16 @@ const MIX_TARGET = 22;
 
 /**
  * Absolute caps for the curated “All” feed (after featured picks).
- * Hierarchy: Featured → Articles/Thoughts → Builds → Visuals → Events → News.
- * Average X posts are excluded unless featured.
+ * Hierarchy: Featured → Articles/Thoughts → Visuals → Events → News.
+ * Builds retired (retyped as visuals). Average X posts excluded unless featured.
  */
 const CAPS = {
   featuredEditorial: 6,
   featuredOther: 2,
-  editorial: 10,
-  builds: 4,
-  visuals: 4,
+  editorial: 12,
+  visuals: 5,
   events: 3,
   news: 2,
-  posts: 0, // only via featured
 } as const;
 
 function asTime(value: Date | string | null | undefined) {
@@ -69,17 +66,26 @@ function hasSubstance(item: ContentWithMaker) {
   return excerpt.length >= 80 || Boolean(item.body?.trim());
 }
 
+/** Treat legacy builds as visuals in ranking. */
+function effectiveType(item: ContentWithMaker): ContentType {
+  return item.type === "build" ? "visual" : item.type;
+}
+
 function sortQuality(a: ContentWithMaker, b: ContentWithMaker) {
   if (a.featured !== b.featured) return a.featured ? -1 : 1;
   const aScore =
-    (hasSubstance(a) ? 2 : 0) + (hasImage(a) ? 1 : 0) + (a.readingTimeMinutes ? 1 : 0);
+    (hasSubstance(a) ? 2 : 0) +
+    (hasImage(a) ? 1 : 0) +
+    (a.readingTimeMinutes ? 1 : 0);
   const bScore =
-    (hasSubstance(b) ? 2 : 0) + (hasImage(b) ? 1 : 0) + (b.readingTimeMinutes ? 1 : 0);
+    (hasSubstance(b) ? 2 : 0) +
+    (hasImage(b) ? 1 : 0) +
+    (b.readingTimeMinutes ? 1 : 0);
   if (aScore !== bScore) return bScore - aScore;
   return publishedAtMs(b) - publishedAtMs(a);
 }
 
-function takeByType(
+function takeByTypes(
   pool: ContentWithMaker[],
   types: ContentType[],
   count: number,
@@ -87,7 +93,7 @@ function takeByType(
 ) {
   const allowed = new Set(types);
   return pool
-    .filter((item) => allowed.has(item.type))
+    .filter((item) => allowed.has(effectiveType(item)))
     .filter((item) => (predicate ? predicate(item) : true))
     .sort(sortQuality)
     .slice(0, Math.max(0, count));
@@ -119,18 +125,15 @@ function toEventItems(items: Event[]): FeedEventItem[] {
 
 /**
  * Editorial-weighted interleave: writing appears more often than the rest.
- * Pattern roughly: E B E V E Ev E N …
  */
 function interleaveEditorialFirst(buckets: {
   editorial: FeedItem[];
-  builds: FeedItem[];
   visuals: FeedItem[];
   events: FeedItem[];
   news: FeedItem[];
 }): FeedItem[] {
   const q = {
     editorial: [...buckets.editorial],
-    builds: [...buckets.builds],
     visuals: [...buckets.visuals],
     events: [...buckets.events],
     news: [...buckets.news],
@@ -139,13 +142,12 @@ function interleaveEditorialFirst(buckets: {
   const out: FeedItem[] = [];
   const pattern = [
     "editorial",
-    "builds",
-    "editorial",
     "visuals",
     "editorial",
     "events",
     "editorial",
     "news",
+    "editorial",
   ] as const;
 
   let guard = 0;
@@ -161,8 +163,7 @@ function interleaveEditorialFirst(buckets: {
     if (!progressed) break;
   }
 
-  // Drain leftovers in priority order
-  for (const key of ["editorial", "builds", "visuals", "events", "news"] as const) {
+  for (const key of ["editorial", "visuals", "events", "news"] as const) {
     out.push(...q[key]);
   }
 
@@ -171,14 +172,13 @@ function interleaveEditorialFirst(buckets: {
 
 /**
  * Premium home mix — tight, featured-led, writing-first.
- * Generic X posts are excluded unless explicitly featured.
  */
 export function curateHomeFeed(
   content: ContentWithMaker[],
   events: Event[],
   target = MIX_TARGET
 ): FeedItem[] {
-  const featuredEditorial = takeByType(
+  const featuredEditorial = takeByTypes(
     content.filter((item) => item.featured),
     ["article", "thought"],
     CAPS.featuredEditorial
@@ -189,13 +189,11 @@ export function curateHomeFeed(
       (item) =>
         item.featured &&
         !featuredEditorial.some((f) => f.id === item.id) &&
-        // Still allow a featured build/visual/news — never dump average posts
-        item.type !== "post"
+        effectiveType(item) !== "post"
     )
     .sort(sortQuality)
     .slice(0, CAPS.featuredOther);
 
-  // Exception: one exceptional featured X thought/post max
   const featuredPost = content
     .filter((item) => item.featured && item.type === "post")
     .sort(sortQuality)
@@ -206,7 +204,7 @@ export function curateHomeFeed(
   );
   const remaining = content.filter((item) => !used.has(item.id));
 
-  const editorial = takeByType(
+  const editorial = takeByTypes(
     remaining,
     ["article", "thought"],
     CAPS.editorial,
@@ -214,23 +212,15 @@ export function curateHomeFeed(
   );
   editorial.forEach((item) => used.add(item.id));
 
-  const builds = takeByType(
+  const visuals = takeByTypes(
     remaining.filter((item) => !used.has(item.id)),
-    ["build"],
-    CAPS.builds
-  );
-  builds.forEach((item) => used.add(item.id));
-
-  const visuals = takeByType(
-    remaining.filter((item) => !used.has(item.id)),
-    ["visual"],
+    ["visual", "build"],
     CAPS.visuals,
     (item) => hasImage(item)
   );
   visuals.forEach((item) => used.add(item.id));
 
-  // News: only with substance — never fill the feed with link dumps
-  const news = takeByType(
+  const news = takeByTypes(
     remaining.filter((item) => !used.has(item.id)),
     ["news"],
     CAPS.news,
@@ -241,7 +231,6 @@ export function curateHomeFeed(
 
   const mixed = interleaveEditorialFirst({
     editorial: toContentItems(editorial),
-    builds: toContentItems(builds),
     visuals: toContentItems(visuals),
     events: toEventItems(eventPicks),
     news: toContentItems(news),
@@ -265,15 +254,13 @@ export function filterFeedItems(
       return curateHomeFeed(content, events);
     case "articles":
       return toContentItems(
-        takeByType(content, ["article", "thought"], 28, (item) =>
+        takeByTypes(content, ["article", "thought"], 28, (item) =>
           Boolean(item.featured || hasSubstance(item))
         )
       );
-    case "builds":
-      return toContentItems(takeByType(content, ["build"], 24));
     case "visuals":
       return toContentItems(
-        takeByType(content, ["visual"], 24, (item) => hasImage(item))
+        takeByTypes(content, ["visual", "build"], 24, (item) => hasImage(item))
       );
     case "events":
       return toEventItems(upcomingEvents(events, 24));

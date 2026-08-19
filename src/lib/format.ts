@@ -30,7 +30,7 @@ export function contentTypeLabel(type: ContentType) {
     case "visual":
       return "Visual";
     case "build":
-      return "Build";
+      return "Visual";
     case "news":
       return "News";
     case "post":

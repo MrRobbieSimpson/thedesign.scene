@@ -97,7 +97,6 @@ function shouldSpan(item: FeedItem, layout: FeedLayout, index: number) {
   if (item.item.type === "thought" && (item.item.featured || index < 4)) {
     return true;
   }
-  if (item.item.type === "build" && item.item.featured) return true;
   return false;
 }
 
@@ -115,7 +114,7 @@ function FeedGridLayout({
           Nothing selected yet
         </p>
         <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
-          Editor’s picks, writing, builds, and events will appear here.
+          Editor’s picks, writing, visuals, and events will appear here.
         </p>
       </div>
     );

@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { CONTENT_TYPES } from "@/db/schema";
+import { PUBLIC_CONTENT_TYPES } from "@/db/schema";
 import type { ResolvedImport } from "@/lib/ingest/types";
 import { contentTypeLabel } from "@/lib/format";
 
@@ -103,7 +103,7 @@ export function ImportUrlForm({ disabled }: { disabled?: boolean }) {
                 disabled={pending}
                 className="h-8 w-full rounded-lg border border-input bg-transparent px-2.5 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 dark:bg-input/30"
               >
-                {CONTENT_TYPES.map((type) => (
+                {PUBLIC_CONTENT_TYPES.map((type) => (
                   <option key={type} value={type}>
                     {contentTypeLabel(type)}
                   </option>

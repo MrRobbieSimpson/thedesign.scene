@@ -4,6 +4,8 @@ import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 
 import { ArticleBody } from "@/components/content/article-body";
+import { EditorNote } from "@/components/content/editor-note";
+import { FocusToggle } from "@/components/reading/focus-toggle";
 import { SaveButton } from "@/components/save-button";
 import { Badge } from "@/components/ui/badge";
 import { contentTypeLabel, formatPublishedDate } from "@/lib/format";
@@ -13,6 +15,7 @@ export const dynamic = "force-dynamic";
 
 type ArticlePageProps = {
   params: Promise<{ slug: string }>;
+  searchParams: Promise<{ published?: string }>;
 };
 
 export async function generateMetadata({ params }: ArticlePageProps) {
@@ -25,23 +28,84 @@ export async function generateMetadata({ params }: ArticlePageProps) {
   };
 }
 
-export default async function ArticlePage({ params }: ArticlePageProps) {
+export default async function ArticlePage({
+  params,
+  searchParams,
+}: ArticlePageProps) {
   const { slug } = await params;
+  const { published } = await searchParams;
   const item = await getContentBySlug(slug);
 
   if (!item || item.type !== "article" || item.status !== "published") {
     notFound();
   }
 
+  const profile = item.authorProfile;
+  const maker = item.maker;
+  const authorName =
+    maker?.name ??
+    profile?.displayName ??
+    (profile?.handle ? `@${profile.handle}` : null) ??
+    item.authorName ??
+    (item.authorHandle ? `@${item.authorHandle}` : null);
+  const authorHandle = maker?.handle ?? profile?.handle ?? item.authorHandle;
+  const authorAvatar = maker?.avatar ?? profile?.avatarUrl ?? null;
+  const authorHref = maker?.handle
+    ? `/maker/${maker.handle}`
+    : profile?.handle
+      ? `/u/${profile.handle}`
+      : null;
+  const authorBio = maker?.bio ?? profile?.bio ?? null;
+  const portfolioHandle = profile?.handle ?? null;
+  const justPublished = published === "1";
+
   return (
     <article className="mx-auto max-w-[42rem] px-6 py-12 sm:py-16">
-      <Link
-        href="/"
-        className="mb-10 inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
+      {justPublished ? (
+        <div className="mb-8 rounded-2xl border border-foreground/15 bg-muted/30 px-5 py-4">
+          <p className="font-heading text-lg tracking-tight">Published</p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            It’s live on the feed
+            {portfolioHandle ? (
+              <>
+                {" "}
+                and on your{" "}
+                <Link
+                  href={`/u/${portfolioHandle}`}
+                  className="font-medium text-foreground underline-offset-4 hover:underline"
+                >
+                  portfolio
+                </Link>
+              </>
+            ) : null}
+            .
+          </p>
+        </div>
+      ) : null}
+
+      <div
+        className="mb-10 flex flex-wrap items-center justify-between gap-3"
+        data-hide-on-focus
       >
-        <ArrowLeft className="size-4" />
-        Back to feed
-      </Link>
+        <Link
+          href="/"
+          className="inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
+        >
+          <ArrowLeft className="size-4" />
+          Back to feed
+        </Link>
+        <div className="flex items-center gap-2">
+          <FocusToggle />
+          <a
+            href={`https://x.com/intent/tweet?text=${encodeURIComponent(item.title)}&url=${encodeURIComponent(`https://thedesign-scene.vercel.app/article/${item.slug}`)}`}
+            target="_blank"
+            rel="noreferrer"
+            className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+          >
+            Share
+          </a>
+        </div>
+      </div>
 
       <header className="space-y-6">
         <div className="flex flex-wrap items-center gap-3">
@@ -69,28 +133,60 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
           </p>
         ) : null}
 
+        {item.featured && item.editorNote ? (
+          <EditorNote note={item.editorNote} />
+        ) : null}
+
         <div className="flex flex-wrap items-center justify-between gap-4 border-y border-border/60 py-5">
-          {item.maker ? (
-            <Link
-              href={`/maker/${item.maker.handle}`}
-              className="flex items-center gap-3 transition-opacity hover:opacity-80"
-            >
-              {item.maker.avatar ? (
-                <Image
-                  src={item.maker.avatar}
-                  alt={item.maker.name}
-                  width={44}
-                  height={44}
-                  className="size-11 rounded-full object-cover ring-1 ring-border"
-                />
-              ) : null}
-              <div>
-                <p className="text-sm font-medium">{item.maker.name}</p>
-                <p className="text-sm text-muted-foreground">
-                  @{item.maker.handle}
-                </p>
+          {authorName ? (
+            authorHref ? (
+              <Link
+                href={authorHref}
+                className="flex items-center gap-3 transition-opacity hover:opacity-80"
+              >
+                {authorAvatar ? (
+                  <Image
+                    src={authorAvatar}
+                    alt={authorName}
+                    width={44}
+                    height={44}
+                    className="size-11 rounded-full object-cover ring-1 ring-border"
+                  />
+                ) : (
+                  <span className="flex size-11 items-center justify-center rounded-full bg-muted text-sm font-medium">
+                    {authorName.replace("@", "").charAt(0).toUpperCase()}
+                  </span>
+                )}
+                <div>
+                  <p className="text-sm font-medium">{authorName}</p>
+                  {authorHandle ? (
+                    <p className="text-sm text-muted-foreground">
+                      @{authorHandle}
+                    </p>
+                  ) : null}
+                </div>
+              </Link>
+            ) : (
+              <div className="flex items-center gap-3">
+                {authorAvatar ? (
+                  <Image
+                    src={authorAvatar}
+                    alt={authorName}
+                    width={44}
+                    height={44}
+                    className="size-11 rounded-full object-cover ring-1 ring-border"
+                  />
+                ) : null}
+                <div>
+                  <p className="text-sm font-medium">{authorName}</p>
+                  {authorHandle ? (
+                    <p className="text-sm text-muted-foreground">
+                      @{authorHandle}
+                    </p>
+                  ) : null}
+                </div>
               </div>
-            </Link>
+            )
           ) : (
             <div />
           )}
@@ -117,20 +213,24 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
         </div>
       ) : null}
 
-      {item.maker?.bio ? (
+      {authorBio && authorName ? (
         <aside className="mt-16 rounded-2xl border border-border/70 bg-muted/30 p-6">
           <p className="text-xs font-medium tracking-[0.14em] text-muted-foreground uppercase">
             About the author
           </p>
           <div className="mt-4 space-y-1">
-            <Link
-              href={`/maker/${item.maker.handle}`}
-              className="font-medium hover:underline"
-            >
-              {item.maker.name}
-            </Link>
+            {authorHref ? (
+              <Link
+                href={authorHref}
+                className="font-medium hover:underline"
+              >
+                {authorName}
+              </Link>
+            ) : (
+              <p className="font-medium">{authorName}</p>
+            )}
             <p className="text-sm leading-relaxed text-muted-foreground">
-              {item.maker.bio}
+              {authorBio}
             </p>
           </div>
         </aside>

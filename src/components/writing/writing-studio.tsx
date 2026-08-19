@@ -1,13 +1,20 @@
 "use client";
 
-import { useEffect, useRef, useState, useTransition } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Check, Loader2, X } from "lucide-react";
+import { Check, Eye, Loader2, PenLine, X } from "lucide-react";
 
 import { saveArticleDraft } from "@/app/actions/write";
+import { ArticleBody } from "@/components/content/article-body";
 import { useWriting } from "@/components/writing/writing-context";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+
+function estimateMinutes(body: string) {
+  const words = body.trim().split(/\s+/).filter(Boolean).length;
+  return Math.max(1, Math.round(words / 200));
+}
 
 export function WritingStudio() {
   const { open, visible, draft, setDraft, closeWriter } = useWriting();
@@ -17,6 +24,16 @@ export function WritingStudio() {
   const [status, setStatus] = useState<"idle" | "saved" | "error">("idle");
   const [message, setMessage] = useState<string | null>(null);
   const [draftId, setDraftId] = useState<string | undefined>(draft.id);
+  const [preview, setPreview] = useState(false);
+  const [excerpt, setExcerpt] = useState("");
+  const [cover, setCover] = useState("");
+  const [dirty, setDirty] = useState(false);
+
+  const minutes = useMemo(() => estimateMinutes(draft.body), [draft.body]);
+  const wordCount = useMemo(
+    () => draft.body.trim().split(/\s+/).filter(Boolean).length,
+    [draft.body]
+  );
 
   useEffect(() => {
     setDraftId(draft.id);
@@ -30,7 +47,47 @@ export function WritingStudio() {
     return () => window.clearTimeout(timer);
   }, [visible]);
 
+  // Debounced autosave for drafts with content
+  useEffect(() => {
+    if (!open || !dirty || preview) return;
+    if (!draft.title.trim() && !draft.body.trim()) return;
+    const timer = window.setTimeout(() => {
+      startTransition(async () => {
+        const result = await saveArticleDraft({
+          id: draftId,
+          title: draft.title,
+          body: draft.body,
+          excerpt: excerpt || undefined,
+          image: cover || undefined,
+          status: "draft",
+        });
+        if (result.ok) {
+          setDraftId(result.id);
+          setDraft({ ...draft, id: result.id });
+          setStatus("saved");
+          setMessage("Draft saved");
+          setDirty(false);
+        }
+      });
+    }, 2500);
+    return () => window.clearTimeout(timer);
+  }, [draft, draftId, dirty, excerpt, cover, open, preview, setDraft]);
+
   if (!open) return null;
+
+  function updateDraft(next: Partial<{ title: string; body: string }>) {
+    setDraft({ ...draft, ...next });
+    setDirty(true);
+    setStatus("idle");
+  }
+
+  function requestClose() {
+    if (dirty && (draft.title.trim() || draft.body.trim())) {
+      const ok = window.confirm("Discard unsaved changes?");
+      if (!ok) return;
+    }
+    closeWriter();
+  }
 
   function persist(nextStatus: "draft" | "published") {
     setStatus("idle");
@@ -40,6 +97,8 @@ export function WritingStudio() {
         id: draftId,
         title: draft.title,
         body: draft.body,
+        excerpt: excerpt || undefined,
+        image: cover || undefined,
         status: nextStatus,
       });
       if (!result.ok) {
@@ -49,13 +108,12 @@ export function WritingStudio() {
       }
       setDraftId(result.id);
       setDraft({ ...draft, id: result.id });
+      setDirty(false);
       setStatus("saved");
-      setMessage(
-        nextStatus === "published" ? "Published." : "Draft saved."
-      );
+      setMessage(nextStatus === "published" ? "Published." : "Draft saved.");
       if (nextStatus === "published" && result.slug) {
         closeWriter();
-        router.push(`/article/${result.slug}`);
+        router.push(`/article/${result.slug}?published=1`);
         router.refresh();
       }
     });
@@ -74,7 +132,6 @@ export function WritingStudio() {
       aria-modal="true"
       aria-label="Writing studio"
     >
-      {/* Dimmed stage — suggests the site falling away */}
       <div
         className={cn(
           "pointer-events-none absolute inset-0 bg-foreground/[0.03] transition-opacity duration-500",
@@ -91,7 +148,7 @@ export function WritingStudio() {
             : "translate-y-6 scale-[0.97] opacity-0"
         )}
       >
-        <div className="mb-4 flex items-center justify-between gap-3">
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-3 text-sm text-muted-foreground">
             <span className="font-medium tracking-tight text-foreground/80">
               Writing
@@ -110,16 +167,33 @@ export function WritingStudio() {
             ) : status === "error" ? (
               <span className="text-destructive">{message}</span>
             ) : (
-              <span>Draft</span>
+              <span>
+                {wordCount} words · ~{minutes} min
+              </span>
             )}
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <Button
               type="button"
               variant="ghost"
               size="sm"
-              onClick={closeWriter}
+              onClick={() => setPreview((value) => !value)}
+              disabled={pending}
+              className="gap-1.5"
+            >
+              {preview ? (
+                <PenLine className="size-3.5" />
+              ) : (
+                <Eye className="size-3.5" />
+              )}
+              {preview ? "Edit" : "Preview"}
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={requestClose}
               disabled={pending}
             >
               <X className="size-4" />
@@ -152,37 +226,83 @@ export function WritingStudio() {
           )}
         >
           <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-6 py-8 sm:px-12 sm:py-12">
-            <textarea
-              ref={titleRef}
-              value={draft.title}
-              onChange={(event) =>
-                setDraft({ ...draft, title: event.target.value })
-              }
-              placeholder="Title"
-              rows={1}
-              className="font-heading mb-6 w-full resize-none border-0 bg-transparent text-3xl leading-tight tracking-tight text-foreground outline-none placeholder:text-muted-foreground/40 sm:text-4xl"
-              onInput={(event) => {
-                const el = event.currentTarget;
-                el.style.height = "auto";
-                el.style.height = `${el.scrollHeight}px`;
-              }}
-            />
-            <textarea
-              value={draft.body}
-              onChange={(event) =>
-                setDraft({ ...draft, body: event.target.value })
-              }
-              placeholder="Start writing… Markdown welcome."
-              className="min-h-[50vh] w-full flex-1 resize-none border-0 bg-transparent text-[1.125rem] leading-[1.8] text-foreground/90 outline-none placeholder:text-muted-foreground/35"
-            />
+            {preview ? (
+              <div className="space-y-6">
+                <h1 className="font-heading text-3xl leading-tight tracking-tight sm:text-4xl">
+                  {draft.title.trim() || "Untitled"}
+                </h1>
+                {(excerpt || draft.body) && (
+                  <p className="text-lg leading-relaxed text-muted-foreground">
+                    {excerpt ||
+                      draft.body
+                        .replace(/[#>*_`~\-\[\]\(\)!]/g, " ")
+                        .split(/\s+/)
+                        .filter(Boolean)
+                        .slice(0, 40)
+                        .join(" ")}
+                  </p>
+                )}
+                {draft.body ? (
+                  <ArticleBody markdown={draft.body} />
+                ) : (
+                  <p className="text-muted-foreground">Nothing to preview yet.</p>
+                )}
+              </div>
+            ) : (
+              <>
+                <textarea
+                  ref={titleRef}
+                  value={draft.title}
+                  onChange={(event) =>
+                    updateDraft({ title: event.target.value })
+                  }
+                  placeholder="Title"
+                  rows={1}
+                  className="font-heading mb-4 w-full resize-none border-0 bg-transparent text-3xl leading-tight tracking-tight text-foreground outline-none placeholder:text-muted-foreground/40 sm:text-4xl"
+                  onInput={(event) => {
+                    const el = event.currentTarget;
+                    el.style.height = "auto";
+                    el.style.height = `${el.scrollHeight}px`;
+                  }}
+                />
+                <div className="mb-6 space-y-3">
+                  <Input
+                    value={excerpt}
+                    onChange={(event) => {
+                      setExcerpt(event.target.value);
+                      setDirty(true);
+                    }}
+                    placeholder="Optional deck / excerpt"
+                    className="border-0 bg-muted/30"
+                  />
+                  <Input
+                    value={cover}
+                    onChange={(event) => {
+                      setCover(event.target.value);
+                      setDirty(true);
+                    }}
+                    placeholder="Optional cover image URL"
+                    className="border-0 bg-muted/30"
+                  />
+                </div>
+                <textarea
+                  value={draft.body}
+                  onChange={(event) =>
+                    updateDraft({ body: event.target.value })
+                  }
+                  placeholder="Start writing… Markdown welcome."
+                  className="min-h-[45vh] w-full flex-1 resize-none border-0 bg-transparent text-[1.125rem] leading-[1.8] text-foreground/90 outline-none placeholder:text-muted-foreground/35"
+                />
+              </>
+            )}
           </div>
 
           <div className="flex items-center justify-between border-t border-border/60 px-6 py-3 text-xs text-muted-foreground sm:px-12">
-            <span>Markdown supported · Esc to close</span>
+            <span>Autosaves · Markdown · Esc to close</span>
             <button
               type="button"
               className="transition-colors hover:text-foreground"
-              onClick={closeWriter}
+              onClick={requestClose}
             >
               Back to site
             </button>

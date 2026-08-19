@@ -32,7 +32,7 @@ export default async function ScenesPage() {
         </p>
         <h1 className="font-heading text-4xl tracking-tight">Scenes</h1>
         <p className="max-w-xl text-muted-foreground">
-          Personal collections — group articles, visuals, and builds around a
+          Personal collections — group articles and visuals around a
           theme.
         </p>
       </section>

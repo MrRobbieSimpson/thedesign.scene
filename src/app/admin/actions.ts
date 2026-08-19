@@ -8,6 +8,7 @@ import {
   content,
   events,
   isContentType,
+  isPublicContentType,
   type ContentStatus,
   type ContentType,
   type EventStatus,
@@ -70,11 +71,16 @@ export async function createContent(formData: FormData): Promise<ActionResult> {
     return { ok: false, message: "Title is required." };
   }
 
-  if (!isContentType(typeRaw)) {
+  if (!isPublicContentType(typeRaw) && !isContentType(typeRaw)) {
+    return { ok: false, message: "Invalid content type." };
+  }
+  if (typeRaw === "build" || !isPublicContentType(typeRaw)) {
     return { ok: false, message: "Invalid content type." };
   }
 
   const type = typeRaw as ContentType;
+  const editorNote =
+    String(formData.get("editorNote") ?? "").trim().slice(0, 280) || null;
   const publishedAt = status === "published" ? new Date() : null;
 
   if (type === "article") {
@@ -99,6 +105,7 @@ export async function createContent(formData: FormData): Promise<ActionResult> {
       image,
       status,
       featured,
+      editorNote: featured ? editorNote : null,
       makerId,
       publishedAt,
       sourcePlatform,

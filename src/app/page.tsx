@@ -2,8 +2,10 @@ import { Suspense } from "react";
 
 import { FeedExplorer } from "@/components/content/feed-explorer";
 import { FeedFilters } from "@/components/content/feed-filters";
+import { GuestEditorStrip } from "@/components/home/guest-editor-strip";
 import { filterFeedItems, isFeedFilter, type FeedFilter } from "@/lib/feed-mix";
 import {
+  getCurrentGuestEditor,
   getPublishedContentPool,
   getPublishedEvents,
   getRegisteredDesignerCount,
@@ -21,10 +23,11 @@ export default async function HomePage({ searchParams }: HomeProps) {
   const rawType = params.type ?? "all";
   const filter: FeedFilter = isFeedFilter(rawType) ? rawType : "all";
 
-  const [content, events, designers] = await Promise.all([
+  const [content, events, designers, guest] = await Promise.all([
     getPublishedContentPool(),
     getPublishedEvents(),
     getRegisteredDesignerCount(),
+    getCurrentGuestEditor(),
   ]);
 
   const items = filterFeedItems(filter, content, events);
@@ -49,8 +52,8 @@ export default async function HomePage({ searchParams }: HomeProps) {
           Design worth sitting with.
         </h1>
         <p className="text-base leading-relaxed text-muted-foreground sm:text-lg">
-          A small, considered mix — writing first, then builds, visuals, and
-          events. Not a firehose. Quality over quantity.
+          A small, considered mix — writing first, then visuals and events.
+          Not a firehose. Quality over quantity.
         </p>
         <p className="text-sm text-muted-foreground/80">
           <span className="font-medium tabular-nums text-foreground/90">
@@ -74,6 +77,8 @@ export default async function HomePage({ searchParams }: HomeProps) {
           ) : null}
         </p>
       </section>
+
+      {guest ? <GuestEditorStrip guest={guest} /> : null}
 
       <FeedExplorer
         key={filter}

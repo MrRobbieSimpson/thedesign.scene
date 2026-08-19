@@ -12,11 +12,21 @@ import {
   uuid,
 } from "drizzle-orm/pg-core";
 
+/** DB enum values — includes legacy `build` (retyped to visual; kept for PG enum stability). */
 export const CONTENT_TYPES = [
   "article",
   "thought",
   "visual",
   "build",
+  "news",
+  "post",
+] as const;
+
+/** Types creatable / filterable in the product UI (no dedicated Builds lane). */
+export const PUBLIC_CONTENT_TYPES = [
+  "article",
+  "thought",
+  "visual",
   "news",
   "post",
 ] as const;
@@ -38,6 +48,11 @@ export const eventStatusEnum = pgEnum("event_status", [
   "draft",
   "published",
   "cancelled",
+]);
+
+export const subscriberStatusEnum = pgEnum("subscriber_status", [
+  "active",
+  "unsubscribed",
 ]);
 
 export const makers = pgTable("makers", {
@@ -62,6 +77,13 @@ export const profiles = pgTable("profiles", {
   displayName: text("display_name"),
   handle: text("handle").unique(),
   avatarUrl: text("avatar_url"),
+  bio: text("bio"),
+  website: text("website"),
+  xHandle: text("x_handle"),
+  location: text("location"),
+  makerId: uuid("maker_id").references(() => makers.id, {
+    onDelete: "set null",
+  }),
   createdAt: timestamp("created_at", { withTimezone: true })
     .defaultNow()
     .notNull(),
@@ -85,6 +107,8 @@ export const content = pgTable(
     image: text("image"),
     status: contentStatusEnum("status").notNull().default("draft"),
     featured: boolean("featured").notNull().default(false),
+    /** Short curation note shown on editor picks (“Why this is here”). */
+    editorNote: text("editor_note"),
     makerId: uuid("maker_id").references(() => makers.id, {
       onDelete: "set null",
     }),
@@ -212,8 +236,41 @@ export const sceneItems = pgTable(
   ]
 );
 
-export const makersRelations = relations(makers, ({ many }) => ({
+export const guestTerms = pgTable("guest_terms", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  profileId: uuid("profile_id")
+    .notNull()
+    .references(() => profiles.id, { onDelete: "cascade" }),
+  label: text("label").notNull(),
+  intro: text("intro"),
+  startsAt: timestamp("starts_at", { withTimezone: true }).notNull(),
+  endsAt: timestamp("ends_at", { withTimezone: true }).notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+});
+
+export const newsletterSubscribers = pgTable(
+  "newsletter_subscribers",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    email: text("email").notNull(),
+    status: subscriberStatusEnum("status").notNull().default("active"),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    confirmedAt: timestamp("confirmed_at", { withTimezone: true }),
+    unsubscribedAt: timestamp("unsubscribed_at", { withTimezone: true }),
+  },
+  (table) => [uniqueIndex("newsletter_subscribers_email_uidx").on(table.email)]
+);
+
+export const makersRelations = relations(makers, ({ many, one }) => ({
   content: many(content),
+  profile: one(profiles, {
+    fields: [makers.id],
+    references: [profiles.makerId],
+  }),
 }));
 
 export const contentRelations = relations(content, ({ one, many }) => ({
@@ -229,10 +286,15 @@ export const contentRelations = relations(content, ({ one, many }) => ({
   sceneItems: many(sceneItems),
 }));
 
-export const profilesRelations = relations(profiles, ({ many }) => ({
+export const profilesRelations = relations(profiles, ({ many, one }) => ({
   saves: many(saves),
   scenes: many(scenes),
   articles: many(content),
+  guestTerms: many(guestTerms),
+  maker: one(makers, {
+    fields: [profiles.makerId],
+    references: [makers.id],
+  }),
 }));
 
 export const savesRelations = relations(saves, ({ one }) => ({
@@ -265,6 +327,13 @@ export const sceneItemsRelations = relations(sceneItems, ({ one }) => ({
   }),
 }));
 
+export const guestTermsRelations = relations(guestTerms, ({ one }) => ({
+  profile: one(profiles, {
+    fields: [guestTerms.profileId],
+    references: [profiles.id],
+  }),
+}));
+
 export type Maker = typeof makers.$inferSelect;
 export type NewMaker = typeof makers.$inferInsert;
 export type Content = typeof content.$inferSelect;
@@ -273,11 +342,18 @@ export type Event = typeof events.$inferSelect;
 export type NewEvent = typeof events.$inferInsert;
 export type Profile = typeof profiles.$inferSelect;
 export type Scene = typeof scenes.$inferSelect;
+export type GuestTerm = typeof guestTerms.$inferSelect;
+export type NewsletterSubscriber = typeof newsletterSubscribers.$inferSelect;
 export type ContentType = (typeof CONTENT_TYPES)[number];
+export type PublicContentType = (typeof PUBLIC_CONTENT_TYPES)[number];
 export type ContentStatus = (typeof contentStatusEnum.enumValues)[number];
 export type EventType = (typeof eventTypeEnum.enumValues)[number];
 export type EventStatus = (typeof eventStatusEnum.enumValues)[number];
 
 export function isContentType(value: string): value is ContentType {
   return (CONTENT_TYPES as readonly string[]).includes(value);
+}
+
+export function isPublicContentType(value: string): value is PublicContentType {
+  return (PUBLIC_CONTENT_TYPES as readonly string[]).includes(value);
 }

@@ -9,7 +9,6 @@ import { FEED_FILTERS, isFeedFilter, type FeedFilter } from "@/lib/feed-mix";
 const labels: Record<FeedFilter, string> = {
   all: "All",
   articles: "Articles",
-  builds: "Builds",
   visuals: "Visuals",
   events: "Events",
 };

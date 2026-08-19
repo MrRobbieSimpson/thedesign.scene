@@ -249,6 +249,23 @@
   animation: page-enter 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
+/* Calm reading mode — hide chrome, widen attention */
+html.reading-focus header,
+html.reading-focus footer,
+html.reading-focus [data-hide-on-focus] {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.35s ease;
+}
+
+html.reading-focus body {
+  background: var(--background);
+}
+
+html.reading-focus main {
+  padding-top: 2rem;
+}
+
 /* Theme toggle: calm crossfade when View Transitions API is available */
 @supports (view-transition-name: none) {
   ::view-transition-old(root),

@@ -9,6 +9,8 @@ const nextConfig: NextConfig = {
     formats: ["image/avif", "image/webp"],
     minimumCacheTTL: 60 * 60 * 24 * 30,
     remotePatterns: [
+      { protocol: "https", hostname: "img.clerk.com" },
+      { protocol: "https", hostname: "images.clerk.dev" },
       { protocol: "https", hostname: "images.unsplash.com" },
       { protocol: "https", hostname: "static.dezeen.com" },
       { protocol: "https", hostname: "substackcdn.com" },

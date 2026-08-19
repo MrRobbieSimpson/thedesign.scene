@@ -1,13 +1,16 @@
 import { unstable_cache } from "next/cache";
-import { and, eq, sql } from "drizzle-orm";
+import { and, eq, gte, lte, sql } from "drizzle-orm";
 
 import {
   content,
   events,
+  guestTerms,
   makers,
   profiles,
   type ContentType,
   type Event,
+  type GuestTerm,
+  type Profile,
 } from "@/db/schema";
 import { db, isDatabaseConfigured } from "@/db";
 import {
@@ -16,6 +19,8 @@ import {
   filterDemoContent,
   type ContentWithMaker,
 } from "@/lib/demo-data";
+
+export type GuestTermWithProfile = GuestTerm & { profile: Profile };
 
 const FEED_POOL_LIMIT = 120;
 const FEED_REVALIDATE_SECONDS = 60;
@@ -62,7 +67,7 @@ async function fetchPublishedContent(
 
   const rows = await db.query.content.findMany({
     where: and(...conditions),
-    with: { maker: true },
+    with: { maker: true, authorProfile: true },
     orderBy: (fields, { desc: d }) => [
       d(fields.featured),
       d(fields.publishedAt),
@@ -80,7 +85,7 @@ export async function getPublishedContent(
 ): Promise<ContentWithMaker[]> {
   const rows = await unstable_cache(
     () => fetchPublishedContent(type),
-    ["published-content", type, "v5"],
+    ["published-content", type, "v6"],
     { revalidate: FEED_REVALIDATE_SECONDS, tags: ["content"] }
   )();
   return rows.map(reviveContent);
@@ -97,7 +102,7 @@ export async function getAllContent(): Promise<ContentWithMaker[]> {
   }
 
   return db.query.content.findMany({
-    with: { maker: true },
+    with: { maker: true, authorProfile: true },
     orderBy: (fields, { desc: d }) => [d(fields.createdAt)],
   });
 }
@@ -113,7 +118,7 @@ export async function getContentById(
 
   const row = await db.query.content.findFirst({
     where: eq(content.id, id),
-    with: { maker: true },
+    with: { maker: true, authorProfile: true },
   });
 
   return row ?? null;
@@ -208,7 +213,7 @@ export async function getContentBySlug(
 
   const row = await db.query.content.findFirst({
     where: eq(content.slug, slug),
-    with: { maker: true },
+    with: { maker: true, authorProfile: true },
   });
 
   return row ?? null;
@@ -233,10 +238,72 @@ export async function getPublishedContentByMaker(makerId: string) {
 
   return db.query.content.findMany({
     where: and(eq(content.status, "published"), eq(content.makerId, makerId)),
-    with: { maker: true },
+    with: { maker: true, authorProfile: true },
     orderBy: (fields, { desc: d }) => [
       d(fields.publishedAt),
       d(fields.createdAt),
     ],
   });
+}
+
+export async function getProfileByHandle(handle: string) {
+  if (!isDatabaseConfigured() || !db) return null;
+
+  return (
+    (await db.query.profiles.findFirst({
+      where: eq(profiles.handle, handle),
+    })) ?? null
+  );
+}
+
+export async function getProfiles() {
+  if (!isDatabaseConfigured() || !db) return [];
+  return db.query.profiles.findMany({
+    orderBy: (fields, { asc }) => [asc(fields.displayName)],
+  });
+}
+
+export async function getPublishedContentByProfile(profileId: string) {
+  if (!isDatabaseConfigured() || !db) return [];
+
+  return db.query.content.findMany({
+    where: and(
+      eq(content.status, "published"),
+      eq(content.authorProfileId, profileId)
+    ),
+    with: { maker: true, authorProfile: true },
+    orderBy: (fields, { desc: d }) => [
+      d(fields.publishedAt),
+      d(fields.createdAt),
+    ],
+  });
+}
+
+export async function getActiveGuestTerm(profileId: string) {
+  if (!isDatabaseConfigured() || !db) return null;
+
+  const now = new Date();
+  return (
+    (await db.query.guestTerms.findFirst({
+      where: and(
+        eq(guestTerms.profileId, profileId),
+        lte(guestTerms.startsAt, now),
+        gte(guestTerms.endsAt, now)
+      ),
+      orderBy: (fields, { desc: d }) => [d(fields.startsAt)],
+    })) ?? null
+  );
+}
+
+export async function getCurrentGuestEditor(): Promise<GuestTermWithProfile | null> {
+  if (!isDatabaseConfigured() || !db) return null;
+
+  const now = new Date();
+  const row = await db.query.guestTerms.findFirst({
+    where: and(lte(guestTerms.startsAt, now), gte(guestTerms.endsAt, now)),
+    with: { profile: true },
+    orderBy: (fields, { desc: d }) => [d(fields.startsAt)],
+  });
+
+  return row ?? null;
 }

@@ -51,12 +51,12 @@ export default async function ContentPage({ params }: ContentPageProps) {
     sourcePlatformLabel(item.sourcePlatform);
 
   const ctaLabel =
-    item.type === "build"
-      ? "Open build"
-      : item.type === "post"
-        ? "View on X"
-        : item.type === "news"
-          ? "Read original"
+    item.type === "post"
+      ? "View on X"
+      : item.type === "news"
+        ? "Read original"
+        : item.type === "visual" || item.type === "build"
+          ? "Open visual"
           : "View source";
 
   return (

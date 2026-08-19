@@ -21,6 +21,7 @@ const signedInNav = [
   { href: "/drafts", label: "Drafts" },
   { href: "/saves", label: "Saves" },
   { href: "/scenes", label: "Scenes" },
+  { href: "/settings/profile", label: "Profile" },
   { href: "/admin", label: "Admin" },
 ];
 
