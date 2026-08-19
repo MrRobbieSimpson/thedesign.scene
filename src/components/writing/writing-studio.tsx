@@ -7,6 +7,7 @@ import { Check, Eye, Loader2, PenLine, Settings2, X } from "lucide-react";
 import { saveArticleDraft } from "@/app/actions/write";
 import { ArticleBody } from "@/components/content/article-body";
 import { ArticleEnd } from "@/components/reading/article-end";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { PublishDialog } from "@/components/writing/publish-dialog";
 import { useWriting } from "@/components/writing/writing-context";
 import { Button } from "@/components/ui/button";
@@ -254,6 +255,7 @@ export function WritingStudio() {
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
+            <ThemeToggle />
             {!preview ? (
               <Button
                 type="button"

@@ -91,7 +91,7 @@ export function ThemeToggle() {
       </span>
       <span
         role="tooltip"
-        className="pointer-events-none absolute top-full left-1/2 z-50 mt-2 hidden -translate-x-1/2 whitespace-nowrap rounded-full border border-border/70 bg-popover px-2.5 py-1 text-[11px] font-medium tracking-wide text-popover-foreground opacity-0 shadow-sm transition-[opacity,transform] duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] translate-y-0.5 sm:block group-hover/theme:translate-y-0 group-hover/theme:opacity-100 group-focus-visible/theme:opacity-100"
+        className="pointer-events-none absolute top-full left-1/2 z-[130] mt-2 hidden -translate-x-1/2 whitespace-nowrap rounded-full border border-border/70 bg-popover px-2.5 py-1 text-[11px] font-medium tracking-wide text-popover-foreground opacity-0 shadow-sm transition-[opacity,transform] duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] translate-y-0.5 sm:block group-hover/theme:translate-y-0 group-hover/theme:opacity-100 group-focus-visible/theme:opacity-100"
       >
         {label}
       </span>
