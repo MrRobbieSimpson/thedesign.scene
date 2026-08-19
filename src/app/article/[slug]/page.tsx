@@ -83,7 +83,7 @@ export default async function ArticlePage({
       : [];
 
   return (
-    <article className="reading-surface mx-auto max-w-[40rem] px-6 py-12 sm:max-w-[42rem] sm:py-16">
+    <article className="reading-surface mx-auto max-w-[40.625rem] px-5 py-16 sm:px-6 sm:py-24">
       {justPublished ? (
         <PublishedBanner
           portfolioHandle={portfolioHandle}
@@ -141,7 +141,7 @@ export default async function ArticlePage({
         ) : null}
 
         {item.featured && item.editorNote ? (
-          <EditorNote note={item.editorNote} />
+          <EditorNote note={item.editorNote} variant="reading" />
         ) : null}
 
         <div
@@ -227,7 +227,7 @@ export default async function ArticlePage({
 
       {authorBio && authorName ? (
         <aside
-          className="mt-12 rounded-2xl border border-border/70 bg-muted/25 p-6"
+          className="mt-16 rounded-2xl border border-border/70 bg-muted/25 p-6 sm:mt-20"
           data-hide-on-focus
         >
           <p className="text-[11px] font-medium tracking-[0.14em] text-muted-foreground uppercase">

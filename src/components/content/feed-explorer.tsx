@@ -72,7 +72,7 @@ export function FeedExplorer({
           {toolbar}
         </div>
         <div className="flex h-8 shrink-0 items-center justify-between gap-3 sm:justify-end">
-          <p className="text-sm text-muted-foreground">
+          <p className="text-xs text-muted-foreground/70">
             {revived.length} selected
           </p>
           <FeedLayoutSwitcher value={layout} onChange={onLayoutChange} />
@@ -88,16 +88,6 @@ function densityFor(layout: FeedLayout) {
   if (layout === "small") return "compact" as const;
   if (layout === "mosaic") return "mosaic" as const;
   return "comfortable" as const;
-}
-
-function shouldSpan(item: FeedItem, layout: FeedLayout, index: number) {
-  if (layout !== "big") return false;
-  if (item.kind === "event") return true;
-  if (item.item.type === "article") return true;
-  if (item.item.type === "thought" && (item.item.featured || index < 4)) {
-    return true;
-  }
-  return false;
 }
 
 function FeedGridLayout({
@@ -124,7 +114,7 @@ function FeedGridLayout({
 
   if (layout === "mosaic") {
     return (
-      <div className="columns-1 gap-6 sm:columns-2 lg:columns-3">
+      <div className="columns-1 gap-6 sm:columns-2">
         {items.map((item, index) => (
           <div key={item.id} className="mb-6 break-inside-avoid">
             <FeedItemCard item={item} density={density} priority={index < 3} />
@@ -136,7 +126,7 @@ function FeedGridLayout({
 
   if (layout === "small") {
     return (
-      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
         {items.map((item, index) => (
           <FeedItemCard
             key={item.id}
@@ -149,17 +139,16 @@ function FeedGridLayout({
     );
   }
 
+  // Default “big” — single calm editorial column.
   return (
-    <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
+    <div className="flex flex-col gap-12 sm:gap-14">
       {items.map((item, index) => (
-        <div
+        <FeedItemCard
           key={item.id}
-          className={
-            shouldSpan(item, layout, index) ? "md:col-span-2" : undefined
-          }
-        >
-          <FeedItemCard item={item} density={density} priority={index < 4} />
-        </div>
+          item={item}
+          density={density}
+          priority={index < 4}
+        />
       ))}
     </div>
   );

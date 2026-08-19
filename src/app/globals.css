@@ -178,15 +178,15 @@
 /* Journal-calm article typography — serif body, sans headings */
 .article-prose {
   font-family: var(--font-serif), "Source Serif 4", ui-serif, Georgia, serif;
-  font-size: 1.2rem;
-  line-height: 1.8;
+  font-size: 1.275rem;
+  line-height: 1.85;
   color: color-mix(in oklab, var(--foreground) 92%, transparent);
   hanging-punctuation: first allow-end;
   font-optical-sizing: auto;
 }
 
 .article-prose > * + * {
-  margin-top: 1.4em;
+  margin-top: 1.5em;
 }
 
 .article-prose h2 {
@@ -374,13 +374,22 @@
   animation: page-enter 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
-/* Calm reading mode — hide chrome, leave only the piece */
+/* Strong Focus — chrome leaves the layout so only the piece remains */
 html.reading-focus header,
 html.reading-focus footer,
 html.reading-focus [data-hide-on-focus] {
   opacity: 0;
+  visibility: hidden;
   pointer-events: none;
-  transition: opacity 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+  max-height: 0;
+  margin: 0 !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  overflow: hidden;
+  border: none !important;
+  transition:
+    opacity 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+    visibility 0.4s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 html.reading-focus body {
@@ -388,9 +397,18 @@ html.reading-focus body {
 }
 
 html.reading-focus main {
-  padding-top: 3rem;
-  padding-bottom: 4rem;
+  padding-top: 4rem;
+  padding-bottom: 5rem;
   transition: padding 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html.reading-focus header,
+  html.reading-focus footer,
+  html.reading-focus [data-hide-on-focus],
+  html.reading-focus main {
+    transition: none;
+  }
 }
 
 /* Theme toggle: calm crossfade when View Transitions API is available */

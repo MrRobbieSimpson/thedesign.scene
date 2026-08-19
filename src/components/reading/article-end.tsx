@@ -4,7 +4,7 @@
  */
 export function ArticleEnd() {
   return (
-    <div className="mt-16 flex flex-col items-center gap-3" aria-hidden>
+    <div className="mt-20 flex flex-col items-center gap-3" aria-hidden>
       <span className="block h-px w-10 bg-foreground/20" />
       <p className="font-serif text-sm italic text-muted-foreground/70">
         End of piece

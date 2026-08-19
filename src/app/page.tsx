@@ -50,8 +50,8 @@ export default async function HomePage({ searchParams }: HomeProps) {
   ).length;
 
   return (
-    <div className="mx-auto max-w-6xl px-6 py-14 sm:py-20">
-      <section className="mb-14 max-w-2xl space-y-5 sm:mb-16">
+    <div className="mx-auto max-w-[45rem] px-5 py-14 sm:px-6 sm:py-20">
+      <section className="mb-14 space-y-5 sm:mb-16">
         <p className="text-sm font-medium tracking-[0.16em] text-muted-foreground uppercase">
           Editor’s selection
         </p>

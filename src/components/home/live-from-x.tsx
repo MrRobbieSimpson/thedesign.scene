@@ -13,8 +13,8 @@ export function LiveFromX({ items }: { items: ContentWithMaker[] }) {
   if (items.length === 0) return null;
 
   return (
-    <section className="mt-20 border-t border-border/60 pt-12">
-      <div className="mb-6 max-w-xl space-y-2">
+    <section className="mt-20 border-t border-border/60 pt-12 sm:mt-24 sm:pt-14">
+      <div className="mb-6 space-y-2">
         <p className="text-[11px] font-medium tracking-[0.14em] text-muted-foreground/80 uppercase">
           Notes from X
         </p>
@@ -27,7 +27,7 @@ export function LiveFromX({ items }: { items: ContentWithMaker[] }) {
         </p>
       </div>
 
-      <ul className="grid gap-3 sm:grid-cols-2">
+      <ul className="grid gap-3">
         {items.map((item) => {
           const handle = item.authorHandle?.replace(/^@/, "");
           return (

@@ -260,7 +260,7 @@ export function WritingStudio() {
         >
           <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-6 py-8 sm:px-12 sm:py-12">
             {preview ? (
-              <div className="mx-auto w-full max-w-[40rem] space-y-6 sm:max-w-[42rem]">
+              <div className="mx-auto w-full max-w-[40.625rem] space-y-6">
                 <p className="text-sm text-muted-foreground">
                   ~{minutes} min to sit with
                 </p>

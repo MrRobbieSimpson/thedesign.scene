@@ -89,17 +89,17 @@ function Attribution({
       : null;
 
   const inner = (
-    <div className="flex items-center gap-2.5 text-sm text-muted-foreground">
+    <div className="flex items-center gap-2 text-xs text-muted-foreground/70">
       {avatar ? (
         <Image
           src={avatar}
           alt={name}
-          width={22}
-          height={22}
-          className="size-[22px] rounded-full object-cover ring-1 ring-border"
+          width={20}
+          height={20}
+          className="size-5 rounded-full object-cover ring-1 ring-border/70"
         />
       ) : (
-        <span className="flex size-[22px] items-center justify-center rounded-full bg-muted text-[10px] font-medium">
+        <span className="flex size-5 items-center justify-center rounded-full bg-muted text-[9px] font-medium">
           {name.replace("@", "").charAt(0).toUpperCase()}
         </span>
       )}
@@ -177,28 +177,29 @@ function ArticleCard({
         item.featured
           ? "border-foreground/20"
           : "border-foreground/10",
-        comfortable ? "p-9 sm:p-12" : densityPad(density),
+        comfortable ? "p-7 sm:p-9" : densityPad(density),
+        item.featured && comfortable && "sm:p-10",
         "hover:-translate-y-0.5 hover:border-foreground/30 hover:shadow-[0_24px_60px_-32px_rgba(0,0,0,0.55)] active:translate-y-0 active:scale-[0.99]"
       )}
     >
-      <div className={cn(density === "compact" ? "space-y-3" : "space-y-6")}>
+      <div className={cn(density === "compact" ? "space-y-3" : "space-y-5")}>
         <div className="flex items-center justify-between gap-3">
           <Badge className="gap-1.5 border-0 bg-foreground text-background">
             <TypeIcon type="article" />
             {contentTypeLabel("article")}
           </Badge>
           {item.featured && density !== "compact" ? (
-            <span className="text-[11px] font-medium tracking-[0.16em] text-muted-foreground uppercase">
+            <span className="text-[10px] font-medium tracking-[0.16em] text-muted-foreground/80 uppercase">
               Editor’s pick
             </span>
           ) : null}
         </div>
-        <div className={cn("space-y-3", comfortable && "max-w-3xl")}>
+        <div className={cn("space-y-3", comfortable && "space-y-4")}>
           <h3
             className={cn(
               "font-heading text-balance tracking-tight",
               comfortable
-                ? "text-[1.85rem] leading-[1.15] sm:text-[2.15rem]"
+                ? "text-[1.65rem] leading-[1.15] sm:text-[1.85rem]"
                 : densityTitle(density, true)
             )}
           >
@@ -209,7 +210,7 @@ function ArticleCard({
               className={cn(
                 "text-muted-foreground",
                 comfortable
-                  ? "line-clamp-4 text-[1.05rem] leading-relaxed"
+                  ? "line-clamp-4 text-[1.02rem] leading-relaxed"
                   : densityExcerpt(density)
               )}
             >
@@ -217,14 +218,14 @@ function ArticleCard({
             </p>
           ) : null}
           {item.featured && item.editorNote && density !== "compact" ? (
-            <EditorNote note={item.editorNote} />
+            <EditorNote note={item.editorNote} variant="feed" />
           ) : null}
         </div>
       </div>
       <div
         className={cn(
-          "flex items-center justify-between gap-3 border-t border-border/50",
-          density === "compact" ? "mt-4 pt-3" : "mt-12 pt-5"
+          "flex items-center justify-between gap-3 border-t border-border/40",
+          density === "compact" ? "mt-4 pt-3" : "mt-10 pt-4"
         )}
       >
         <Attribution item={item} date={item.publishedAt} />
@@ -260,18 +261,18 @@ function ThoughtCard({
             {contentTypeLabel("thought")}
           </Badge>
           {item.featured && density !== "compact" ? (
-            <span className="text-[11px] font-medium tracking-[0.16em] text-muted-foreground uppercase">
+            <span className="text-[10px] font-medium tracking-[0.16em] text-muted-foreground/80 uppercase">
               Editor’s pick
             </span>
           ) : null}
         </div>
 
-        <div className="space-y-2">
+        <div className="space-y-3">
           <h3
             className={cn(
               "font-heading text-balance transition-colors group-hover:text-foreground",
               density === "comfortable"
-                ? "text-[1.55rem] leading-[1.2]"
+                ? "text-[1.45rem] leading-[1.2]"
                 : densityTitle(density)
             )}
           >
@@ -283,7 +284,7 @@ function ThoughtCard({
             </p>
           ) : null}
           {item.featured && item.editorNote && density !== "compact" ? (
-            <EditorNote note={item.editorNote} />
+            <EditorNote note={item.editorNote} variant="feed" />
           ) : null}
         </div>
       </div>
@@ -377,7 +378,7 @@ function VisualCard({
             </p>
           ) : null}
           {item.featured && item.editorNote && density !== "compact" ? (
-            <EditorNote note={item.editorNote} />
+            <EditorNote note={item.editorNote} variant="feed" />
           ) : null}
         </div>
         <div className="mt-auto">
@@ -413,7 +414,7 @@ function NewsCard({
             Brief
           </Badge>
           {item.sourcePlatform ? (
-            <span className="text-[11px] tracking-wide text-muted-foreground/80 uppercase">
+            <span className="text-[10px] tracking-wide text-muted-foreground/60 uppercase">
               {sourcePlatformLabel(item.sourcePlatform)}
             </span>
           ) : null}
@@ -427,7 +428,7 @@ function NewsCard({
           {item.title}
         </h3>
         {item.excerpt ? (
-          <p className="line-clamp-2 text-xs leading-relaxed text-muted-foreground">
+          <p className="line-clamp-2 text-xs leading-relaxed text-muted-foreground/80">
             {item.excerpt}
           </p>
         ) : null}
@@ -467,7 +468,7 @@ function PostCard({
             <TypeIcon type="post" />
             Note
           </Badge>
-          <span className="text-[11px] tracking-wide text-muted-foreground/80 uppercase">
+          <span className="text-[10px] tracking-wide text-muted-foreground/60 uppercase">
             {sourcePlatformLabel(item.sourcePlatform) ?? "X"}
           </span>
         </div>
