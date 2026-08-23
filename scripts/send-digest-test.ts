@@ -2,6 +2,7 @@
  * One-off digest test send.
  *
  *   npx tsx scripts/send-digest-test.ts robsimpson93@gmail.com
+ *   npx tsx scripts/send-digest-test.ts robsimpson93@gmail.com Belfast
  */
 import { config } from "dotenv";
 config({ path: ".env.local" });
@@ -24,7 +25,8 @@ async function main() {
   const { Resend } = await import("resend");
   const { buildWeeklyDigest } = await import("../src/lib/digest");
 
-  const digest = await buildWeeklyDigest();
+  const location = process.argv[3]?.trim() || null;
+  const digest = await buildWeeklyDigest({ location });
   if (digest.skipped) {
     console.error("Skipped:", digest.skipped);
     console.error(
@@ -49,7 +51,7 @@ async function main() {
   console.log("Sent test digest to", to);
   console.log("id:", result.data?.id);
   console.log(
-    `Content — picks:${digest.picks} writing:${digest.writing} events:${digest.events}`
+    `Content — picks:${digest.picks} writing:${digest.writing} events:${digest.events} location:${digest.locationLabel ?? "global"}`
   );
 }
 

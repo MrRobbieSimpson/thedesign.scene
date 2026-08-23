@@ -278,6 +278,10 @@ export const newsletterSubscribers = pgTable(
   {
     id: uuid("id").defaultRandom().primaryKey(),
     email: text("email").notNull(),
+    /** Linked profile when subscribe requires sign-in — drives location-aware events. */
+    profileId: uuid("profile_id").references(() => profiles.id, {
+      onDelete: "set null",
+    }),
     status: subscriberStatusEnum("status").notNull().default("active"),
     createdAt: timestamp("created_at", { withTimezone: true })
       .defaultNow()
@@ -316,11 +320,22 @@ export const profilesRelations = relations(profiles, ({ many, one }) => ({
   scenes: many(scenes),
   articles: many(content),
   guestTerms: many(guestTerms),
+  newsletterSubscriptions: many(newsletterSubscribers),
   maker: one(makers, {
     fields: [profiles.makerId],
     references: [makers.id],
   }),
 }));
+
+export const newsletterSubscribersRelations = relations(
+  newsletterSubscribers,
+  ({ one }) => ({
+    profile: one(profiles, {
+      fields: [newsletterSubscribers.profileId],
+      references: [profiles.id],
+    }),
+  })
+);
 
 export const savesRelations = relations(saves, ({ one }) => ({
   profile: one(profiles, {
