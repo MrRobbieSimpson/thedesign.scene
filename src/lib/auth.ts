@@ -95,13 +95,14 @@ export async function getOrCreateProfile(): Promise<Profile | null> {
   const handle = user?.username ?? null;
   const avatarUrl = user?.imageUrl ?? null;
   const xHandle =
-    user?.externalAccounts?.find(
-      (account) =>
-        account.provider === "oauth_x" ||
-        account.provider === "x" ||
-        account.provider.includes("twitter") ||
-        account.provider.includes("x")
-    )?.username ??
+    user?.externalAccounts?.find((account) => {
+      const provider = String(account.provider).toLowerCase();
+      return (
+        provider.includes("twitter") ||
+        provider === "x" ||
+        provider.includes("oauth_x")
+      );
+    })?.username ??
     user?.username ??
     null;
 

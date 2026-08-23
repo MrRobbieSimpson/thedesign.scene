@@ -80,13 +80,14 @@ export function AccountMenu() {
   const email = user.primaryEmailAddress?.emailAddress ?? null;
   const imageUrl = user.imageUrl;
   const xHandle =
-    user.externalAccounts?.find(
-      (account) =>
-        account.provider === "oauth_x" ||
-        account.provider === "x" ||
-        account.provider.includes("twitter") ||
-        account.provider.includes("x")
-    )?.username ?? user.username;
+    user.externalAccounts?.find((account) => {
+      const provider = String(account.provider).toLowerCase();
+      return (
+        provider.includes("twitter") ||
+        provider === "x" ||
+        provider.includes("oauth_x")
+      );
+    })?.username ?? user.username;
 
   return (
     <div ref={rootRef} className="relative">
