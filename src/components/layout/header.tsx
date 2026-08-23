@@ -20,7 +20,6 @@ const nav = [
 const signedInNav = [
   { href: "/drafts", label: "Drafts" },
   { href: "/saves", label: "Saves" },
-  { href: "/scenes", label: "Scenes" },
   { href: "/settings/profile", label: "Profile" },
 ];
 
