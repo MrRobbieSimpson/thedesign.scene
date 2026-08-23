@@ -25,19 +25,21 @@ export function DigestStrip() {
   }
 
   return (
-    <section className="mb-12 rounded-2xl border border-border/60 bg-muted/20 px-5 py-5 sm:mb-14 sm:px-6 sm:py-5">
-      <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between sm:gap-8">
-        <div className="min-w-0 space-y-1.5 sm:max-w-[16rem]">
-          <h2 className="font-heading text-xl tracking-tight">Digest</h2>
+    <section className="mb-12 rounded-2xl border border-border/60 bg-muted/20 px-4 py-4 sm:mb-14 sm:px-5 sm:py-5">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between sm:gap-6">
+        <div className="min-w-0 space-y-1 sm:max-w-[15rem]">
+          <h2 className="font-heading text-lg tracking-tight sm:text-xl">
+            Digest
+          </h2>
           <p className="text-sm leading-relaxed text-muted-foreground">
-            A short Thursday note — editor’s picks, new writing, and events. No
-            firehose.
+            A short Thursday note — editor’s picks, writing, and events.
           </p>
         </div>
 
+        {/* Always one row: input + subscribe share the same baseline */}
         <form
           action={onSubmit}
-          className="flex w-full min-w-0 flex-col gap-2 sm:max-w-sm sm:flex-row sm:items-center"
+          className="flex w-full min-w-0 items-center gap-2 sm:max-w-sm"
         >
           <Input
             name="email"
@@ -47,13 +49,13 @@ export function DigestStrip() {
             placeholder="you@studio.com"
             disabled={pending}
             aria-label="Email"
-            className="h-9 flex-1 bg-background/60"
+            className="h-9 min-w-0 flex-1 bg-background/60"
           />
           <Button
             type="submit"
             size="sm"
             disabled={pending}
-            className="h-9 shrink-0 px-4"
+            className="h-9 shrink-0 px-3.5"
           >
             {pending ? "…" : "Subscribe"}
           </Button>
@@ -72,7 +74,7 @@ export function DigestStrip() {
         </p>
       ) : (
         <p className="mt-3 text-xs text-muted-foreground/70">
-          Or read more on the{" "}
+          Or see the{" "}
           <Link
             href="/subscribe"
             className="underline-offset-4 transition-colors hover:text-foreground hover:underline"

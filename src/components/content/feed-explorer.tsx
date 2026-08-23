@@ -66,12 +66,16 @@ export function FeedExplorer({
 
   return (
     <div className="space-y-8 sm:space-y-10">
-      {/* One aligned control row: filters + layout */}
-      <div className="flex items-center gap-2 sm:gap-3">
-        <div className="min-w-0 flex-1 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      {/*
+        Small screens: filters full-width, layout controls on the next line
+        right-aligned — avoids cramped / uneven baseline with the pills.
+        sm+: single row, shared vertical center.
+      */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-3">
+        <div className="min-w-0 w-full overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:flex-1">
           {toolbar}
         </div>
-        <div className="flex h-8 shrink-0 items-center gap-2">
+        <div className="flex h-9 shrink-0 items-center justify-end gap-2">
           <p className="hidden text-xs tabular-nums text-muted-foreground/70 sm:block">
             {revived.length}
           </p>
