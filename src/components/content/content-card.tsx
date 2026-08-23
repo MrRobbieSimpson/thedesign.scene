@@ -83,6 +83,7 @@ function Attribution({
     "thedesign.scene";
 
   const avatar = item.maker?.avatar ?? profile?.avatarUrl ?? null;
+  const xHandle = profile?.xHandle ?? item.authorHandle ?? null;
   const href = item.maker?.handle
     ? `/maker/${item.maker.handle}`
     : profile?.handle
@@ -95,6 +96,7 @@ function Attribution({
         src={avatar}
         alt={name}
         size={20}
+        xHandle={xHandle}
         className="ring-1 ring-border/70"
       />
       <span className="truncate">

@@ -85,7 +85,6 @@ export async function getOrCreateProfile(): Promise<Profile | null> {
   const existing = await db.query.profiles.findFirst({
     where: eq(profiles.clerkUserId, userId),
   });
-  if (existing) return existing;
 
   const user = await currentUser();
   const displayName =
@@ -95,6 +94,39 @@ export async function getOrCreateProfile(): Promise<Profile | null> {
     "Reader";
   const handle = user?.username ?? null;
   const avatarUrl = user?.imageUrl ?? null;
+  const xHandle =
+    user?.externalAccounts?.find(
+      (account) =>
+        account.provider === "oauth_x" ||
+        account.provider === "x" ||
+        account.provider.includes("twitter") ||
+        account.provider.includes("x")
+    )?.username ??
+    user?.username ??
+    null;
+
+  if (existing) {
+    // Keep avatar / X handle fresh — Clerk’s stored OAuth thumbs go stale/soft.
+    const needsUpdate =
+      (avatarUrl && avatarUrl !== existing.avatarUrl) ||
+      (xHandle && xHandle !== existing.xHandle) ||
+      (!existing.xHandle && xHandle);
+
+    if (needsUpdate) {
+      const [updated] = await db
+        .update(profiles)
+        .set({
+          avatarUrl: avatarUrl ?? existing.avatarUrl,
+          xHandle: xHandle ?? existing.xHandle,
+          displayName: existing.displayName ?? displayName,
+        })
+        .where(eq(profiles.id, existing.id))
+        .returning();
+      revalidateTag("profiles");
+      return updated ?? existing;
+    }
+    return existing;
+  }
 
   const [created] = await db
     .insert(profiles)
@@ -103,6 +135,7 @@ export async function getOrCreateProfile(): Promise<Profile | null> {
       displayName,
       handle,
       avatarUrl,
+      xHandle,
     })
     .returning();
 

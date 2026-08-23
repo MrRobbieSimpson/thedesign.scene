@@ -79,6 +79,14 @@ export function AccountMenu() {
     "Account";
   const email = user.primaryEmailAddress?.emailAddress ?? null;
   const imageUrl = user.imageUrl;
+  const xHandle =
+    user.externalAccounts?.find(
+      (account) =>
+        account.provider === "oauth_x" ||
+        account.provider === "x" ||
+        account.provider.includes("twitter") ||
+        account.provider.includes("x")
+    )?.username ?? user.username;
 
   return (
     <div ref={rootRef} className="relative">
@@ -94,7 +102,13 @@ export function AccountMenu() {
           "hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
         )}
       >
-        <Avatar src={imageUrl} alt={name} size={32} className="ring-0" />
+        <Avatar
+          src={imageUrl}
+          alt={name}
+          size={32}
+          xHandle={xHandle}
+          className="ring-0"
+        />
       </button>
 
       {open ? (

@@ -50,7 +50,8 @@ export default async function PortfolioPage({ params }: PortfolioPageProps) {
           <Avatar
             src={profile.avatarUrl}
             alt={displayName}
-            size={80}
+            size={96}
+            xHandle={profile.xHandle}
             priority
             className="ring-1 ring-border"
           />

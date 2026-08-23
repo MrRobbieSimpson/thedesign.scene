@@ -175,6 +175,7 @@ export default async function ArticlePage({
                   src={authorAvatar}
                   alt={authorName}
                   size={44}
+                  xHandle={profile?.xHandle ?? authorHandle}
                   className="ring-1 ring-border"
                 />
                 <div>
@@ -192,6 +193,7 @@ export default async function ArticlePage({
                   src={authorAvatar}
                   alt={authorName}
                   size={44}
+                  xHandle={profile?.xHandle ?? authorHandle}
                   className="ring-1 ring-border"
                 />
                 <div>

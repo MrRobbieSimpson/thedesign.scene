@@ -20,6 +20,7 @@ export function GuestEditorStrip({ guest }: { guest: Guest }) {
             src={profile.avatarUrl}
             alt={name}
             size={44}
+            xHandle={profile.xHandle}
             className="shrink-0 ring-1 ring-border"
           />
           <div className="min-w-0 space-y-1.5">

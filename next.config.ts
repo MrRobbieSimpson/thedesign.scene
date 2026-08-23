@@ -11,6 +11,8 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       { protocol: "https", hostname: "img.clerk.com" },
       { protocol: "https", hostname: "images.clerk.dev" },
+      { protocol: "https", hostname: "unavatar.io" },
+      { protocol: "https", hostname: "pbs.twimg.com" },
       { protocol: "https", hostname: "images.unsplash.com" },
       { protocol: "https", hostname: "static.dezeen.com" },
       { protocol: "https", hostname: "substackcdn.com" },

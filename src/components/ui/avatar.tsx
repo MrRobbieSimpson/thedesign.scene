@@ -7,6 +7,7 @@ export function Avatar({
   src,
   alt,
   size = 32,
+  xHandle,
   className,
   priority = false,
 }: {
@@ -14,10 +15,12 @@ export function Avatar({
   alt: string;
   /** Display size in CSS pixels. */
   size?: number;
+  /** When set, prefer a high-res X/Unavatar source over Clerk’s tiny OAuth thumb. */
+  xHandle?: string | null;
   className?: string;
   priority?: boolean;
 }) {
-  const resolved = avatarSrc(src, size);
+  const resolved = avatarSrc(src, size, { xHandle });
   const initial = alt.replace("@", "").charAt(0).toUpperCase() || "?";
 
   if (!resolved) {
@@ -27,7 +30,11 @@ export function Avatar({
           "inline-flex shrink-0 items-center justify-center rounded-full bg-muted font-medium",
           className
         )}
-        style={{ width: size, height: size, fontSize: Math.max(10, size * 0.35) }}
+        style={{
+          width: size,
+          height: size,
+          fontSize: Math.max(10, size * 0.35),
+        }}
         aria-hidden={alt ? undefined : true}
       >
         {initial}
@@ -35,13 +42,16 @@ export function Avatar({
     );
   }
 
+  // Request a large intrinsic size so Next/Image doesn’t downsample a soft source.
+  const intrinsic = Math.min(Math.max(size * 3, 128), 512);
+
   return (
     <Image
       src={resolved}
       alt={alt}
-      width={size * 2}
-      height={size * 2}
-      quality={92}
+      width={intrinsic}
+      height={intrinsic}
+      quality={100}
       priority={priority}
       sizes={`${size}px`}
       className={cn("shrink-0 rounded-full object-cover", className)}
