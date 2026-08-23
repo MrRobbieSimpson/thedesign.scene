@@ -30,7 +30,8 @@ export function Header() {
 
   return (
     <header className="sticky top-0 z-40 border-b border-border/60 bg-background/80 backdrop-blur-xl">
-      <div className="mx-auto max-w-6xl px-4 sm:px-6">
+      {/* px-5 matches home/feed gutters so mobile nav lines up with filters */}
+      <div className="mx-auto max-w-6xl px-5 sm:px-6">
         {/* Primary bar — logo + actions always on one aligned row */}
         <div className="flex h-14 items-center justify-between gap-3 sm:h-16">
           <div className="flex min-w-0 items-center gap-4 lg:gap-8">
@@ -71,7 +72,7 @@ export function Header() {
           </div>
         </div>
 
-        {/* Mobile nav — second row, full-width aligned pills */}
+        {/* Mobile nav — same width/gutters as feed controls below */}
         <nav
           className="flex h-11 items-center gap-1 border-t border-border/40 md:hidden"
           aria-label="Primary"

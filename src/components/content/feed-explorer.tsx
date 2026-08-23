@@ -52,8 +52,7 @@ export function FeedExplorer({
 
   useEffect(() => {
     const stored = window.localStorage.getItem(FEED_LAYOUT_STORAGE_KEY);
-    // Prefer calm big layout for the editorial promise.
-    if (stored && isFeedLayout(stored) && stored !== "mosaic") {
+    if (stored && isFeedLayout(stored)) {
       setLayout(stored);
     }
   }, []);
@@ -63,17 +62,18 @@ export function FeedExplorer({
     window.localStorage.setItem(FEED_LAYOUT_STORAGE_KEY, next);
   }
 
-  const listKey = revived.map((item) => item.id).join("|");
+  const listKey = `${layout}:${revived.map((item) => item.id).join("|")}`;
 
   return (
-    <div className="space-y-10">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="min-w-0 max-w-full overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+    <div className="space-y-8 sm:space-y-10">
+      {/* One aligned control row: filters + layout */}
+      <div className="flex items-center gap-2 sm:gap-3">
+        <div className="min-w-0 flex-1 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {toolbar}
         </div>
-        <div className="flex h-8 shrink-0 items-center justify-between gap-3 sm:justify-end">
-          <p className="text-xs text-muted-foreground/70">
-            {revived.length} selected
+        <div className="flex h-8 shrink-0 items-center gap-2">
+          <p className="hidden text-xs tabular-nums text-muted-foreground/70 sm:block">
+            {revived.length}
           </p>
           <FeedLayoutSwitcher value={layout} onChange={onLayoutChange} />
         </div>
@@ -112,11 +112,12 @@ function FeedGridLayout({
 
   const density = densityFor(layout);
 
+  // Mosaic — multi-column even on small screens so the control does something.
   if (layout === "mosaic") {
     return (
-      <div className="columns-1 gap-6 sm:columns-2">
+      <div className="columns-2 gap-3 sm:columns-2 sm:gap-5 md:columns-3">
         {items.map((item, index) => (
-          <div key={item.id} className="mb-6 break-inside-avoid">
+          <div key={item.id} className="mb-3 break-inside-avoid sm:mb-5">
             <FeedItemCard item={item} density={density} priority={index < 3} />
           </div>
         ))}
@@ -124,9 +125,10 @@ function FeedGridLayout({
     );
   }
 
+  // Small — 2-up from the smallest breakpoint (was 1-col until sm = looked broken).
   if (layout === "small") {
     return (
-      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+      <div className="grid grid-cols-2 gap-3 sm:gap-5">
         {items.map((item, index) => (
           <FeedItemCard
             key={item.id}
@@ -139,9 +141,9 @@ function FeedGridLayout({
     );
   }
 
-  // Default “big” — single calm editorial column.
+  // Big — single editorial column, generous rhythm.
   return (
-    <div className="flex flex-col gap-12 sm:gap-14">
+    <div className="flex flex-col gap-10 sm:gap-14">
       {items.map((item, index) => (
         <FeedItemCard
           key={item.id}

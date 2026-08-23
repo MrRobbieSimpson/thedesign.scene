@@ -26,7 +26,8 @@ export function FeedLayoutSwitcher({
     <AnimatedPills
       size="sm"
       aria-label="Feed layout"
-      followHover
+      // Touch devices: hover-follow steals the first tap — keep clicks direct.
+      followHover={false}
       items={options.map((option) => {
         const Icon = option.icon;
         return {
