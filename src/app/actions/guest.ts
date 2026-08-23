@@ -4,14 +4,18 @@ import { revalidatePath, revalidateTag } from "next/cache";
 
 import { db } from "@/db";
 import { guestTerms } from "@/db/schema";
-import { requireProfile } from "@/lib/auth";
+import { requireAdmin, requireProfile } from "@/lib/auth";
 
 /**
- * Create a guest editor term. v1: any signed-in user can call this from admin
- * (admin route is already Clerk-protected). Tighten to allowlist later.
+ * Create a guest editor term — admin allowlist only.
  */
 export async function createGuestTerm(formData: FormData) {
   if (!db) return { ok: false as const, message: "Database not configured." };
+  try {
+    await requireAdmin();
+  } catch {
+    return { ok: false as const, message: "You don’t have access to curate." };
+  }
   await requireProfile();
 
   const profileId = String(formData.get("profileId") ?? "").trim();

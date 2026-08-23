@@ -15,14 +15,33 @@ const isProtectedRoute = createRouteMatcher([
   "/me",
 ]);
 
+const isAdminRoute = createRouteMatcher(["/admin(.*)"]);
+
+function adminUserIds() {
+  return new Set(
+    (process.env.ADMIN_CLERK_USER_IDS ?? "")
+      .split(",")
+      .map((value) => value.trim())
+      .filter(Boolean)
+  );
+}
+
 export default hasClerk
   ? clerkMiddleware(async (auth, req) => {
-      if (isProtectedRoute(req)) {
-        await auth.protect();
+      if (!isProtectedRoute(req)) return;
+
+      await auth.protect();
+
+      if (isAdminRoute(req)) {
+        const { userId } = await auth();
+        const allow = adminUserIds();
+        // Fail closed: empty allowlist → nobody reaches /admin.
+        if (allow.size === 0 || !userId || !allow.has(userId)) {
+          return NextResponse.redirect(new URL("/", req.url));
+        }
       }
     })
   : function middleware() {
-      // Clerk keys not configured yet — allow the public site to load.
       return NextResponse.next();
     };
 

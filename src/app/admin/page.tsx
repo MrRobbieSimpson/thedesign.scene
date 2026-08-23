@@ -1,3 +1,5 @@
+import { redirect } from "next/navigation";
+
 import { ContentForm } from "@/components/admin/content-form";
 import { ContentList } from "@/components/admin/content-list";
 import { EventList } from "@/components/admin/event-list";
@@ -6,6 +8,7 @@ import { ImportEventForm } from "@/components/admin/import-event-form";
 import { ImportRssPanel } from "@/components/admin/import-rss-panel";
 import { ImportUrlForm } from "@/components/admin/import-url-form";
 import { isDatabaseConfigured } from "@/db";
+import { isAdmin } from "@/lib/auth";
 import {
   getAllContent,
   getAllEvents,
@@ -21,6 +24,10 @@ export const metadata = {
 };
 
 export default async function AdminPage() {
+  if (!(await isAdmin())) {
+    redirect("/");
+  }
+
   const [items, eventItems, makers, profiles] = await Promise.all([
     getAllContent(),
     getAllEvents(),
@@ -39,8 +46,7 @@ export default async function AdminPage() {
         <p className="max-w-xl text-muted-foreground">
           Editorial back office — import links, publish with taste, feature
           picks with notes, manage events, and set the monthly guest editor.
-          Currently open to any signed-in account; tighten to an allowlist when
-          you’re ready.
+          Restricted to authorised curators.
         </p>
       </section>
 

@@ -22,7 +22,6 @@ const signedInNav = [
   { href: "/saves", label: "Saves" },
   { href: "/scenes", label: "Scenes" },
   { href: "/settings/profile", label: "Profile" },
-  { href: "/admin", label: "Admin" },
 ];
 
 export function Header() {

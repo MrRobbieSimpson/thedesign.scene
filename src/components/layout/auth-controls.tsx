@@ -1,8 +1,10 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Show, SignInButton, SignUpButton, useAuth } from "@clerk/nextjs";
 
+import { checkIsAdmin } from "@/app/actions/admin-access";
 import { AccountMenu } from "@/components/layout/account-menu";
 import { WriteButton } from "@/components/writing/write-button";
 import { AnimatedPills } from "@/components/ui/animated-pills";
@@ -90,14 +92,30 @@ export function SignedInNav({
   items: { href: string; label: string }[];
   pathname: string;
 }) {
+  const [admin, setAdmin] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    checkIsAdmin().then((value) => {
+      if (active) setAdmin(value);
+    });
+    return () => {
+      active = false;
+    };
+  }, []);
+
   if (!isClerkPublishableConfigured()) return null;
+
+  const navItems = admin
+    ? [...items, { href: "/admin", label: "Admin" }]
+    : items;
 
   return (
     <Show when="signed-in">
       <AnimatedPills
         variant="ghost"
         aria-label="Account"
-        items={items.map((item) => ({
+        items={navItems.map((item) => ({
           key: item.href,
           label: item.label,
           href: item.href,

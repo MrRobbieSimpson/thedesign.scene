@@ -42,9 +42,22 @@ function requireDb(): ActionResult | null {
   return null;
 }
 
+async function requireAdminAccess(): Promise<ActionResult | null> {
+  try {
+    const { requireAdmin } = await import("@/lib/auth");
+    await requireAdmin();
+    return null;
+  } catch {
+    return { ok: false, message: "You don’t have access to curate." };
+  }
+}
+
 export async function createContent(formData: FormData): Promise<ActionResult> {
   const missing = requireDb();
   if (missing) return missing;
+
+  const forbidden = await requireAdminAccess();
+  if (forbidden) return forbidden;
 
   const { readingTimeMinutes, slugify } = await import("@/lib/slug");
 
@@ -136,6 +149,9 @@ export async function setContentStatus(
   const missing = requireDb();
   if (missing) return missing;
 
+  const forbidden = await requireAdminAccess();
+  if (forbidden) return forbidden;
+
   await db!
     .update(content)
     .set({
@@ -161,12 +177,15 @@ export async function previewImportUrl(
   | { ok: true; data: ResolvedImport }
   | { ok: false; message: string }
 > {
+  const forbidden = await requireAdminAccess();
+  if (forbidden) return { ok: false as const, message: forbidden.message };
+
   try {
     const data = await resolveImportUrl(url);
     return { ok: true, data };
   } catch (error) {
     return {
-      ok: false,
+      ok: false as const,
       message:
         error instanceof Error ? error.message : "Could not resolve that URL.",
     };
@@ -174,6 +193,9 @@ export async function previewImportUrl(
 }
 
 export async function confirmImportUrl(formData: FormData): Promise<ActionResult> {
+  const forbidden = await requireAdminAccess();
+  if (forbidden) return forbidden;
+
   const url = String(formData.get("url") ?? "").trim();
   const typeRaw = String(formData.get("type") ?? "");
   const title = String(formData.get("title") ?? "").trim();
@@ -213,6 +235,9 @@ export async function confirmImportUrl(formData: FormData): Promise<ActionResult
 }
 
 export async function loadRssSource(sourceId: string, limit = 10) {
+  const forbidden = await requireAdminAccess();
+  if (forbidden) return { ok: false as const, message: forbidden.message };
+
   const source = getFeedSource(sourceId);
   if (!source) {
     return { ok: false as const, message: "Unknown source." };
@@ -234,6 +259,9 @@ export async function importRssSelection(
   sourceId: string,
   externalIds: string[]
 ): Promise<ActionResult> {
+  const forbidden = await requireAdminAccess();
+  if (forbidden) return forbidden;
+
   const source = getFeedSource(sourceId);
   if (!source) return { ok: false, message: "Unknown source." };
 
@@ -268,12 +296,15 @@ export async function previewEventUrl(url: string): Promise<
   | { ok: true; data: ResolvedEvent; needsDates: boolean }
   | { ok: false; message: string }
 > {
+  const forbidden = await requireAdminAccess();
+  if (forbidden) return { ok: false as const, message: forbidden.message };
+
   try {
     const data = await resolveEventUrl(url);
     return { ok: true, data, needsDates: eventNeedsDates(data) };
   } catch (error) {
     return {
-      ok: false,
+      ok: false as const,
       message:
         error instanceof Error ? error.message : "Could not resolve that event URL.",
     };
@@ -285,6 +316,9 @@ export async function confirmEventImport(
 ): Promise<ActionResult> {
   const missing = requireDb();
   if (missing) return missing;
+
+  const forbidden = await requireAdminAccess();
+  if (forbidden) return forbidden;
 
   const url = String(formData.get("url") ?? "").trim();
   if (!url) return { ok: false, message: "URL is required." };
@@ -377,6 +411,9 @@ export async function createEvent(formData: FormData): Promise<ActionResult> {
   const missing = requireDb();
   if (missing) return missing;
 
+  const forbidden = await requireAdminAccess();
+  if (forbidden) return forbidden;
+
   const title = String(formData.get("title") ?? "").trim();
   const description = String(formData.get("description") ?? "").trim() || null;
   const url = String(formData.get("url") ?? "").trim() || null;
@@ -424,6 +461,9 @@ export async function setEventStatus(
 ): Promise<ActionResult> {
   const missing = requireDb();
   if (missing) return missing;
+
+  const forbidden = await requireAdminAccess();
+  if (forbidden) return forbidden;
 
   await db!.update(events).set({ status }).where(eq(events.id, id));
 
