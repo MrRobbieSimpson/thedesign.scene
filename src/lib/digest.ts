@@ -5,11 +5,19 @@ import { content, events, type Event } from "@/db/schema";
 
 const SITE = "https://thedesign-scene.vercel.app";
 
-/** Scene ink / paper approximations for email clients. */
-const INK = "#1c1914";
+/** Light (paper) — inline fallbacks for clients that strip <style>. */
 const PAPER = "#f7f4ef";
+const CARD = "#fffefb";
+const INK = "#1c1914";
 const MUTED = "#7a7468";
 const RULE = "rgba(28,25,20,0.12)";
+
+/** Dark (ink) — applied via prefers-color-scheme where supported. */
+const DARK_PAPER = "#16130f";
+const DARK_CARD = "#1e1b16";
+const DARK_INK = "#f4f0ea";
+const DARK_MUTED = "#a39e94";
+const DARK_RULE = "rgba(244,240,234,0.12)";
 
 export type DigestPayload = {
   html: string;
@@ -22,7 +30,6 @@ export type DigestPayload = {
 };
 
 export type DigestOptions = {
-  /** Profile location string, e.g. "Belfast" — favours nearby events. */
   location?: string | null;
 };
 
@@ -53,7 +60,10 @@ function isLikelyRemote(event: Event) {
   return !loc || loc.includes("online") || loc.includes("remote");
 }
 
-function pickEventsForLocation(all: Event[], location: string | null | undefined) {
+function pickEventsForLocation(
+  all: Event[],
+  location: string | null | undefined
+) {
   if (!location?.trim()) {
     return all.slice(0, 3);
   }
@@ -73,7 +83,7 @@ function shortLocationLabel(location: string) {
   return location.split(",")[0]?.trim() || location.trim();
 }
 
-/** Build this week’s digest HTML — Scene aesthetic, optional local events. */
+/** Build this week’s digest HTML — Scene aesthetic + OS dark/light. */
 export async function buildWeeklyDigest(
   options: DigestOptions = {}
 ): Promise<DigestPayload> {
@@ -141,13 +151,13 @@ export async function buildWeeklyDigest(
   const sections: string[] = [];
 
   sections.push(`
-    <p style="margin:0 0 10px;font-family:${fontStack};font-size:11px;font-weight:500;letter-spacing:0.16em;text-transform:uppercase;color:${MUTED}">
+    <p class="muted eyebrow" style="margin:0 0 10px;font-family:${fontStack};font-size:11px;font-weight:500;letter-spacing:0.16em;text-transform:uppercase;color:${MUTED}">
       Editor’s selection
     </p>
-    <h1 style="margin:0 0 12px;font-family:${serifStack};font-weight:500;font-size:32px;line-height:1.15;letter-spacing:-0.02em;color:${INK}">
+    <h1 class="ink title" style="margin:0 0 12px;font-family:${serifStack};font-weight:500;font-size:32px;line-height:1.15;letter-spacing:-0.02em;color:${INK}">
       Design worth sitting with
     </h1>
-    <p style="margin:0 0 28px;font-family:${fontStack};font-size:15px;line-height:1.65;color:${MUTED}">
+    <p class="muted" style="margin:0 0 28px;font-family:${fontStack};font-size:15px;line-height:1.65;color:${MUTED}">
       A small weekly note from thedesign.scene — writing first, then events${
         locationLabel ? ` near ${escapeHtml(locationLabel)}` : ""
       }.
@@ -156,7 +166,7 @@ export async function buildWeeklyDigest(
 
   if (picks.length) {
     sections.push(`
-      <p style="margin:0 0 14px;font-family:${fontStack};font-size:11px;font-weight:500;letter-spacing:0.14em;text-transform:uppercase;color:${MUTED}">
+      <p class="muted eyebrow" style="margin:0 0 14px;font-family:${fontStack};font-size:11px;font-weight:500;letter-spacing:0.14em;text-transform:uppercase;color:${MUTED}">
         Editor’s picks
       </p>
     `);
@@ -165,14 +175,14 @@ export async function buildWeeklyDigest(
         ? `${SITE}/article/${item.slug}`
         : `${SITE}/content/${item.id}`;
       sections.push(`
-        <div style="margin:0 0 22px;padding:0 0 22px;border-bottom:1px solid ${RULE}">
-          <a href="${href}" style="font-family:${serifStack};font-size:20px;line-height:1.3;font-weight:500;letter-spacing:-0.02em;color:${INK};text-decoration:none">
+        <div class="rule-b" style="margin:0 0 22px;padding:0 0 22px;border-bottom:1px solid ${RULE}">
+          <a class="ink link" href="${href}" style="font-family:${serifStack};font-size:20px;line-height:1.3;font-weight:500;letter-spacing:-0.02em;color:${INK};text-decoration:none">
             ${escapeHtml(item.title)}
           </a>
           ${
             item.editorNote
-              ? `<p style="margin:10px 0 0;padding-left:12px;border-left:1px solid ${RULE};font-family:${fontStack};font-size:13px;line-height:1.55;color:${MUTED}">
-                  <span style="display:block;margin-bottom:4px;font-size:10px;letter-spacing:0.14em;text-transform:uppercase">Why this is here</span>
+              ? `<p class="muted note" style="margin:10px 0 0;padding-left:12px;border-left:1px solid ${RULE};font-family:${fontStack};font-size:13px;line-height:1.55;color:${MUTED}">
+                  <span class="eyebrow" style="display:block;margin-bottom:4px;font-size:10px;letter-spacing:0.14em;text-transform:uppercase">Why this is here</span>
                   ${escapeHtml(item.editorNote)}
                 </p>`
               : ""
@@ -184,7 +194,7 @@ export async function buildWeeklyDigest(
 
   if (writing.length) {
     sections.push(`
-      <p style="margin:8px 0 14px;font-family:${fontStack};font-size:11px;font-weight:500;letter-spacing:0.14em;text-transform:uppercase;color:${MUTED}">
+      <p class="muted eyebrow" style="margin:8px 0 14px;font-family:${fontStack};font-size:11px;font-weight:500;letter-spacing:0.14em;text-transform:uppercase;color:${MUTED}">
         New writing
       </p>
       <ul style="margin:0 0 28px;padding:0;list-style:none">
@@ -195,7 +205,7 @@ export async function buildWeeklyDigest(
         : `${SITE}/content/${item.id}`;
       sections.push(`
         <li style="margin:0 0 12px">
-          <a href="${href}" style="font-family:${serifStack};font-size:17px;line-height:1.35;font-weight:500;color:${INK};text-decoration:none">
+          <a class="ink link" href="${href}" style="font-family:${serifStack};font-size:17px;line-height:1.35;font-weight:500;color:${INK};text-decoration:none">
             ${escapeHtml(item.title)}
           </a>
         </li>
@@ -206,25 +216,25 @@ export async function buildWeeklyDigest(
 
   if (upcoming.length) {
     sections.push(`
-      <p style="margin:8px 0 14px;font-family:${fontStack};font-size:11px;font-weight:500;letter-spacing:0.14em;text-transform:uppercase;color:${MUTED}">
+      <p class="muted eyebrow" style="margin:8px 0 14px;font-family:${fontStack};font-size:11px;font-weight:500;letter-spacing:0.14em;text-transform:uppercase;color:${MUTED}">
         ${locationLabel ? `Near ${escapeHtml(locationLabel)}` : "Upcoming events"}
       </p>
       <ul style="margin:0 0 8px;padding:0;list-style:none">
     `);
     for (const event of upcoming) {
       sections.push(`
-        <li style="margin:0 0 14px;padding:14px 16px;border:1px solid ${RULE};border-radius:14px">
-          <div style="font-family:${fontStack};font-size:15px;font-weight:500;color:${INK}">
+        <li class="event-card" style="margin:0 0 14px;padding:14px 16px;border:1px solid ${RULE};border-radius:14px">
+          <div class="ink" style="font-family:${fontStack};font-size:15px;font-weight:500;color:${INK}">
             ${escapeHtml(event.title)}
           </div>
           ${
             event.location
-              ? `<div style="margin-top:4px;font-family:${fontStack};font-size:12px;color:${MUTED}">${escapeHtml(event.location)}</div>`
+              ? `<div class="muted" style="margin-top:4px;font-family:${fontStack};font-size:12px;color:${MUTED}">${escapeHtml(event.location)}</div>`
               : ""
           }
           ${
             event.url
-              ? `<div style="margin-top:8px"><a href="${event.url}" style="font-family:${fontStack};font-size:12px;color:${INK};text-decoration:underline">Details</a></div>`
+              ? `<div style="margin-top:8px"><a class="ink" href="${event.url}" style="font-family:${fontStack};font-size:12px;color:${INK};text-decoration:underline">Details</a></div>`
               : ""
           }
         </li>
@@ -234,12 +244,12 @@ export async function buildWeeklyDigest(
   }
 
   sections.push(`
-    <p style="margin:32px 0 0;padding-top:20px;border-top:1px solid ${RULE};font-family:${fontStack};font-size:12px;line-height:1.5;color:${MUTED}">
-      <a href="${SITE}" style="color:${MUTED};text-decoration:underline">Open the scene</a>
+    <p class="muted rule-t" style="margin:32px 0 0;padding-top:20px;border-top:1px solid ${RULE};font-family:${fontStack};font-size:12px;line-height:1.5;color:${MUTED}">
+      <a class="muted" href="${SITE}" style="color:${MUTED};text-decoration:underline">Open the scene</a>
       ·
-      <a href="${SITE}/settings/profile" style="color:${MUTED};text-decoration:underline">Update location</a>
+      <a class="muted" href="${SITE}/settings/profile" style="color:${MUTED};text-decoration:underline">Update location</a>
       ·
-      <a href="${SITE}/subscribe" style="color:${MUTED};text-decoration:underline">Digest</a>
+      <a class="muted" href="${SITE}/subscribe" style="color:${MUTED};text-decoration:underline">Digest</a>
     </p>
   `);
 
@@ -249,25 +259,57 @@ export async function buildWeeklyDigest(
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="light dark" />
+  <meta name="supported-color-schemes" content="light dark" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,500;8..60,600&display=swap" rel="stylesheet" />
+  <style>
+    :root { color-scheme: light dark; }
+    /* Dark mode — Apple Mail, iOS, many desktop clients. Gmail often keeps light inlines. */
+    @media (prefers-color-scheme: dark) {
+      .body-bg { background: ${DARK_PAPER} !important; }
+      .shell { background: ${DARK_PAPER} !important; }
+      .card {
+        background: ${DARK_CARD} !important;
+        border-color: ${DARK_RULE} !important;
+      }
+      .brand, .ink, .ink a, a.ink, a.link {
+        color: ${DARK_INK} !important;
+      }
+      .muted, .muted a, a.muted, .eyebrow {
+        color: ${DARK_MUTED} !important;
+      }
+      .rule-b, .rule-t, .note {
+        border-color: ${DARK_RULE} !important;
+      }
+      .event-card {
+        border-color: ${DARK_RULE} !important;
+        background: ${DARK_CARD} !important;
+      }
+    }
+  </style>
 </head>
-<body style="margin:0;padding:0;background:${PAPER}">
+<body class="body-bg" style="margin:0;padding:0;background:${PAPER}">
   <div style="display:none;max-height:0;overflow:hidden;opacity:0">
     A small weekly selection from thedesign.scene.
   </div>
-  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:${PAPER}">
+  <table class="shell" role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:${PAPER}">
     <tr>
       <td align="center" style="padding:40px 16px">
         <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:42rem;width:100%">
           <tr>
-            <td style="padding:0 0 28px;font-family:${fontStack};font-size:14px;font-weight:500;letter-spacing:-0.02em;color:${INK}">
+            <td class="brand" style="padding:0 0 28px;font-family:${fontStack};font-size:14px;font-weight:500;letter-spacing:-0.02em;color:${INK}">
               thedesign.scene
             </td>
           </tr>
           <tr>
-            <td style="padding:28px 24px;border:1px solid ${RULE};border-radius:18px;background:#fffefb">
+            <td class="card" style="padding:28px 24px;border:1px solid ${RULE};border-radius:18px;background:${CARD}">
               ${sections.join("\n")}
+            </td>
+          </tr>
+          <tr>
+            <td class="muted" style="padding:16px 4px 0;font-family:${fontStack};font-size:11px;color:${MUTED};text-align:center">
+              Follows your device light/dark setting where supported.
             </td>
           </tr>
         </table>
