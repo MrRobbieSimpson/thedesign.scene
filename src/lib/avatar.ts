@@ -169,3 +169,19 @@ export function xHandleFromClerkUser(
   if (fromX) return fromX.replace(/^@/, "");
   return user.username?.replace(/^@/, "").trim() || null;
 }
+
+/** True when the URL is already a high-res social CDN (don't overwrite with Clerk thumbs). */
+export function isSharpAvatarUrl(url: string | null | undefined): boolean {
+  if (!url) return false;
+  try {
+    const host = new URL(url).hostname.toLowerCase();
+    if (host.includes("pbs.twimg.com")) return /_(?:200x200|400x400)\./i.test(url) || !/_(?:normal|bigger|mini)\./i.test(url);
+    if (host.includes("googleusercontent.com")) {
+      const match = url.match(/=s(\d+)/i) || url.match(/\/s(\d+)-c\//i);
+      return match ? Number(match[1]) >= 200 : true;
+    }
+    return false;
+  } catch {
+    return false;
+  }
+}

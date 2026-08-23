@@ -1,4 +1,4 @@
-import { auth, currentUser } from "@clerk/nextjs/server";
+import { auth, clerkClient, currentUser } from "@clerk/nextjs/server";
 import { eq } from "drizzle-orm";
 import { revalidateTag } from "next/cache";
 
@@ -6,6 +6,7 @@ import { db } from "@/db";
 import { profiles, type Profile } from "@/db/schema";
 import {
   bestAvatarFromClerkUser,
+  isSharpAvatarUrl,
   xHandleFromClerkUser,
 } from "@/lib/avatar";
 import { isClerkConfigured } from "@/lib/clerk";
@@ -90,21 +91,39 @@ export async function getOrCreateProfile(): Promise<Profile | null> {
     where: eq(profiles.clerkUserId, userId),
   });
 
-  const user = await currentUser();
+  // Backend user includes external-account imageUrls that unwrap to
+  // pbs.twimg / Google CDNs. currentUser() alone often only has the soft thumb.
+  const client = await clerkClient();
+  const user = await client.users.getUser(userId);
   const displayName =
-    user?.fullName ||
-    [user?.firstName, user?.lastName].filter(Boolean).join(" ") ||
-    user?.username ||
+    user.fullName ||
+    [user.firstName, user.lastName].filter(Boolean).join(" ") ||
+    user.username ||
     "Reader";
-  const handle = user?.username ?? null;
-  // Prefer Google / upgraded X CDN over Clerk’s soft 48×48 OAuth proxy.
-  const avatarUrl = bestAvatarFromClerkUser(user, 128) ?? user?.imageUrl ?? null;
-  const xHandle = xHandleFromClerkUser(user);
+  const handle = user.username ?? null;
+  const shaped = {
+    imageUrl: user.imageUrl,
+    username: user.username,
+    externalAccounts: user.externalAccounts.map((account) => ({
+      provider: account.provider,
+      username: account.username,
+      imageUrl: account.imageUrl,
+    })),
+  };
+  const resolvedAvatar = bestAvatarFromClerkUser(shaped, 128);
+  const xHandle = xHandleFromClerkUser(shaped);
 
   if (existing) {
-    // Keep avatar / X handle fresh — Clerk’s stored OAuth thumbs go stale/soft.
+    // Never replace a sharp CDN avatar with Clerk’s soft OAuth thumb.
+    const nextAvatar =
+      resolvedAvatar &&
+      (!isSharpAvatarUrl(existing.avatarUrl) ||
+        isSharpAvatarUrl(resolvedAvatar))
+        ? resolvedAvatar
+        : existing.avatarUrl;
+
     const needsUpdate =
-      (avatarUrl && avatarUrl !== existing.avatarUrl) ||
+      (nextAvatar && nextAvatar !== existing.avatarUrl) ||
       (xHandle && xHandle !== existing.xHandle) ||
       (!existing.xHandle && xHandle);
 
@@ -112,7 +131,7 @@ export async function getOrCreateProfile(): Promise<Profile | null> {
       const [updated] = await db
         .update(profiles)
         .set({
-          avatarUrl: avatarUrl ?? existing.avatarUrl,
+          avatarUrl: nextAvatar ?? existing.avatarUrl,
           xHandle: xHandle ?? existing.xHandle,
           displayName: existing.displayName ?? displayName,
         })
@@ -130,7 +149,7 @@ export async function getOrCreateProfile(): Promise<Profile | null> {
       clerkUserId: userId,
       displayName,
       handle,
-      avatarUrl,
+      avatarUrl: resolvedAvatar ?? user.imageUrl ?? null,
       xHandle,
     })
     .returning();
