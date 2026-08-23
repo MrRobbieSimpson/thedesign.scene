@@ -6,10 +6,6 @@
 import { config } from "dotenv";
 config({ path: ".env.local" });
 
-import { Resend } from "resend";
-
-import { buildWeeklyDigest } from "../src/lib/digest";
-
 async function main() {
   const to = (process.argv[2] || "").trim().toLowerCase();
   if (!to) {
@@ -23,6 +19,10 @@ async function main() {
     console.error("Missing RESEND_API_KEY or DIGEST_FROM_EMAIL in .env.local");
     process.exit(1);
   }
+
+  // Dynamic imports after dotenv so DATABASE_URL is available.
+  const { Resend } = await import("resend");
+  const { buildWeeklyDigest } = await import("../src/lib/digest");
 
   const digest = await buildWeeklyDigest();
   if (digest.skipped) {
@@ -41,8 +41,16 @@ async function main() {
     html: digest.html,
   });
 
+  if (result.error) {
+    console.error("Resend error:", result.error);
+    process.exit(1);
+  }
+
   console.log("Sent test digest to", to);
-  console.log(result);
+  console.log("id:", result.data?.id);
+  console.log(
+    `Content — picks:${digest.picks} writing:${digest.writing} events:${digest.events}`
+  );
 }
 
 main().catch((error) => {
