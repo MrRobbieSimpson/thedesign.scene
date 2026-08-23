@@ -5,7 +5,7 @@ import { Geist, Geist_Mono, Source_Serif_4 } from "next/font/google";
 import { DeferredUi } from "@/components/deferred-ui";
 import { EnsureProfile } from "@/components/ensure-profile";
 import { Footer } from "@/components/layout/footer";
-import { Header } from "@/components/layout/header";
+import { SiteHeader } from "@/components/layout/site-header";
 import { ThemeProvider } from "@/components/theme-provider";
 import { SiteStage } from "@/components/writing/site-stage";
 import { WritingProvider } from "@/components/writing/writing-context";
@@ -59,7 +59,7 @@ export default function RootLayout({
       <WritingProvider>
         <EnsureProfile />
         <SiteStage>
-          <Header />
+          <SiteHeader />
           <main className="flex-1">{children}</main>
           <Footer />
         </SiteStage>

@@ -6,6 +6,7 @@ import { revalidatePath, revalidateTag } from "next/cache";
 import { db } from "@/db";
 import { profiles, type ProfileLink } from "@/db/schema";
 import { requireProfile } from "@/lib/auth";
+import { timezoneFromLocation } from "@/lib/geo";
 import { slugify } from "@/lib/slug";
 
 export type UpdateProfileResult =
@@ -104,6 +105,17 @@ export async function updateMyProfile(
 
   const previousHandle = profile.handle;
 
+  // Resolve IANA timezone from location when it changes (drives header clock).
+  let timezone = profile.timezone ?? null;
+  if (!location) {
+    timezone = null;
+  } else if (
+    location !== profile.location ||
+    !profile.timezone
+  ) {
+    timezone = (await timezoneFromLocation(location)) ?? profile.timezone ?? null;
+  }
+
   const [updated] = await db
     .update(profiles)
     .set({
@@ -113,12 +125,14 @@ export async function updateMyProfile(
       website,
       xHandle,
       location,
+      timezone,
       links,
     })
     .where(eq(profiles.id, profile.id))
     .returning();
 
   revalidateTag("profiles");
+  revalidatePath("/");
   revalidatePath("/settings/profile");
   if (previousHandle) revalidatePath(`/u/${previousHandle}`);
   if (updated.handle) revalidatePath(`/u/${updated.handle}`);

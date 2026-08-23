@@ -64,6 +64,13 @@
       "when": 1787519000000,
       "tag": "0008_profile_links",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1787520000000,
+      "tag": "0009_profile_timezone",
+      "breakpoints": true
     }
   ]
 }

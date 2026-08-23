@@ -146,6 +146,17 @@ export default async function ProfileSettingsPage({
             defaultValue={profile.location ?? ""}
             placeholder="Belfast"
           />
+          <p className="text-xs text-muted-foreground">
+            Used for nearby digest events and the header clock
+            {profile.timezone ? (
+              <>
+                {" "}
+                · currently{" "}
+                <span className="text-foreground/80">{profile.timezone}</span>
+              </>
+            ) : null}
+            .
+          </p>
         </div>
 
         <div className="flex items-center justify-between gap-3 pt-2">

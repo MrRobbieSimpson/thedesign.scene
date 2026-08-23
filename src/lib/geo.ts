@@ -64,3 +64,43 @@ export async function geocodeLocation(
 
   return { latitude, longitude };
 }
+
+/**
+ * Resolve an IANA timezone for a free-text place name via geocode + Open-Meteo.
+ * Returns null when the place can’t be resolved.
+ */
+export async function timezoneFromLocation(
+  query: string | null | undefined
+): Promise<string | null> {
+  const trimmed = query?.trim();
+  if (!trimmed) return null;
+
+  const coords = await geocodeLocation(trimmed);
+  if (!coords) return null;
+
+  const url = new URL("https://api.open-meteo.com/v1/forecast");
+  url.searchParams.set("latitude", String(coords.latitude));
+  url.searchParams.set("longitude", String(coords.longitude));
+  url.searchParams.set("timezone", "auto");
+  url.searchParams.set("forecast_days", "1");
+
+  try {
+    const response = await fetch(url.toString(), {
+      headers: { Accept: "application/json" },
+      cache: "no-store",
+    });
+    if (!response.ok) return null;
+    const data = (await response.json()) as { timezone?: string };
+    const zone = data.timezone?.trim();
+    if (!zone) return null;
+    // Validate it is a real IANA zone the runtime knows.
+    try {
+      Intl.DateTimeFormat(undefined, { timeZone: zone });
+      return zone;
+    } catch {
+      return null;
+    }
+  } catch {
+    return null;
+  }
+}

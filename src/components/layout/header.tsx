@@ -14,7 +14,7 @@ const nav = [
   { href: "/events", label: "Events" },
 ];
 
-export function Header() {
+export function Header({ timeZone }: { timeZone?: string | null }) {
   const pathname = usePathname();
 
   return (
@@ -56,7 +56,7 @@ export function Header() {
           </div>
 
           <div className="flex h-8 shrink-0 items-center gap-1 sm:gap-1.5">
-            <LocalTime />
+            <LocalTime timeZone={timeZone} />
             <ThemeToggle />
             <AuthControls />
           </div>

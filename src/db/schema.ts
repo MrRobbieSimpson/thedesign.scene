@@ -87,6 +87,8 @@ export const profiles = pgTable("profiles", {
   website: text("website"),
   xHandle: text("x_handle"),
   location: text("location"),
+  /** IANA timezone resolved from location (e.g. Europe/London). Drives the header clock. */
+  timezone: text("timezone"),
   /** Optional label+URL pairs shown on the portfolio. */
   links: jsonb("links").$type<ProfileLink[]>().notNull().default([]),
   makerId: uuid("maker_id").references(() => makers.id, {

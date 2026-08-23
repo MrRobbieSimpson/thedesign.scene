@@ -3,10 +3,12 @@
 import { useEffect, useState } from "react";
 
 /**
- * Subtle live clock in the user's local timezone.
+ * Subtle live clock. Uses the signed-in profile timezone when set
+ * (resolved from Location); otherwise the browser’s local zone.
  */
-export function LocalTime() {
+export function LocalTime({ timeZone }: { timeZone?: string | null }) {
   const [now, setNow] = useState<Date | null>(null);
+  const zoneOption = timeZone?.trim() || undefined;
 
   useEffect(() => {
     setNow(new Date());
@@ -27,24 +29,49 @@ export function LocalTime() {
     );
   }
 
-  const time = now.toLocaleTimeString(undefined, {
+  const formatOpts: Intl.DateTimeFormatOptions = {
     hour: "numeric",
     minute: "2-digit",
-  });
+    ...(zoneOption ? { timeZone: zoneOption } : {}),
+  };
 
-  const zone =
-    Intl.DateTimeFormat(undefined, { timeZoneName: "short" })
-      .formatToParts(now)
-      .find((part) => part.type === "timeZoneName")?.value ?? "";
+  let time: string;
+  let zoneLabel = "";
+  try {
+    time = now.toLocaleTimeString(undefined, formatOpts);
+    zoneLabel =
+      Intl.DateTimeFormat(undefined, {
+        timeZoneName: "short",
+        ...(zoneOption ? { timeZone: zoneOption } : {}),
+      })
+        .formatToParts(now)
+        .find((part) => part.type === "timeZoneName")?.value ?? "";
+  } catch {
+    // Invalid stored zone — fall back to device local.
+    time = now.toLocaleTimeString(undefined, {
+      hour: "numeric",
+      minute: "2-digit",
+    });
+    zoneLabel =
+      Intl.DateTimeFormat(undefined, { timeZoneName: "short" })
+        .formatToParts(now)
+        .find((part) => part.type === "timeZoneName")?.value ?? "";
+  }
+
+  const title = zoneOption
+    ? `Time in ${zoneOption}${zoneLabel ? ` (${zoneLabel})` : ""}`
+    : zoneLabel
+      ? `Local time (${zoneLabel})`
+      : "Local time";
 
   return (
     <time
       dateTime={now.toISOString()}
-      title={zone ? `Local time (${zone})` : "Local time"}
+      title={title}
       className="hidden h-8 items-center tabular-nums text-[11px] leading-none tracking-wide text-muted-foreground/70 md:inline-flex"
     >
       {time}
-      {zone ? <span className="ml-1">{zone}</span> : null}
+      {zoneLabel ? <span className="ml-1">{zoneLabel}</span> : null}
     </time>
   );
 }
