@@ -8,12 +8,16 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { requireProfile } from "@/lib/auth";
+import { buildPageMetadata } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
-export const metadata = {
+export const metadata = buildPageMetadata({
   title: "Profile settings",
-};
+  path: "/settings/profile",
+  description: "Edit how you appear on thedesign.scene.",
+  noIndex: true,
+});
 
 export default async function ProfileSettingsPage({
   searchParams,

@@ -5,12 +5,16 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { buildPageMetadata } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
-export const metadata = {
+export const metadata = buildPageMetadata({
   title: "Scenes",
-};
+  path: "/scenes",
+  description: "Your private scenes on thedesign.scene.",
+  noIndex: true,
+});
 
 export default async function ScenesPage() {
   const userScenes = await getUserScenes();

@@ -4,9 +4,14 @@ import { SignIn } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
 import { isClerkPublishableConfigured } from "@/lib/clerk";
 
-export const metadata = {
+import { buildPageMetadata } from "@/lib/seo";
+
+export const metadata = buildPageMetadata({
   title: "Sign in",
-};
+  path: "/sign-in",
+  description: "Sign in to thedesign.scene.",
+  noIndex: true,
+});
 
 export default function SignInPage() {
   if (!isClerkPublishableConfigured()) {

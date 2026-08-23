@@ -2,14 +2,16 @@ import Link from "next/link";
 
 import { EventsExplorer } from "@/components/events/events-explorer";
 import { getPublishedEvents } from "@/lib/queries";
+import { buildPageMetadata } from "@/lib/seo";
 
 export const revalidate = 60;
 
-export const metadata = {
+export const metadata = buildPageMetadata({
   title: "Events",
+  path: "/events",
   description:
-    "Design events worth showing up for — talks, meetups, and conferences.",
-};
+    "Design events worth showing up for — talks, meetups, and conferences, curated with the same taste as the feed.",
+});
 
 export default async function EventsPage() {
   const events = await getPublishedEvents();

@@ -1,12 +1,16 @@
 import { FeedGrid } from "@/components/content/feed-grid";
 import { getSavedContent } from "@/app/actions/library";
 import type { ContentWithMaker } from "@/lib/demo-data";
+import { buildPageMetadata } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
-export const metadata = {
+export const metadata = buildPageMetadata({
   title: "Saves",
-};
+  path: "/saves",
+  description: "Pieces you’ve saved on thedesign.scene.",
+  noIndex: true,
+});
 
 export default async function SavesPage() {
   const items = (await getSavedContent()) as ContentWithMaker[];

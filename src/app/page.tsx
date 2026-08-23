@@ -16,9 +16,16 @@ import {
   getPublishedEvents,
   getRegisteredDesignerCount,
 } from "@/lib/queries";
+import { buildPageMetadata } from "@/lib/seo";
 
 /** Soft ISR — feed stays fresh without a Neon hit on every request. */
 export const revalidate = 60;
+
+export const metadata = buildPageMetadata({
+  path: "/",
+  description:
+    "A calm curation of writing, visuals, and design events — quality over quantity.",
+});
 
 type HomeProps = {
   searchParams: Promise<{ type?: string }>;

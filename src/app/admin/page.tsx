@@ -15,13 +15,16 @@ import {
   getMakers,
   getProfiles,
 } from "@/lib/queries";
+import { buildPageMetadata } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
-export const metadata = {
+export const metadata = buildPageMetadata({
   title: "Admin",
-  description: "Manage thedesign.scene content.",
-};
+  path: "/admin",
+  description: "Editorial back office for thedesign.scene.",
+  noIndex: true,
+});
 
 export default async function AdminPage() {
   if (!(await isAdmin())) {

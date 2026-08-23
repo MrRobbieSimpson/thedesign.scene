@@ -8,6 +8,7 @@ import {
   getMakerByHandle,
   getPublishedContentByMaker,
 } from "@/lib/queries";
+import { buildPageMetadata, NO_INDEX } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
@@ -18,11 +19,16 @@ type MakerPageProps = {
 export async function generateMetadata({ params }: MakerPageProps) {
   const { handle } = await params;
   const maker = await getMakerByHandle(handle);
-  if (!maker) return { title: "Maker not found" };
-  return {
+  if (!maker) return { title: "Maker not found", ...NO_INDEX };
+  return buildPageMetadata({
     title: maker.name,
-    description: maker.bio ?? undefined,
-  };
+    description:
+      maker.bio ??
+      `${maker.name} on thedesign.scene — curated design work and writing.`,
+    path: `/maker/${maker.handle}`,
+    image: maker.avatar,
+    type: "profile",
+  });
 }
 
 export default async function MakerPage({ params }: MakerPageProps) {

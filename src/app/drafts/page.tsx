@@ -5,12 +5,16 @@ import { ContinueDraftButton } from "@/components/writing/continue-draft-button"
 import { WriteButton } from "@/components/writing/write-button";
 import { Button } from "@/components/ui/button";
 import { formatPublishedDate } from "@/lib/format";
+import { buildPageMetadata } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
-export const metadata = {
+export const metadata = buildPageMetadata({
   title: "Drafts",
-};
+  path: "/drafts",
+  description: "Your unpublished writing on thedesign.scene.",
+  noIndex: true,
+});
 
 function ArticleRow({
   draft,

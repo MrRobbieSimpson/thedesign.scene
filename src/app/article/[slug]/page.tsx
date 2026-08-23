@@ -24,10 +24,10 @@ import {
   getContentBySlug,
   getPublishedContentByProfile,
 } from "@/lib/queries";
+import { buildPageMetadata, NO_INDEX } from "@/lib/seo";
+import { SITE_ORIGIN } from "@/lib/site";
 
 export const dynamic = "force-dynamic";
-
-const SITE_ORIGIN = "https://thedesign-scene.vercel.app";
 
 type ArticlePageProps = {
   params: Promise<{ slug: string }>;
@@ -37,11 +37,17 @@ type ArticlePageProps = {
 export async function generateMetadata({ params }: ArticlePageProps) {
   const { slug } = await params;
   const item = await getContentBySlug(slug);
-  if (!item || item.type !== "article") return { title: "Not found" };
-  return {
+  if (!item || item.type !== "article") {
+    return { title: "Not found", ...NO_INDEX };
+  }
+  return buildPageMetadata({
     title: item.title,
-    description: item.excerpt ?? undefined,
-  };
+    description: item.excerpt,
+    path: `/article/${item.slug}`,
+    image: item.image,
+    type: "article",
+    noIndex: item.status !== "published",
+  });
 }
 
 export default async function ArticlePage({

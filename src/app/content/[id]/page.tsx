@@ -12,6 +12,7 @@ import {
   sourcePlatformLabel,
 } from "@/lib/format";
 import { getContentById } from "@/lib/queries";
+import { buildPageMetadata, NO_INDEX } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
@@ -22,11 +23,24 @@ type ContentPageProps = {
 export async function generateMetadata({ params }: ContentPageProps) {
   const { id } = await params;
   const item = await getContentById(id);
-  if (!item) return { title: "Not found" };
-  return {
+  if (!item) return { title: "Not found", ...NO_INDEX };
+  if (item.type === "article" && item.slug) {
+    return buildPageMetadata({
+      title: item.title,
+      description: item.excerpt,
+      path: `/article/${item.slug}`,
+      image: item.image,
+      type: "article",
+      noIndex: item.status !== "published",
+    });
+  }
+  return buildPageMetadata({
     title: item.title,
-    description: item.excerpt ?? undefined,
-  };
+    description: item.excerpt,
+    path: `/content/${item.id}`,
+    image: item.image,
+    noIndex: item.status !== "published",
+  });
 }
 
 export default async function ContentPage({ params }: ContentPageProps) {

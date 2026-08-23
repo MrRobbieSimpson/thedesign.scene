@@ -4,9 +4,14 @@ import { SignUp } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
 import { isClerkPublishableConfigured } from "@/lib/clerk";
 
-export const metadata = {
+import { buildPageMetadata } from "@/lib/seo";
+
+export const metadata = buildPageMetadata({
   title: "Sign up",
-};
+  path: "/sign-up",
+  description: "Join thedesign.scene.",
+  noIndex: true,
+});
 
 export default function SignUpPage() {
   if (!isClerkPublishableConfigured()) {

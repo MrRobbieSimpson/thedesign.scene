@@ -1,6 +1,13 @@
 import { redirect } from "next/navigation";
 
 import { getOrCreateProfile, requireClerkUserId } from "@/lib/auth";
+import { buildPageMetadata } from "@/lib/seo";
+
+export const metadata = buildPageMetadata({
+  title: "Your portfolio",
+  path: "/me",
+  noIndex: true,
+});
 
 /**
  * Avatar menu entry → public portfolio.

@@ -3,7 +3,9 @@ import { and, desc, eq, gte } from "drizzle-orm";
 import { db } from "@/db";
 import { content, events, type Event } from "@/db/schema";
 
-const SITE = "https://thedesign-scene.vercel.app";
+import { SITE_ORIGIN } from "@/lib/site";
+
+const SITE = SITE_ORIGIN;
 
 /** Light (paper) — inline fallbacks for clients that strip <style>. */
 const PAPER = "#f7f4ef";

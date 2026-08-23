@@ -10,8 +10,15 @@ import {
 import { FeedGrid } from "@/components/content/feed-grid";
 import { Button } from "@/components/ui/button";
 import type { ContentWithMaker } from "@/lib/demo-data";
+import { buildPageMetadata } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
+
+export const metadata = buildPageMetadata({
+  title: "Scene",
+  path: "/scenes",
+  noIndex: true,
+});
 
 type ScenePageProps = {
   params: Promise<{ id: string }>;

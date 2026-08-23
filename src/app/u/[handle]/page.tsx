@@ -12,6 +12,7 @@ import {
   getProfileByHandle,
   getPublishedContentByProfile,
 } from "@/lib/queries";
+import { buildPageMetadata, NO_INDEX } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
@@ -22,11 +23,17 @@ type PortfolioPageProps = {
 export async function generateMetadata({ params }: PortfolioPageProps) {
   const { handle } = await params;
   const profile = await getProfileByHandle(handle);
-  if (!profile) return { title: "Profile not found" };
-  return {
-    title: profile.displayName ?? `@${profile.handle}`,
-    description: profile.bio ?? undefined,
-  };
+  if (!profile) return { title: "Profile not found", ...NO_INDEX };
+  const name = profile.displayName ?? `@${profile.handle}`;
+  return buildPageMetadata({
+    title: name,
+    description:
+      profile.bio ??
+      `${name} on thedesign.scene — writing and work from the curated design community.`,
+    path: `/u/${profile.handle}`,
+    image: profile.avatarUrl,
+    type: "profile",
+  });
 }
 
 export default async function PortfolioPage({ params }: PortfolioPageProps) {
