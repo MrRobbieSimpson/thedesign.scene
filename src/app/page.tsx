@@ -94,12 +94,11 @@ export default async function HomePage({ searchParams }: HomeProps) {
       {guest ? <GuestEditorStrip guest={guest} /> : null}
 
       <HomeFeed
-        key={filter}
         items={items}
         toolbar={
           <Suspense
             fallback={
-              <div className="h-10 w-72 animate-pulse rounded-full bg-muted" />
+              <div className="h-10 w-72 max-w-full animate-pulse rounded-full bg-muted" />
             }
           >
             <FeedFilters />

@@ -18,20 +18,18 @@ function DigestShell({
   error: boolean;
 }) {
   return (
-    <section className="rounded-2xl bg-foreground px-4 py-5 text-background sm:px-5 sm:py-5">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between sm:gap-6">
-        <div className="min-w-0 space-y-1 sm:max-w-[18rem]">
-          <h2 className="font-heading text-lg tracking-tight text-background sm:text-xl">
-            Digest
-          </h2>
-          <p className="text-sm leading-relaxed text-background/70">
-            A short Thursday note — picks, writing, and events near you.
-          </p>
-        </div>
-        <div className="flex w-full min-w-0 flex-col items-stretch gap-2 sm:max-w-xs sm:items-end">
-          {action}
-        </div>
+    <section className="rounded-2xl bg-foreground px-4 py-5 text-background sm:px-5">
+      {/* Title + CTA on one aligned row; copy stacks cleanly below. */}
+      <div className="flex items-start justify-between gap-3">
+        <h2 className="min-w-0 flex-1 font-heading text-lg tracking-tight text-background sm:text-xl">
+          Digest
+        </h2>
+        <div className="shrink-0">{action}</div>
       </div>
+
+      <p className="mt-2 max-w-prose text-sm leading-relaxed text-background/70">
+        A short Thursday note — picks, writing, and events near you.
+      </p>
 
       {message ? (
         <p
@@ -55,7 +53,7 @@ function DigestShell({
           ) : null}
         </p>
       ) : (
-        <p className="mt-3 text-xs text-background/55">
+        <p className="mt-3 text-xs leading-relaxed text-background/55">
           Uses your profile location for nearby events.{" "}
           <Link
             href="/settings/profile"
@@ -67,6 +65,55 @@ function DigestShell({
         </p>
       )}
     </section>
+  );
+}
+
+function DigestCta({
+  pending,
+  onSubscribe,
+  signedIn,
+  loaded,
+}: {
+  pending: boolean;
+  onSubscribe: () => void;
+  signedIn: boolean;
+  loaded: boolean;
+}) {
+  const className =
+    "h-9 shrink-0 border border-background/20 bg-background px-3.5 text-foreground hover:bg-background/90 sm:px-4";
+
+  if (!loaded) {
+    return (
+      <div className="h-9 w-[4.5rem] animate-pulse rounded-lg bg-background/20" />
+    );
+  }
+
+  if (signedIn) {
+    return (
+      <Button
+        type="button"
+        size="sm"
+        disabled={pending}
+        onClick={onSubscribe}
+        className={className}
+      >
+        {pending ? "…" : (
+          <>
+            <span className="sm:hidden">Join</span>
+            <span className="hidden sm:inline">Join the digest</span>
+          </>
+        )}
+      </Button>
+    );
+  }
+
+  return (
+    <SignInButton mode="modal">
+      <Button type="button" size="sm" className={className}>
+        <span className="sm:hidden">Join</span>
+        <span className="hidden sm:inline">Sign in to join</span>
+      </Button>
+    </SignInButton>
   );
 }
 
@@ -85,31 +132,20 @@ function DigestStripAuthed() {
     });
   }
 
-  const action = !isLoaded ? (
-    <div className="h-9 w-28 animate-pulse rounded-lg bg-background/20" />
-  ) : isSignedIn ? (
-    <Button
-      type="button"
-      size="sm"
-      disabled={pending}
-      onClick={onSubscribe}
-      className="h-9 border border-background/20 bg-background px-4 text-foreground hover:bg-background/90"
-    >
-      {pending ? "…" : "Join the digest"}
-    </Button>
-  ) : (
-    <SignInButton mode="modal">
-      <Button
-        type="button"
-        size="sm"
-        className="h-9 border border-background/20 bg-background px-4 text-foreground hover:bg-background/90"
-      >
-        Sign in to join
-      </Button>
-    </SignInButton>
+  return (
+    <DigestShell
+      action={
+        <DigestCta
+          pending={pending}
+          onSubscribe={onSubscribe}
+          signedIn={Boolean(isSignedIn)}
+          loaded={isLoaded}
+        />
+      }
+      message={message}
+      error={error}
+    />
   );
-
-  return <DigestShell action={action} message={message} error={error} />;
 }
 
 export function DigestStrip() {
@@ -120,11 +156,12 @@ export function DigestStrip() {
           <Button
             type="button"
             size="sm"
-            className="h-9 border border-background/20 bg-background px-4 text-foreground"
+            className="h-9 shrink-0 border border-background/20 bg-background px-3.5 text-foreground sm:px-4"
             render={<Link href="/sign-in" />}
             nativeButton={false}
           >
-            Sign in to join
+            <span className="sm:hidden">Join</span>
+            <span className="hidden sm:inline">Sign in to join</span>
           </Button>
         }
         message={null}

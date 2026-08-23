@@ -28,11 +28,12 @@ export function FeedLayoutSwitcher({
       aria-label="Feed layout"
       // Touch devices: hover-follow steals the first tap — keep clicks direct.
       followHover={false}
+      className="shrink-0"
       items={options.map((option) => {
         const Icon = option.icon;
         return {
           key: option.value,
-          label: <Icon className="size-3.5" />,
+          label: <Icon className="size-3.5" aria-hidden />,
           title: option.label,
           "aria-label": option.label,
           active: value === option.value,

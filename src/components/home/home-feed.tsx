@@ -9,7 +9,7 @@ import {
   isFeedLayout,
   type FeedLayout,
 } from "@/components/content/feed-layout";
-import { FeedLayoutSwitcher } from "@/components/content/feed-layout-switcher";
+import { FeedToolbar } from "@/components/content/feed-toolbar";
 import { DigestStrip } from "@/components/home/digest-strip";
 import type { Event } from "@/db/schema";
 import type { ContentWithMaker } from "@/lib/demo-data";
@@ -145,17 +145,12 @@ export function HomeFeed({
 
   return (
     <div className="space-y-8 sm:space-y-10">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-3">
-        <div className="min-w-0 w-full overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:flex-1">
-          {toolbar}
-        </div>
-        <div className="flex h-9 shrink-0 items-center justify-end gap-2">
-          <p className="hidden text-xs tabular-nums text-muted-foreground/70 sm:block">
-            {revived.length}
-          </p>
-          <FeedLayoutSwitcher value={layout} onChange={onLayoutChange} />
-        </div>
-      </div>
+      <FeedToolbar
+        toolbar={toolbar}
+        layout={layout}
+        onLayoutChange={onLayoutChange}
+        count={revived.length}
+      />
 
       {revived.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-border/80 px-6 py-24 text-center">
