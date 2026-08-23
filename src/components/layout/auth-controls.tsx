@@ -1,19 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import {
-  Show,
-  SignInButton,
-  SignUpButton,
-  UserButton,
-  useAuth,
-} from "@clerk/nextjs";
-import { Pencil, UserRound } from "lucide-react";
+import { Show, SignInButton, SignUpButton, useAuth } from "@clerk/nextjs";
 
+import { AccountMenu } from "@/components/layout/account-menu";
 import { WriteButton } from "@/components/writing/write-button";
 import { AnimatedPills } from "@/components/ui/animated-pills";
 import { Button } from "@/components/ui/button";
-import { userButtonAppearance } from "@/lib/clerk-appearance";
 import { isClerkPublishableConfigured } from "@/lib/clerk";
 
 function GuestAuthLinks() {
@@ -46,23 +39,7 @@ function SignedInControls() {
   return (
     <div className="flex h-8 items-center gap-1.5">
       <WriteButton />
-      <UserButton
-        appearance={userButtonAppearance}
-        userProfileProps={{ appearance: userButtonAppearance }}
-      >
-        <UserButton.MenuItems>
-          <UserButton.Link
-            label="Portfolio"
-            href="/me"
-            labelIcon={<UserRound className="size-4" />}
-          />
-          <UserButton.Link
-            label="Edit profile"
-            href="/settings/profile"
-            labelIcon={<Pencil className="size-4" />}
-          />
-        </UserButton.MenuItems>
-      </UserButton>
+      <AccountMenu />
     </div>
   );
 }
