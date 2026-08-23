@@ -4,6 +4,10 @@ import { revalidateTag } from "next/cache";
 
 import { db } from "@/db";
 import { profiles, type Profile } from "@/db/schema";
+import {
+  bestAvatarFromClerkUser,
+  xHandleFromClerkUser,
+} from "@/lib/avatar";
 import { isClerkConfigured } from "@/lib/clerk";
 
 function adminUserIdSet() {
@@ -93,18 +97,9 @@ export async function getOrCreateProfile(): Promise<Profile | null> {
     user?.username ||
     "Reader";
   const handle = user?.username ?? null;
-  const avatarUrl = user?.imageUrl ?? null;
-  const xHandle =
-    user?.externalAccounts?.find((account) => {
-      const provider = String(account.provider).toLowerCase();
-      return (
-        provider.includes("twitter") ||
-        provider === "x" ||
-        provider.includes("oauth_x")
-      );
-    })?.username ??
-    user?.username ??
-    null;
+  // Prefer Google / upgraded X CDN over Clerk’s soft 48×48 OAuth proxy.
+  const avatarUrl = bestAvatarFromClerkUser(user, 128) ?? user?.imageUrl ?? null;
+  const xHandle = xHandleFromClerkUser(user);
 
   if (existing) {
     // Keep avatar / X handle fresh — Clerk’s stored OAuth thumbs go stale/soft.

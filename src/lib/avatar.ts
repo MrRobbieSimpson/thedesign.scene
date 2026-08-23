@@ -1,43 +1,171 @@
 /**
  * Build the best available avatar URL.
  *
- * Clerk’s X OAuth images are often locked at 48×48. When we know an X handle,
- * prefer Unavatar (typically 400×400). Fall back to Clerk / stored URL.
+ * Clerk’s X OAuth thumbs are often locked at 48×48 (`_normal` on pbs.twimg.com).
+ * We unwrap Clerk proxies and upgrade Twitter CDN size suffixes to `_400x400`.
  */
+
+function decodeClerkProxy(url: string): string | null {
+  try {
+    const parsed = new URL(url);
+    if (!parsed.hostname.toLowerCase().includes("img.clerk")) return null;
+    const token = parsed.pathname.split("/").filter(Boolean).pop();
+    if (!token) return null;
+    const padded =
+      token.replace(/-/g, "+").replace(/_/g, "/") +
+      "===".slice((token.length + 3) % 4);
+    const json = JSON.parse(atob(padded)) as { src?: string };
+    return json.src ?? null;
+  } catch {
+    return null;
+  }
+}
+
+/** Prefer 400×400 (or original) over Twitter’s tiny `_normal` OAuth thumb. */
+function upgradeTwitterCdn(url: string, displayPx: number): string {
+  try {
+    const parsed = new URL(url);
+    if (!parsed.hostname.toLowerCase().includes("pbs.twimg.com")) return url;
+    if (!parsed.pathname.includes("/profile_images/")) return url;
+
+    const want = displayPx >= 80 ? "_400x400" : displayPx >= 40 ? "_200x200" : "_bigger";
+    parsed.pathname = parsed.pathname.replace(
+      /_(?:normal|bigger|mini|200x200|400x400)(?=\.[a-z]+$)/i,
+      want
+    );
+    return parsed.toString();
+  } catch {
+    return url;
+  }
+}
+
+/** Google profile pics often ship as s96 — bump up, never shrink an already-sharp source. */
+function upgradeGoogleCdn(url: string, displayPx: number): string {
+  try {
+    const parsed = new URL(url);
+    if (!parsed.hostname.toLowerCase().includes("googleusercontent.com")) {
+      return url;
+    }
+    const want = Math.min(Math.max(Math.round(displayPx * 3), 200), 512);
+    const pathMatch = parsed.pathname.match(/\/s(\d+)-c\//);
+    if (pathMatch) {
+      const current = Number(pathMatch[1]);
+      if (current >= want) return url;
+      parsed.pathname = parsed.pathname.replace(/\/s\d+-c\//, `/s${want}-c/`);
+      return parsed.toString();
+    }
+    const queryMatch = parsed.href.match(/=s(\d+)(-[a-z]+)?/i);
+    if (queryMatch) {
+      const current = Number(queryMatch[1]);
+      if (current >= want) return url;
+      return parsed.href.replace(
+        /=s\d+(-[a-z]+)?/i,
+        (_, flags: string | undefined) => `=s${want}${flags ?? ""}`
+      );
+    }
+    return parsed.toString();
+  } catch {
+    return url;
+  }
+}
+
 export function avatarSrc(
   url: string | null | undefined,
   displayPx: number,
   options?: { xHandle?: string | null }
 ): string | null {
+  let resolved = url?.trim() || null;
+
+  if (resolved) {
+    const unwrapped = decodeClerkProxy(resolved);
+    if (unwrapped) resolved = unwrapped;
+    resolved = upgradeTwitterCdn(resolved, displayPx);
+    resolved = upgradeGoogleCdn(resolved, displayPx);
+    return resolved;
+  }
+
+  // Last-resort public social avatar when we only know the X handle.
+  // Prefer not to rely on this — Unavatar’s X provider is often paywalled.
   const handle = options?.xHandle?.replace(/^@/, "").trim();
   if (handle) {
-    // High-res social avatar; size hint for CDNs that honour it.
     const size = Math.min(Math.max(Math.round(displayPx * 3), 128), 512);
     return `https://unavatar.io/x/${encodeURIComponent(handle)}?size=${size}`;
   }
 
-  if (!url?.trim()) return null;
+  return null;
+}
 
-  // Unwrap Clerk proxy payload to the underlying source when possible.
-  try {
-    const parsed = new URL(url);
-    if (parsed.hostname.toLowerCase().includes("img.clerk")) {
-      const token = parsed.pathname.split("/").filter(Boolean).pop();
-      if (token) {
-        try {
-          const padded =
-            token.replace(/-/g, "+").replace(/_/g, "/") +
-            "===".slice((token.length + 3) % 4);
-          const json = JSON.parse(atob(padded)) as { src?: string };
-          if (json.src) return json.src;
-        } catch {
-          // keep proxy url
-        }
-      }
-    }
-  } catch {
-    // fall through
+type ClerkishAccount = {
+  provider?: string | null;
+  username?: string | null;
+  imageUrl?: string | null;
+  avatarUrl?: string | null;
+  picture?: string | null;
+};
+
+type ClerkishUser = {
+  imageUrl?: string | null;
+  username?: string | null;
+  externalAccounts?: ClerkishAccount[] | null;
+};
+
+function providerKey(account: ClerkishAccount) {
+  return String(account.provider ?? "").toLowerCase();
+}
+
+function isXAccount(account: ClerkishAccount) {
+  const provider = providerKey(account);
+  return (
+    provider.includes("twitter") ||
+    provider === "x" ||
+    provider.includes("oauth_x")
+  );
+}
+
+function isGoogleAccount(account: ClerkishAccount) {
+  const provider = providerKey(account);
+  return provider.includes("google");
+}
+
+function accountPhoto(account: ClerkishAccount): string | null {
+  return account.avatarUrl || account.picture || account.imageUrl || null;
+}
+
+/**
+ * Pick the sharpest photo Clerk exposes for this user.
+ * Prefers Google (often ≥400px) then upgraded X CDN, then Clerk imageUrl.
+ */
+export function bestAvatarFromClerkUser(
+  user: ClerkishUser | null | undefined,
+  displayPx = 128
+): string | null {
+  if (!user) return null;
+
+  const accounts = user.externalAccounts ?? [];
+  const google = accounts.find(isGoogleAccount);
+  const x = accounts.find(isXAccount);
+
+  // Prefer X when linked (matches public handle), then Google (often sharper),
+  // then Clerk’s primary imageUrl (may be a soft OAuth thumb).
+  const candidates = [
+    x ? accountPhoto(x) : null,
+    google ? accountPhoto(google) : null,
+    user.imageUrl ?? null,
+  ].filter(Boolean) as string[];
+
+  for (const candidate of candidates) {
+    const resolved = avatarSrc(candidate, displayPx);
+    if (resolved) return resolved;
   }
 
-  return url;
+  return null;
+}
+
+export function xHandleFromClerkUser(
+  user: ClerkishUser | null | undefined
+): string | null {
+  if (!user) return null;
+  const fromX = user.externalAccounts?.find(isXAccount)?.username?.trim();
+  if (fromX) return fromX.replace(/^@/, "");
+  return user.username?.replace(/^@/, "").trim() || null;
 }

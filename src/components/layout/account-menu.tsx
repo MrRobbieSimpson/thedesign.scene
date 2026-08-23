@@ -14,6 +14,10 @@ import {
 
 import { checkIsAdmin } from "@/app/actions/admin-access";
 import { Avatar } from "@/components/ui/avatar";
+import {
+  bestAvatarFromClerkUser,
+  xHandleFromClerkUser,
+} from "@/lib/avatar";
 import { cn } from "@/lib/utils";
 
 const baseLinks = [
@@ -78,16 +82,8 @@ export function AccountMenu() {
     user.primaryEmailAddress?.emailAddress ??
     "Account";
   const email = user.primaryEmailAddress?.emailAddress ?? null;
-  const imageUrl = user.imageUrl;
-  const xHandle =
-    user.externalAccounts?.find((account) => {
-      const provider = String(account.provider).toLowerCase();
-      return (
-        provider.includes("twitter") ||
-        provider === "x" ||
-        provider.includes("oauth_x")
-      );
-    })?.username ?? user.username;
+  const imageUrl = bestAvatarFromClerkUser(user, 32) ?? user.imageUrl;
+  const xHandle = xHandleFromClerkUser(user);
 
   return (
     <div ref={rootRef} className="relative">

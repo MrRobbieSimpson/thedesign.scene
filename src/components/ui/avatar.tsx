@@ -43,6 +43,7 @@ export function Avatar({
   }
 
   // Request a large intrinsic size so Next/Image doesn’t downsample a soft source.
+  // sizes accounts for retina so the browser picks ≥2× the CSS size.
   const intrinsic = Math.min(Math.max(size * 3, 128), 512);
 
   return (
@@ -53,7 +54,7 @@ export function Avatar({
       height={intrinsic}
       quality={100}
       priority={priority}
-      sizes={`${size}px`}
+      sizes={`${size * 2}px`}
       className={cn("shrink-0 rounded-full object-cover", className)}
       style={{ width: size, height: size }}
     />
