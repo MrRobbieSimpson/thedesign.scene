@@ -9,6 +9,7 @@ import { Header } from "@/components/layout/header";
 import { ThemeProvider } from "@/components/theme-provider";
 import { SiteStage } from "@/components/writing/site-stage";
 import { WritingProvider } from "@/components/writing/writing-context";
+import { clerkAppearance } from "@/lib/clerk-appearance";
 import { isClerkPublishableConfigured } from "@/lib/clerk";
 
 import "./globals.css";
@@ -75,7 +76,7 @@ export default function RootLayout({
     >
       <body className={`${geistSans.className} min-h-dvh antialiased`}>
         {isClerkPublishableConfigured() ? (
-          <ClerkProvider>{shell}</ClerkProvider>
+          <ClerkProvider appearance={clerkAppearance}>{shell}</ClerkProvider>
         ) : (
           shell
         )}

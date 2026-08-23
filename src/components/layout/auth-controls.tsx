@@ -13,6 +13,7 @@ import { Pencil, UserRound } from "lucide-react";
 import { WriteButton } from "@/components/writing/write-button";
 import { AnimatedPills } from "@/components/ui/animated-pills";
 import { Button } from "@/components/ui/button";
+import { userButtonAppearance } from "@/lib/clerk-appearance";
 import { isClerkPublishableConfigured } from "@/lib/clerk";
 
 function GuestAuthLinks() {
@@ -46,16 +47,12 @@ function SignedInControls() {
     <div className="flex h-8 items-center gap-1.5">
       <WriteButton />
       <UserButton
-        appearance={{
-          elements: {
-            rootBox: "flex size-8 items-center justify-center",
-            avatarBox: "size-8",
-          },
-        }}
+        appearance={userButtonAppearance}
+        userProfileProps={{ appearance: userButtonAppearance }}
       >
         <UserButton.MenuItems>
           <UserButton.Link
-            label="My portfolio"
+            label="Portfolio"
             href="/me"
             labelIcon={<UserRound className="size-4" />}
           />
