@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useId, useRef, useState } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { useClerk, useUser } from "@clerk/nextjs";
 import {
@@ -14,6 +13,7 @@ import {
 } from "lucide-react";
 
 import { checkIsAdmin } from "@/app/actions/admin-access";
+import { Avatar } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 
 const baseLinks = [
@@ -79,7 +79,6 @@ export function AccountMenu() {
     "Account";
   const email = user.primaryEmailAddress?.emailAddress ?? null;
   const imageUrl = user.imageUrl;
-  const initial = name.replace("@", "").charAt(0).toUpperCase();
 
   return (
     <div ref={rootRef} className="relative">
@@ -95,19 +94,7 @@ export function AccountMenu() {
           "hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
         )}
       >
-        {imageUrl ? (
-          <Image
-            src={imageUrl}
-            alt=""
-            width={32}
-            height={32}
-            className="size-8 object-cover"
-          />
-        ) : (
-          <span className="flex size-8 items-center justify-center bg-muted text-xs font-medium">
-            {initial}
-          </span>
-        )}
+        <Avatar src={imageUrl} alt={name} size={32} className="ring-0" />
       </button>
 
       {open ? (

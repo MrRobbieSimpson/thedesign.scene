@@ -1,10 +1,10 @@
-import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowUpRight } from "lucide-react";
 
 import { PortfolioWork } from "@/components/writing/portfolio-work";
 import { WriteButton } from "@/components/writing/write-button";
+import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { getClerkUserId } from "@/lib/auth";
 import {
@@ -42,25 +42,18 @@ export default async function PortfolioPage({ params }: PortfolioPageProps) {
 
   const isOwner = Boolean(userId && userId === profile.clerkUserId);
   const displayName = profile.displayName ?? profile.handle ?? "Designer";
-  const initial = displayName.replace("@", "").charAt(0).toUpperCase();
 
   return (
     <div className="mx-auto max-w-[45rem] px-5 py-14 sm:px-6 sm:py-20">
       <section className="mb-14 space-y-8 border-b border-border/50 pb-14">
         <div className="flex items-start gap-5">
-          {profile.avatarUrl ? (
-            <Image
-              src={profile.avatarUrl}
-              alt={displayName}
-              width={80}
-              height={80}
-              className="size-16 rounded-full object-cover ring-1 ring-border sm:size-20"
-            />
-          ) : (
-            <span className="flex size-16 items-center justify-center rounded-full bg-muted text-lg font-medium sm:size-20">
-              {initial}
-            </span>
-          )}
+          <Avatar
+            src={profile.avatarUrl}
+            alt={displayName}
+            size={80}
+            priority
+            className="ring-1 ring-border"
+          />
           <div className="min-w-0 space-y-3 pt-1">
             <div className="space-y-1.5">
               <div className="flex flex-wrap items-center gap-2.5">

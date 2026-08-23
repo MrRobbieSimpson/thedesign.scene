@@ -12,6 +12,7 @@ import { MoreFromWriter } from "@/components/reading/more-from-writer";
 import { ReadingProgress } from "@/components/reading/reading-progress";
 import { SitWithButton } from "@/components/reading/sit-with-button";
 import { SaveButton } from "@/components/save-button";
+import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { PublishedBanner } from "@/components/writing/published-banner";
 import {
@@ -170,19 +171,12 @@ export default async function ArticlePage({
                 href={authorHref}
                 className="flex items-center gap-3 transition-opacity hover:opacity-80"
               >
-                {authorAvatar ? (
-                  <Image
-                    src={authorAvatar}
-                    alt={authorName}
-                    width={44}
-                    height={44}
-                    className="size-11 rounded-full object-cover ring-1 ring-border"
-                  />
-                ) : (
-                  <span className="flex size-11 items-center justify-center rounded-full bg-muted text-sm font-medium">
-                    {authorName.replace("@", "").charAt(0).toUpperCase()}
-                  </span>
-                )}
+                <Avatar
+                  src={authorAvatar}
+                  alt={authorName}
+                  size={44}
+                  className="ring-1 ring-border"
+                />
                 <div>
                   <p className="text-sm font-medium">{authorName}</p>
                   {authorHandle ? (
@@ -194,15 +188,12 @@ export default async function ArticlePage({
               </Link>
             ) : (
               <div className="flex items-center gap-3">
-                {authorAvatar ? (
-                  <Image
-                    src={authorAvatar}
-                    alt={authorName}
-                    width={44}
-                    height={44}
-                    className="size-11 rounded-full object-cover ring-1 ring-border"
-                  />
-                ) : null}
+                <Avatar
+                  src={authorAvatar}
+                  alt={authorName}
+                  size={44}
+                  className="ring-1 ring-border"
+                />
                 <div>
                   <p className="text-sm font-medium">{authorName}</p>
                   {authorHandle ? (

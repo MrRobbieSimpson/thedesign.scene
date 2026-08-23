@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 
 import { EditorNote } from "@/components/content/editor-note";
+import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import {
   contentTypeLabel,
@@ -90,19 +91,12 @@ function Attribution({
 
   const inner = (
     <div className="flex items-center gap-2 text-xs text-muted-foreground/70">
-      {avatar ? (
-        <Image
-          src={avatar}
-          alt={name}
-          width={20}
-          height={20}
-          className="size-5 rounded-full object-cover ring-1 ring-border/70"
-        />
-      ) : (
-        <span className="flex size-5 items-center justify-center rounded-full bg-muted text-[9px] font-medium">
-          {name.replace("@", "").charAt(0).toUpperCase()}
-        </span>
-      )}
+      <Avatar
+        src={avatar}
+        alt={name}
+        size={20}
+        className="ring-1 ring-border/70"
+      />
       <span className="truncate">
         {name}
         {date ? (
