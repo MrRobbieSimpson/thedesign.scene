@@ -71,6 +71,12 @@ export const makers = pgTable("makers", {
     .$onUpdate(() => new Date()),
 });
 
+/** Optional external links on a designer portfolio (LinkedIn, Are.na, …). */
+export type ProfileLink = {
+  label: string;
+  url: string;
+};
+
 export const profiles = pgTable("profiles", {
   id: uuid("id").defaultRandom().primaryKey(),
   clerkUserId: text("clerk_user_id").notNull().unique(),
@@ -81,6 +87,8 @@ export const profiles = pgTable("profiles", {
   website: text("website"),
   xHandle: text("x_handle"),
   location: text("location"),
+  /** Optional label+URL pairs shown on the portfolio. */
+  links: jsonb("links").$type<ProfileLink[]>().notNull().default([]),
   makerId: uuid("maker_id").references(() => makers.id, {
     onDelete: "set null",
   }),

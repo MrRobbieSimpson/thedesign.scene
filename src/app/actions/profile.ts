@@ -4,13 +4,60 @@ import { and, eq, ne } from "drizzle-orm";
 import { revalidatePath, revalidateTag } from "next/cache";
 
 import { db } from "@/db";
-import { profiles } from "@/db/schema";
+import { profiles, type ProfileLink } from "@/db/schema";
 import { requireProfile } from "@/lib/auth";
 import { slugify } from "@/lib/slug";
 
 export type UpdateProfileResult =
   | { ok: true; handle: string | null }
   | { ok: false; message: string };
+
+const MAX_LINKS = 8;
+
+function normalizeUrl(raw: string): string | null {
+  const trimmed = raw.trim();
+  if (!trimmed) return null;
+  const withProtocol = /^https?:\/\//i.test(trimmed)
+    ? trimmed
+    : `https://${trimmed}`;
+  try {
+    const parsed = new URL(withProtocol);
+    if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+      return null;
+    }
+    return parsed.toString();
+  } catch {
+    return null;
+  }
+}
+
+function parseLinks(formData: FormData): ProfileLink[] | { error: string } {
+  const labels = formData
+    .getAll("linkLabel")
+    .map((value) => String(value).trim());
+  const urls = formData.getAll("linkUrl").map((value) => String(value).trim());
+  const count = Math.max(labels.length, urls.length);
+  const links: ProfileLink[] = [];
+
+  for (let i = 0; i < count; i++) {
+    const label = labels[i] ?? "";
+    const urlRaw = urls[i] ?? "";
+    if (!label && !urlRaw) continue;
+    if (!label || !urlRaw) {
+      return {
+        error: "Each link needs both a label and a URL.",
+      };
+    }
+    const url = normalizeUrl(urlRaw);
+    if (!url) {
+      return { error: `“${label}” needs a valid http(s) URL.` };
+    }
+    links.push({ label: label.slice(0, 40), url });
+    if (links.length >= MAX_LINKS) break;
+  }
+
+  return links;
+}
 
 export async function updateMyProfile(
   formData: FormData
@@ -22,17 +69,18 @@ export async function updateMyProfile(
   const displayName =
     String(formData.get("displayName") ?? "").trim() || null;
   const bio = String(formData.get("bio") ?? "").trim() || null;
-  const websiteRaw = String(formData.get("website") ?? "").trim();
-  const website = websiteRaw
-    ? /^https?:\/\//i.test(websiteRaw)
-      ? websiteRaw
-      : `https://${websiteRaw}`
-    : null;
+  const website = normalizeUrl(String(formData.get("website") ?? ""));
   const xHandle =
     String(formData.get("xHandle") ?? "")
       .trim()
       .replace(/^@/, "") || null;
   const location = String(formData.get("location") ?? "").trim() || null;
+
+  const linksResult = parseLinks(formData);
+  if ("error" in linksResult) {
+    return { ok: false, message: linksResult.error };
+  }
+  const links = linksResult;
 
   const handleRaw = String(formData.get("handle") ?? "").trim();
   const handle = handleRaw ? slugify(handleRaw) : null;
@@ -65,6 +113,7 @@ export async function updateMyProfile(
       website,
       xHandle,
       location,
+      links,
     })
     .where(eq(profiles.id, profile.id))
     .returning();

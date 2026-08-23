@@ -107,6 +107,18 @@ export default async function PortfolioPage({ params }: PortfolioPageProps) {
               <ArrowUpRight className="size-3.5" />
             </Link>
           ) : null}
+          {(profile.links ?? []).map((link) => (
+            <Link
+              key={`${link.label}-${link.url}`}
+              href={link.url}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-1 transition-colors hover:text-foreground"
+            >
+              {link.label}
+              <ArrowUpRight className="size-3.5" />
+            </Link>
+          ))}
           {isOwner ? (
             <Link
               href="/settings/profile"

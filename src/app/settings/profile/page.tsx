@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { updateMyProfile } from "@/app/actions/profile";
+import { ProfileLinksFields } from "@/components/settings/profile-links-fields";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -134,6 +135,8 @@ export default async function ProfileSettingsPage({
             />
           </div>
         </div>
+
+        <ProfileLinksFields initialLinks={profile.links} />
 
         <div className="space-y-2">
           <Label htmlFor="location">Location</Label>
