@@ -1,9 +1,8 @@
 import { Suspense } from "react";
 
-import { FeedExplorer } from "@/components/content/feed-explorer";
 import { FeedFilters } from "@/components/content/feed-filters";
-import { DigestStrip } from "@/components/home/digest-strip";
 import { GuestEditorStrip } from "@/components/home/guest-editor-strip";
+import { HomeFeed } from "@/components/home/home-feed";
 import { LiveFromX } from "@/components/home/live-from-x";
 import {
   filterFeedItems,
@@ -85,11 +84,9 @@ export default async function HomePage({ searchParams }: HomeProps) {
         </p>
       </section>
 
-      <DigestStrip />
-
       {guest ? <GuestEditorStrip guest={guest} /> : null}
 
-      <FeedExplorer
+      <HomeFeed
         key={filter}
         items={items}
         toolbar={

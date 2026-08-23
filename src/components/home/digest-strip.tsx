@@ -25,7 +25,7 @@ export function DigestStrip() {
   }
 
   return (
-    <section className="mb-12 rounded-2xl border border-border/60 bg-muted/20 px-4 py-4 sm:mb-14 sm:px-5 sm:py-5">
+    <section className="rounded-2xl border border-border/60 bg-muted/20 px-4 py-4 sm:px-5 sm:py-5">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between sm:gap-6">
         <div className="min-w-0 space-y-1 sm:max-w-[15rem]">
           <h2 className="font-heading text-lg tracking-tight sm:text-xl">

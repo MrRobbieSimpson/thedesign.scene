@@ -43,9 +43,14 @@ function reviveFeedItem(item: FeedItem): FeedItem {
 export function FeedExplorer({
   items,
   toolbar,
+  showControls = true,
+  className,
 }: {
   items: FeedItem[];
   toolbar?: React.ReactNode;
+  /** When false, only renders the grid (for mid-page continuations). */
+  showControls?: boolean;
+  className?: string;
 }) {
   const [layout, setLayout] = useState<FeedLayout>("big");
   const revived = useMemo(() => items.map(reviveFeedItem), [items]);
@@ -62,26 +67,33 @@ export function FeedExplorer({
     window.localStorage.setItem(FEED_LAYOUT_STORAGE_KEY, next);
   }
 
+  // Re-read layout when continuing mid-page so both halves stay in sync.
+  useEffect(() => {
+    function onStorage(event: StorageEvent) {
+      if (event.key !== FEED_LAYOUT_STORAGE_KEY || !event.newValue) return;
+      if (isFeedLayout(event.newValue)) setLayout(event.newValue);
+    }
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
+  }, []);
+
   const listKey = `${layout}:${revived.map((item) => item.id).join("|")}`;
 
   return (
-    <div className="space-y-8 sm:space-y-10">
-      {/*
-        Small screens: filters full-width, layout controls on the next line
-        right-aligned — avoids cramped / uneven baseline with the pills.
-        sm+: single row, shared vertical center.
-      */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-3">
-        <div className="min-w-0 w-full overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:flex-1">
-          {toolbar}
+    <div className={className ?? "space-y-8 sm:space-y-10"}>
+      {showControls ? (
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-3">
+          <div className="min-w-0 w-full overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:flex-1">
+            {toolbar}
+          </div>
+          <div className="flex h-9 shrink-0 items-center justify-end gap-2">
+            <p className="hidden text-xs tabular-nums text-muted-foreground/70 sm:block">
+              {revived.length}
+            </p>
+            <FeedLayoutSwitcher value={layout} onChange={onLayoutChange} />
+          </div>
         </div>
-        <div className="flex h-9 shrink-0 items-center justify-end gap-2">
-          <p className="hidden text-xs tabular-nums text-muted-foreground/70 sm:block">
-            {revived.length}
-          </p>
-          <FeedLayoutSwitcher value={layout} onChange={onLayoutChange} />
-        </div>
-      </div>
+      ) : null}
 
       <FeedGridLayout key={listKey} items={revived} layout={layout} />
     </div>
