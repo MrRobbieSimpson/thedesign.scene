@@ -4,25 +4,46 @@ import { useEffect, useId, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useClerk, useUser } from "@clerk/nextjs";
-import { FileText, LogOut, Pencil, UserRound } from "lucide-react";
+import {
+  Bookmark,
+  FileText,
+  LogOut,
+  Pencil,
+  Shield,
+  UserRound,
+} from "lucide-react";
 
+import { checkIsAdmin } from "@/app/actions/admin-access";
 import { cn } from "@/lib/utils";
 
-const links = [
+const baseLinks = [
   { href: "/me", label: "Portfolio", icon: UserRound },
-  { href: "/settings/profile", label: "Edit profile", icon: Pencil },
   { href: "/drafts", label: "Drafts", icon: FileText },
+  { href: "/saves", label: "Saves", icon: Bookmark },
+  { href: "/settings/profile", label: "Profile", icon: Pencil },
 ] as const;
 
 /**
- * Scene-native account menu — Clerk for session only, our chrome for the UI.
+ * Scene-native account menu — primary signed-in links live here
+ * so the header stays Feed / Events only.
  */
 export function AccountMenu() {
   const { user, isLoaded } = useUser();
   const { signOut } = useClerk();
   const [open, setOpen] = useState(false);
+  const [admin, setAdmin] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
   const menuId = useId();
+
+  useEffect(() => {
+    let active = true;
+    checkIsAdmin().then((value) => {
+      if (active) setAdmin(value);
+    });
+    return () => {
+      active = false;
+    };
+  }, []);
 
   useEffect(() => {
     if (!open) return;
@@ -46,9 +67,7 @@ export function AccountMenu() {
   }, [open]);
 
   if (!isLoaded) {
-    return (
-      <span className="size-8 rounded-full bg-muted/60" aria-hidden />
-    );
+    return <span className="size-8 rounded-full bg-muted/60" aria-hidden />;
   }
 
   if (!user) return null;
@@ -113,7 +132,7 @@ export function AccountMenu() {
           </div>
 
           <div className="py-1">
-            {links.map((item) => {
+            {baseLinks.map((item) => {
               const Icon = item.icon;
               return (
                 <Link
@@ -128,6 +147,17 @@ export function AccountMenu() {
                 </Link>
               );
             })}
+            {admin ? (
+              <Link
+                href="/admin"
+                role="menuitem"
+                onClick={() => setOpen(false)}
+                className="flex items-center gap-2.5 px-3.5 py-2 text-sm text-foreground/90 transition-colors hover:bg-muted/50"
+              >
+                <Shield className="size-4 text-muted-foreground" />
+                Admin
+              </Link>
+            ) : null}
           </div>
 
           <div className="border-t border-border/50 py-1">

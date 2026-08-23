@@ -3,10 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-import {
-  AuthControls,
-  SignedInNav,
-} from "@/components/layout/auth-controls";
+import { AuthControls } from "@/components/layout/auth-controls";
 import { LocalTime } from "@/components/layout/local-time";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { AnimatedPills } from "@/components/ui/animated-pills";
@@ -15,12 +12,6 @@ import { cn } from "@/lib/utils";
 const nav = [
   { href: "/", label: "Feed" },
   { href: "/events", label: "Events" },
-];
-
-const signedInNav = [
-  { href: "/drafts", label: "Drafts" },
-  { href: "/saves", label: "Saves" },
-  { href: "/settings/profile", label: "Profile" },
 ];
 
 export function Header() {
@@ -33,7 +24,6 @@ export function Header() {
         lines up with Digest / filters. Wider shell from sm up for other pages.
       */}
       <div className="mx-auto w-full max-w-[45rem] px-5 sm:max-w-6xl sm:px-6">
-        {/* Primary bar — logo + actions always on one aligned row */}
         <div className="flex h-14 items-center justify-between gap-3 sm:h-16">
           <div className="flex min-w-0 items-center gap-4 lg:gap-8">
             <Link
@@ -62,7 +52,6 @@ export function Header() {
                       : pathname.startsWith(item.href),
                 }))}
               />
-              <SignedInNav items={signedInNav} pathname={pathname} />
             </nav>
           </div>
 
@@ -73,7 +62,6 @@ export function Header() {
           </div>
         </div>
 
-        {/* Mobile nav — same column edges as page content */}
         <nav
           className="flex h-11 items-center gap-1.5 border-t border-border/40 md:hidden"
           aria-label="Primary"
