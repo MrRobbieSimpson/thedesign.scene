@@ -51,7 +51,7 @@ async function main() {
   console.log("Sent test digest to", to);
   console.log("id:", result.data?.id);
   console.log(
-    `Content — picks:${digest.picks} writing:${digest.writing} events:${digest.events} location:${digest.locationLabel ?? "global"}`
+    `Content — picks:${digest.picks} writing:${digest.writing} events:${digest.events} posts:${digest.posts} location:${digest.locationLabel ?? "global"}`
   );
 }
 
