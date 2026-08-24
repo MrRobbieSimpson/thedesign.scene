@@ -6,10 +6,9 @@ import { cn } from "@/lib/utils";
 /**
  * Feed layouts: big / small / mosaic.
  *
- * Mosaic is a true flush masonry via CSS columns (desktop only — callers
- * should remap mosaic → small on mobile). Avoids the old CSS-grid “tiled
- * with gaps” look and the previous overlap bugs by keeping items as
- * inline-block + overflow hidden (no hover translate on mosaic cards).
+ * Mosaic is CSS-column masonry with a calm gap and rounded tiles
+ * (desktop only — callers remap mosaic → small on mobile). Items stay
+ * inline-block + overflow hidden so they don’t bleed across columns.
  */
 export function FeedLayoutGrid({
   layout,
