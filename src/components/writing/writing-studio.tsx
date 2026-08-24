@@ -2,7 +2,16 @@
 
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Check, Eye, Loader2, PenLine, Settings2, X } from "lucide-react";
+import {
+  Check,
+  Eye,
+  ImagePlus,
+  Loader2,
+  PenLine,
+  Settings2,
+  Upload,
+  X,
+} from "lucide-react";
 
 import { saveArticleDraft } from "@/app/actions/write";
 import { ArticleBody } from "@/components/content/article-body";
@@ -12,6 +21,7 @@ import { PublishDialog } from "@/components/writing/publish-dialog";
 import { useWriting } from "@/components/writing/writing-context";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { uploadArticleImage } from "@/lib/upload-image";
 import { cn } from "@/lib/utils";
 
 /** Match reading column — editorial, not full-bleed. */
@@ -26,7 +36,11 @@ export function WritingStudio() {
   const { open, visible, draft, setDraft, closeWriter } = useWriting();
   const router = useRouter();
   const titleRef = useRef<HTMLTextAreaElement>(null);
+  const bodyRef = useRef<HTMLTextAreaElement>(null);
+  const coverInputRef = useRef<HTMLInputElement>(null);
+  const inlineInputRef = useRef<HTMLInputElement>(null);
   const [pending, startTransition] = useTransition();
+  const [uploading, setUploading] = useState<"cover" | "inline" | null>(null);
   const [status, setStatus] = useState<"idle" | "saved" | "error">("idle");
   const [message, setMessage] = useState<string | null>(null);
   const [draftId, setDraftId] = useState<string | undefined>(draft.id);
@@ -109,6 +123,53 @@ export function WritingStudio() {
     setDraft({ ...draft, ...next, excerpt, image: cover });
     setDirty(true);
     setStatus("idle");
+  }
+
+  function insertImageMarkdown(url: string, alt = "Image") {
+    const textarea = bodyRef.current;
+    const snippet = `\n\n![${alt}](${url})\n\n`;
+    if (!textarea) {
+      updateDraft({ body: `${draft.body.trimEnd()}${snippet}` });
+      return;
+    }
+    const start = textarea.selectionStart ?? draft.body.length;
+    const end = textarea.selectionEnd ?? start;
+    const next = `${draft.body.slice(0, start)}${snippet}${draft.body.slice(end)}`;
+    updateDraft({ body: next });
+    requestAnimationFrame(() => {
+      const cursor = start + snippet.length;
+      textarea.focus();
+      textarea.setSelectionRange(cursor, cursor);
+    });
+  }
+
+  async function handleImageFile(
+    file: File | undefined,
+    target: "cover" | "inline"
+  ) {
+    if (!file) return;
+    setUploading(target);
+    setStatus("idle");
+    setMessage(null);
+    try {
+      const url = await uploadArticleImage(file);
+      if (target === "cover") {
+        setCover(url);
+        setDraft({ ...draft, excerpt, image: url });
+        setDetails(true);
+        setDirty(true);
+        setMessage("Cover uploaded");
+      } else {
+        insertImageMarkdown(url);
+        setMessage("Image inserted");
+      }
+      setStatus("saved");
+    } catch (error) {
+      setStatus("error");
+      setMessage(error instanceof Error ? error.message : "Upload failed.");
+    } finally {
+      setUploading(null);
+    }
   }
 
   function requestClose() {
@@ -202,7 +263,12 @@ export function WritingStudio() {
       .slice(0, 40)
       .join(" ");
 
-  const statusLine = pending ? (
+  const statusLine = uploading ? (
+    <span className="inline-flex items-center gap-1.5">
+      <Loader2 className="size-3 animate-spin" />
+      Uploading image…
+    </span>
+  ) : pending ? (
     <span className="inline-flex items-center gap-1.5">
       <Loader2 className="size-3 animate-spin" />
       Saving…
@@ -266,7 +332,7 @@ export function WritingStudio() {
                 variant="ghost"
                 size="sm"
                 onClick={() => setDetails((value) => !value)}
-                disabled={pending}
+                disabled={pending || Boolean(uploading)}
                 className="h-8 gap-1.5 px-2 text-xs text-muted-foreground"
                 aria-pressed={details}
               >
@@ -276,12 +342,44 @@ export function WritingStudio() {
                 </span>
               </Button>
             ) : null}
+            {!preview ? (
+              <>
+                <input
+                  ref={inlineInputRef}
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp,image/gif"
+                  className="hidden"
+                  onChange={(event) => {
+                    const file = event.target.files?.[0];
+                    event.target.value = "";
+                    void handleImageFile(file, "inline");
+                  }}
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => inlineInputRef.current?.click()}
+                  disabled={pending || Boolean(uploading)}
+                  className="h-8 gap-1.5 px-2 text-xs text-muted-foreground"
+                  aria-label="Insert image"
+                  title="Insert image"
+                >
+                  {uploading === "inline" ? (
+                    <Loader2 className="size-3.5 animate-spin" />
+                  ) : (
+                    <ImagePlus className="size-3.5" />
+                  )}
+                  <span className="hidden sm:inline">Image</span>
+                </Button>
+              </>
+            ) : null}
             <Button
               type="button"
               variant="ghost"
               size="sm"
               onClick={() => setPreview((value) => !value)}
-              disabled={pending}
+              disabled={pending || Boolean(uploading)}
               className="h-8 gap-1.5 px-2 text-xs text-muted-foreground"
             >
               {preview ? (
@@ -349,6 +447,14 @@ export function WritingStudio() {
                 <h1 className="font-heading text-4xl leading-[1.15] tracking-tight text-balance sm:text-5xl">
                   {draft.title.trim() || "Untitled"}
                 </h1>
+                {cover ? (
+                  // eslint-disable-next-line @next/next/no-img-element -- studio preview
+                  <img
+                    src={cover}
+                    alt=""
+                    className="aspect-[16/10] w-full rounded-2xl border border-border/60 object-cover"
+                  />
+                ) : null}
                 {deck ? (
                   <p className="text-lg leading-relaxed text-muted-foreground text-pretty sm:text-xl">
                     {deck}
@@ -401,23 +507,93 @@ export function WritingStudio() {
                       placeholder="Optional deck / excerpt"
                       className="border-0 bg-muted/25"
                     />
-                    <Input
-                      value={cover}
-                      onChange={(event) => {
-                        setCover(event.target.value);
-                        setDirty(true);
-                      }}
-                      placeholder="Optional cover image URL"
-                      className="border-0 bg-muted/25"
-                    />
+                    <div className="space-y-2">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <Input
+                          value={cover}
+                          onChange={(event) => {
+                            setCover(event.target.value);
+                            setDirty(true);
+                          }}
+                          placeholder="Cover image URL (optional)"
+                          className="min-w-0 flex-1 border-0 bg-muted/25"
+                        />
+                        <input
+                          ref={coverInputRef}
+                          type="file"
+                          accept="image/jpeg,image/png,image/webp,image/gif"
+                          className="hidden"
+                          onChange={(event) => {
+                            const file = event.target.files?.[0];
+                            event.target.value = "";
+                            void handleImageFile(file, "cover");
+                          }}
+                        />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          className="h-9 gap-1.5"
+                          disabled={pending || Boolean(uploading)}
+                          onClick={() => coverInputRef.current?.click()}
+                        >
+                          {uploading === "cover" ? (
+                            <Loader2 className="size-3.5 animate-spin" />
+                          ) : (
+                            <Upload className="size-3.5" />
+                          )}
+                          Upload
+                        </Button>
+                        {cover ? (
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            className="h-9"
+                            onClick={() => {
+                              setCover("");
+                              setDraft({ ...draft, excerpt, image: "" });
+                              setDirty(true);
+                            }}
+                          >
+                            Clear
+                          </Button>
+                        ) : null}
+                      </div>
+                      {cover ? (
+                        // eslint-disable-next-line @next/next/no-img-element -- studio preview of remote/blob URL
+                        <img
+                          src={cover}
+                          alt="Cover preview"
+                          className="mt-1 max-h-40 w-full rounded-xl border border-border/50 object-cover"
+                        />
+                      ) : (
+                        <p className="text-xs text-muted-foreground">
+                          Upload from your computer, or paste a URL.
+                        </p>
+                      )}
+                    </div>
                   </div>
                 ) : null}
                 <textarea
+                  ref={bodyRef}
                   value={draft.body}
                   onChange={(event) =>
                     updateDraft({ body: event.target.value })
                   }
-                  placeholder="Start writing… Markdown welcome."
+                  onPaste={(event) => {
+                    const items = event.clipboardData?.items;
+                    if (!items) return;
+                    for (const item of items) {
+                      if (!item.type.startsWith("image/")) continue;
+                      const file = item.getAsFile();
+                      if (!file) continue;
+                      event.preventDefault();
+                      void handleImageFile(file, "inline");
+                      break;
+                    }
+                  }}
+                  placeholder="Start writing… Markdown welcome. Paste or insert images."
                   className="min-h-[50vh] w-full flex-1 resize-none border-0 bg-transparent font-serif text-[1.275rem] leading-[1.85] text-foreground/90 outline-none placeholder:font-sans placeholder:text-[1.05rem] placeholder:text-muted-foreground/35"
                 />
               </div>

@@ -32,8 +32,11 @@ Open [http://localhost:3000](http://localhost:3000).
 | `CLERK_SECRET_KEY` | Clerk server |
 | `NEXT_PUBLIC_CLERK_SIGN_IN_URL` | `/sign-in` |
 | `NEXT_PUBLIC_CLERK_SIGN_UP_URL` | `/sign-up` |
+| `BLOB_READ_WRITE_TOKEN` | Vercel Blob — article image uploads (Hobby free tier is fine) |
 
 Create a Clerk app, enable **Google**, **X**, and **LinkedIn**, then paste keys into `.env.local` and Vercel.
+
+**Article images:** Vercel → Storage → Create Blob store → copy the read-write token into `BLOB_READ_WRITE_TOKEN` (local + Vercel env). No paid plan required to start.
 
 Without `DATABASE_URL`, the app runs on **demo data**. Admin / Saves / Scenes require Clerk sign-in.
 
