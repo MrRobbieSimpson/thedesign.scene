@@ -91,7 +91,7 @@ export function rootMetadata(): Metadata {
       "design curation",
       "design events",
       "editorial design",
-      "thedesign.scene",
+      "sit with design",
     ],
     referrer: "origin-when-cross-origin",
     robots: {
@@ -133,7 +133,7 @@ export function websiteJsonLd() {
     "@context": "https://schema.org",
     "@type": "WebSite",
     name: SITE_NAME,
-    alternateName: ["the design scene", "Scene"],
+    alternateName: ["Sit with Design", "sitwithdesign"],
     url: SITE_ORIGIN,
     description: SITE_DESCRIPTION,
     inLanguage: "en-GB",

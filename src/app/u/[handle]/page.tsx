@@ -29,7 +29,7 @@ export async function generateMetadata({ params }: PortfolioPageProps) {
     title: name,
     description:
       profile.bio ??
-      `${name} on thedesign.scene — writing and work from the curated design community.`,
+      `${name} on sit with design — writing and work from the curated design community.`,
     path: `/u/${profile.handle}`,
     image: profile.avatarUrl,
     type: "profile",

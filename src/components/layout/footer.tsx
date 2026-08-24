@@ -10,7 +10,7 @@ export async function Footer() {
       <div className="mx-auto flex max-w-6xl flex-col gap-6 px-6 py-12 sm:flex-row sm:items-end sm:justify-between">
         <div className="space-y-2">
           <p className="font-sans text-lg font-medium tracking-tight">
-            thedesign.scene
+            sit with design
           </p>
           <p className="max-w-sm text-sm leading-relaxed text-muted-foreground">
             A considered selection of writing, visuals, and events — quality

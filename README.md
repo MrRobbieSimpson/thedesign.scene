@@ -1,4 +1,4 @@
-# thedesign.scene
+# sit with design
 
 A curated design platform for writing, visuals, and events — quality over quantity.
 
@@ -115,7 +115,7 @@ Editorial, calm, and premium — inspired by recent.design, handheld.design, and
 
 ## Curating content
 
-thedesign.scene is editorial — imports land as **drafts** until you publish.
+sit with design is editorial — imports land as **drafts** until you publish.
 
 ### Admin
 

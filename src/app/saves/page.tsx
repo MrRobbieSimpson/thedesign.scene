@@ -8,7 +8,7 @@ export const dynamic = "force-dynamic";
 export const metadata = buildPageMetadata({
   title: "Saves",
   path: "/saves",
-  description: "Pieces you’ve saved on thedesign.scene.",
+  description: "Pieces you’ve saved on sit with design.",
   noIndex: true,
 });
 

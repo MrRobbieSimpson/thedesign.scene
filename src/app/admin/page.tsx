@@ -22,7 +22,7 @@ export const dynamic = "force-dynamic";
 export const metadata = buildPageMetadata({
   title: "Admin",
   path: "/admin",
-  description: "Editorial back office for thedesign.scene.",
+  description: "Editorial back office for sit with design.",
   noIndex: true,
 });
 

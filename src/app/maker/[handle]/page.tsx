@@ -24,7 +24,7 @@ export async function generateMetadata({ params }: MakerPageProps) {
     title: maker.name,
     description:
       maker.bio ??
-      `${maker.name} on thedesign.scene — curated design work and writing.`,
+      `${maker.name} on sit with design — curated design work and writing.`,
     path: `/maker/${maker.handle}`,
     image: maker.avatar,
     type: "profile",

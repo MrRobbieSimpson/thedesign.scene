@@ -142,7 +142,7 @@ export async function buildWeeklyDigest(
   if (!db) {
     return {
       html: "",
-      subject: "This week in thedesign.scene",
+      subject: "This week in sit with design",
       picks: 0,
       writing: 0,
       events: 0,
@@ -197,7 +197,7 @@ export async function buildWeeklyDigest(
   if (picks.length + writing.length + upcoming.length + xPosts.length < 2) {
     return {
       html: "",
-      subject: "This week in thedesign.scene",
+      subject: "This week in sit with design",
       picks: picks.length,
       writing: writing.length,
       events: upcoming.length,
@@ -222,7 +222,7 @@ export async function buildWeeklyDigest(
       Design worth sitting with
     </h1>
     <p class="muted" style="margin:0 0 28px;font-family:${fontStack};font-size:15px;line-height:1.65;color:${MUTED}">
-      A small weekly note from thedesign.scene — writing first, then events${
+      A small weekly note from sit with design — writing first, then events${
         locationLabel ? ` near ${escapeHtml(locationLabel)}` : ""
       }.
     </p>
@@ -389,7 +389,7 @@ export async function buildWeeklyDigest(
 </head>
 <body class="body-bg" style="margin:0;padding:0;background:${PAPER}">
   <div style="display:none;max-height:0;overflow:hidden;opacity:0">
-    A small weekly selection from thedesign.scene.
+    A small weekly selection from sit with design.
   </div>
   <table class="shell" role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:${PAPER}">
     <tr>
@@ -397,7 +397,7 @@ export async function buildWeeklyDigest(
         <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:42rem;width:100%">
           <tr>
             <td class="brand" style="padding:0 0 28px;font-family:${fontStack};font-size:14px;font-weight:500;letter-spacing:-0.02em;color:${INK}">
-              thedesign.scene
+              sit with design
             </td>
           </tr>
           <tr>
@@ -420,8 +420,8 @@ export async function buildWeeklyDigest(
   return {
     html,
     subject: locationLabel
-      ? `This week in thedesign.scene · ${locationLabel}`
-      : "This week in thedesign.scene",
+      ? `This week in sit with design · ${locationLabel}`
+      : "This week in sit with design",
     picks: picks.length,
     writing: writing.length,
     events: upcoming.length,

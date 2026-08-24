@@ -1,12 +1,13 @@
 /**
  * Canonical site identity for metadata, sitemap, and absolute URLs.
- * Set NEXT_PUBLIC_SITE_URL on Vercel when a custom domain is ready.
+ * Prefer NEXT_PUBLIC_SITE_URL in Vercel once the custom domain is live.
  */
-export const SITE_NAME = "thedesign.scene";
+export const SITE_NAME = "sit with design";
 export const SITE_TAGLINE = "curated design";
 export const SITE_DESCRIPTION =
   "A calm curation of writing, visuals, and design events — quality over quantity.";
 export const SITE_TITLE = `${SITE_NAME} — ${SITE_TAGLINE}`;
+export const SITE_DOMAIN = "sitwithdesign.online";
 
 function resolveSiteOrigin() {
   const fromEnv = process.env.NEXT_PUBLIC_SITE_URL?.trim();
@@ -20,7 +21,7 @@ function resolveSiteOrigin() {
     );
   }
 
-  return "https://thedesign-scene.vercel.app";
+  return `https://${SITE_DOMAIN}`;
 }
 
 export const SITE_ORIGIN = resolveSiteOrigin();

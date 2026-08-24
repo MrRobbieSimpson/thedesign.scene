@@ -80,7 +80,7 @@ function Attribution({
     (item.authorHandle ? `@${item.authorHandle}` : null) ??
     item.authorName ??
     sourcePlatformLabel(item.sourcePlatform) ??
-    "thedesign.scene";
+    "sit with design";
 
   const avatar = item.maker?.avatar ?? profile?.avatarUrl ?? null;
   const xHandle = profile?.xHandle ?? item.authorHandle ?? null;

@@ -146,7 +146,7 @@ export async function resolveEventUrl(inputUrl: string): Promise<ResolvedEvent> 
   const response = await fetch(trimmed, {
     headers: {
       "User-Agent":
-        "thedesign.scene/1.0 (+https://thedesign.scene; curated design platform)",
+        "sitwithdesign/1.0 (+https://sitwithdesign.online; curated design platform)",
       Accept: "text/html,application/xhtml+xml",
     },
     redirect: "follow",

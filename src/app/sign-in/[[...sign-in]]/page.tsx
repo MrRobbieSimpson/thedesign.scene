@@ -9,7 +9,7 @@ import { buildPageMetadata } from "@/lib/seo";
 export const metadata = buildPageMetadata({
   title: "Sign in",
   path: "/sign-in",
-  description: "Sign in to thedesign.scene.",
+  description: "Sign in to sit with design.",
   noIndex: true,
 });
 

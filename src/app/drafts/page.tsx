@@ -12,7 +12,7 @@ export const dynamic = "force-dynamic";
 export const metadata = buildPageMetadata({
   title: "Drafts",
   path: "/drafts",
-  description: "Your unpublished writing on thedesign.scene.",
+  description: "Your unpublished writing on sit with design.",
   noIndex: true,
 });
 

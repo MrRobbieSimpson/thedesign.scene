@@ -93,7 +93,7 @@ export async function fetchLumaCalendarEvents(
   const response = await fetch(endpoint.toString(), {
     headers: {
       Accept: "application/json",
-      "User-Agent": "thedesign.scene/1.0 (curated design events)",
+      "User-Agent": "sitwithdesign/1.0 (curated design events)",
     },
     cache: "no-store",
   });

@@ -3,7 +3,7 @@ import { config } from "dotenv";
 config({ path: ".env.local" });
 
 /**
- * Intentionally empty. thedesign.scene starts blank —
+ * Intentionally empty. sit with design starts blank —
  * content comes from writers, admin imports, and curation.
  *
  * Usage: npm run db:seed

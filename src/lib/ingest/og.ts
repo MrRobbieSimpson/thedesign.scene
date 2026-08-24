@@ -45,7 +45,7 @@ export async function fetchOpenGraph(url: string): Promise<OpenGraphData> {
   const response = await fetch(url, {
     headers: {
       "User-Agent":
-        "thedesign.scene/1.0 (+https://thedesign.scene; curated design platform)",
+        "sitwithdesign/1.0 (+https://sitwithdesign.online; curated design platform)",
       Accept: "text/html,application/xhtml+xml",
     },
     redirect: "follow",

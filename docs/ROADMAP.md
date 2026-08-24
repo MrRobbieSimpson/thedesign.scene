@@ -1,4 +1,4 @@
-# thedesign.scene — Product Roadmap
+# sit with design — Product Roadmap
 
 **North star:** *Design worth sitting with.*  
 A calm, writing-first scene — quality over quantity, curation over aggregation. Not a firehose.
@@ -67,7 +67,7 @@ Editor-note habit             Invite & onboarding
 **Technical**
 1. Verify domain in Resend; set Vercel env: `RESEND_API_KEY`, `DIGEST_FROM_EMAIL`, `CRON_SECRET`
 2. Confirm `vercel.json` cron (`0 14 * * 4` = Thursday 14:00 UTC)
-3. Smoke-test: `curl -H "Authorization: Bearer $CRON_SECRET" https://thedesign-scene.vercel.app/api/cron/weekly-digest`
+3. Smoke-test: `curl -H "Authorization: Bearer $CRON_SECRET" https://sitwithdesign.online/api/cron/weekly-digest`
 4. Optional: unsubscribe token endpoint (signed email param) if Resend headers aren’t enough
 
 **UI/UX**
@@ -252,7 +252,7 @@ Editor-note habit             Invite & onboarding
 | --- | --- |
 | Job board | Only roles you’d recommend to a friend; curated applications, no scrapers |
 | Guest self-serve featuring | Only after trust; still capped |
-| Custom domain email | `digest@thedesign.scene` via Resend DNS |
+| Custom domain email | `digest@sitwithdesign.online` via Resend DNS |
 | Drop PG `build` enum value | Low urgency; app already hides it |
 
 ---

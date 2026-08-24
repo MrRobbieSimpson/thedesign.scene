@@ -15,7 +15,7 @@ export const dynamic = "force-dynamic";
 export const metadata = buildPageMetadata({
   title: "Profile settings",
   path: "/settings/profile",
-  description: "Edit how you appear on thedesign.scene.",
+  description: "Edit how you appear on sit with design.",
   noIndex: true,
 });
 
