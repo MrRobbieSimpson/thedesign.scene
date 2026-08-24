@@ -46,7 +46,8 @@ export function FeedLayoutGrid({
     return (
       <div
         className={cn(
-          "grid w-full grid-cols-2 items-start gap-3 sm:gap-5",
+          // Match mosaic rhythm; top pad so hover lift isn’t clipped by the page.
+          "grid w-full grid-cols-2 items-start gap-3 pt-1 md:gap-4",
           className
         )}
       >
@@ -55,7 +56,7 @@ export function FeedLayoutGrid({
           return (
             <div
               key={key ?? undefined}
-              className="relative z-0 min-w-0 w-full isolate overflow-hidden [&>*]:h-full"
+              className="relative z-0 min-w-0 w-full overflow-visible transition-[z-index] hover:z-10 focus-within:z-10 [&>*]:h-full"
             >
               {child}
             </div>
