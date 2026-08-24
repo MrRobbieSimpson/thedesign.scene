@@ -75,11 +75,15 @@ function FeedGrid({
   if (items.length === 0) return null;
   const density = densityFor(layout);
 
+  // Mosaic: single column on phones (2-col was leaving a half-empty screen).
   if (layout === "mosaic") {
     return (
-      <div className="columns-2 gap-3 sm:gap-5 md:columns-3">
+      <div className="columns-1 gap-3 sm:columns-2 sm:gap-5 md:columns-3">
         {items.map((item, index) => (
-          <div key={item.id} className="mb-3 break-inside-avoid sm:mb-5">
+          <div
+            key={item.id}
+            className="mb-3 w-full break-inside-avoid sm:mb-5"
+          >
             <FeedItemCard item={item} density={density} priority={index < 3} />
           </div>
         ))}
@@ -87,30 +91,33 @@ function FeedGrid({
     );
   }
 
+  // Small: dense 2-up; min-w-0 prevents grid blowout on narrow screens.
   if (layout === "small") {
     return (
       <div className="grid grid-cols-2 gap-3 sm:gap-5">
         {items.map((item, index) => (
-          <FeedItemCard
-            key={item.id}
-            item={item}
-            density={density}
-            priority={index < 6}
-          />
+          <div key={item.id} className="min-w-0 w-full">
+            <FeedItemCard
+              item={item}
+              density={density}
+              priority={index < 6}
+            />
+          </div>
         ))}
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col gap-10 sm:gap-14">
+    <div className="flex w-full flex-col gap-10 sm:gap-14">
       {items.map((item, index) => (
-        <FeedItemCard
-          key={item.id}
-          item={item}
-          density={density}
-          priority={index < 4}
-        />
+        <div key={item.id} className="w-full min-w-0">
+          <FeedItemCard
+            item={item}
+            density={density}
+            priority={index < 4}
+          />
+        </div>
       ))}
     </div>
   );

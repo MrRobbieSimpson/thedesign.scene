@@ -179,7 +179,9 @@ export function AnimatedPills({
           "relative z-10 inline-flex shrink-0 items-center justify-center rounded-full font-medium transition-colors duration-200 ease-[cubic-bezier(0.22,1,0.36,1)]",
           "touch-manipulation select-none",
           // Icon-only (sm) and text (md) share h-8 so toolbars align.
-          size === "sm" ? "size-8 text-xs" : "h-8 min-w-8 px-3.5 text-sm",
+          size === "sm"
+            ? "size-8 text-xs"
+            : "h-8 min-w-8 px-2.5 text-sm sm:px-3.5",
           active || hovered
             ? "text-foreground"
             : "text-muted-foreground hover:text-foreground"

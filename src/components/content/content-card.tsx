@@ -169,11 +169,11 @@ function ArticleCard({
     <Link
       href={contentHref(item)}
       className={cn(
-        "group flex h-full flex-col justify-between rounded-2xl border bg-card shadow-[0_1px_0_rgba(0,0,0,0.02)] transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
+        "group flex h-full w-full min-w-0 flex-col justify-between rounded-2xl border bg-card shadow-[0_1px_0_rgba(0,0,0,0.02)] transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
         item.featured
           ? "border-foreground/20"
           : "border-foreground/10",
-        comfortable ? "p-7 sm:p-9" : densityPad(density),
+        comfortable ? "p-5 sm:p-9" : densityPad(density),
         item.featured && comfortable && "sm:p-10",
         "hover:-translate-y-0.5 hover:border-foreground/30 hover:shadow-[0_24px_60px_-32px_rgba(0,0,0,0.55)] active:translate-y-0 active:scale-[0.99]"
       )}
@@ -245,8 +245,8 @@ function ThoughtCard({
     <Link
       href={contentHref(item)}
       className={cn(
-        "group flex h-full flex-col justify-between rounded-2xl border border-foreground/10 bg-card shadow-[0_1px_0_rgba(0,0,0,0.02)] transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
-        density === "comfortable" ? "p-7 sm:p-8" : densityPad(density),
+        "group flex h-full w-full min-w-0 flex-col justify-between rounded-2xl border border-foreground/10 bg-card shadow-[0_1px_0_rgba(0,0,0,0.02)] transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
+        density === "comfortable" ? "p-5 sm:p-8" : densityPad(density),
         "hover:-translate-y-0.5 hover:border-foreground/20 hover:shadow-[0_16px_48px_-28px_rgba(0,0,0,0.4)] active:translate-y-0 active:scale-[0.985]"
       )}
     >
@@ -313,7 +313,7 @@ function VisualCard({
     <Link
       href={contentHref(item)}
       className={cn(
-        "group flex h-full flex-col overflow-hidden rounded-2xl border border-border/70 bg-card shadow-[0_1px_0_rgba(0,0,0,0.02)] transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
+        "group flex h-full w-full min-w-0 flex-col overflow-hidden rounded-2xl border border-border/70 bg-card shadow-[0_1px_0_rgba(0,0,0,0.02)] transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
         "hover:-translate-y-0.5 hover:border-border hover:shadow-[0_18px_50px_-28px_rgba(0,0,0,0.45)] active:translate-y-0 active:scale-[0.985]"
       )}
     >
@@ -398,7 +398,7 @@ function NewsCard({
     <Link
       href={contentHref(item)}
       className={cn(
-        "group flex h-full flex-col justify-between rounded-2xl border border-border/50 bg-muted/20 transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
+        "group flex h-full w-full min-w-0 flex-col justify-between rounded-2xl border border-border/50 bg-muted/20 transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
         density === "compact" ? "p-4" : "p-5",
         "hover:border-border/80 hover:bg-muted/35 active:scale-[0.99]"
       )}
@@ -453,7 +453,7 @@ function PostCard({
     <Link
       href={contentHref(item)}
       className={cn(
-        "group flex h-full flex-col justify-between rounded-2xl border border-border/50 bg-muted/15 transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
+        "group flex h-full w-full min-w-0 flex-col justify-between rounded-2xl border border-border/50 bg-muted/15 transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
         density === "compact" ? "p-4" : "p-5",
         "hover:border-border/80 hover:bg-muted/30 active:scale-[0.99]"
       )}

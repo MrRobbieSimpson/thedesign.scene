@@ -13,6 +13,14 @@ const labels: Record<FeedFilter, string> = {
   events: "Events",
 };
 
+/** Shorter labels so filters + layout icons fit one mobile row without crush. */
+const shortLabels: Record<FeedFilter, string> = {
+  all: "All",
+  articles: "Writing",
+  visuals: "Visual",
+  events: "Events",
+};
+
 function hrefFor(filter: FeedFilter) {
   return filter === "all" ? "/" : `/?type=${filter}`;
 }
@@ -30,11 +38,16 @@ export function FeedFilters() {
       aria-busy={pending || undefined}
     >
       <AnimatedPills
-        className="w-fit max-w-full"
+        className="w-max max-w-none"
         followHover={false}
         items={FEED_FILTERS.map((filter) => ({
           key: filter,
-          label: labels[filter],
+          label: (
+            <>
+              <span className="sm:hidden">{shortLabels[filter]}</span>
+              <span className="hidden sm:inline">{labels[filter]}</span>
+            </>
+          ),
           active: current === filter,
           "aria-label": `Show ${labels[filter]}`,
           onClick: () => {

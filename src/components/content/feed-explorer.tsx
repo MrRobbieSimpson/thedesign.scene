@@ -123,12 +123,15 @@ function FeedGridLayout({
 
   const density = densityFor(layout);
 
-  // Mosaic — multi-column even on small screens so the control does something.
+  // Mosaic: full-width on phones; multi-column from sm up.
   if (layout === "mosaic") {
     return (
-      <div className="columns-2 gap-3 sm:columns-2 sm:gap-5 md:columns-3">
+      <div className="columns-1 gap-3 sm:columns-2 sm:gap-5 md:columns-3">
         {items.map((item, index) => (
-          <div key={item.id} className="mb-3 break-inside-avoid sm:mb-5">
+          <div
+            key={item.id}
+            className="mb-3 w-full break-inside-avoid sm:mb-5"
+          >
             <FeedItemCard item={item} density={density} priority={index < 3} />
           </div>
         ))}
@@ -136,17 +139,18 @@ function FeedGridLayout({
     );
   }
 
-  // Small — 2-up from the smallest breakpoint (was 1-col until sm = looked broken).
+  // Small: dense 2-up; min-w-0 prevents grid blowout on narrow screens.
   if (layout === "small") {
     return (
       <div className="grid grid-cols-2 gap-3 sm:gap-5">
         {items.map((item, index) => (
-          <FeedItemCard
-            key={item.id}
-            item={item}
-            density={density}
-            priority={index < 6}
-          />
+          <div key={item.id} className="min-w-0 w-full">
+            <FeedItemCard
+              item={item}
+              density={density}
+              priority={index < 6}
+            />
+          </div>
         ))}
       </div>
     );
@@ -154,14 +158,15 @@ function FeedGridLayout({
 
   // Big — single editorial column, generous rhythm.
   return (
-    <div className="flex flex-col gap-10 sm:gap-14">
+    <div className="flex w-full flex-col gap-10 sm:gap-14">
       {items.map((item, index) => (
-        <FeedItemCard
-          key={item.id}
-          item={item}
-          density={density}
-          priority={index < 4}
-        />
+        <div key={item.id} className="w-full min-w-0">
+          <FeedItemCard
+            item={item}
+            density={density}
+            priority={index < 4}
+          />
+        </div>
       ))}
     </div>
   );

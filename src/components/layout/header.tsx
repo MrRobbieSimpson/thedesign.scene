@@ -24,16 +24,16 @@ export function Header({ timeZone }: { timeZone?: string | null }) {
         lines up with Digest / filters. Wider shell from sm up for other pages.
       */}
       <div className="mx-auto w-full max-w-[45rem] px-5 sm:max-w-6xl sm:px-6">
-        <div className="flex h-14 items-center justify-between gap-3 sm:h-16">
-          <div className="flex min-w-0 items-center gap-4 lg:gap-8">
+        <div className="flex h-14 items-center justify-between gap-2 sm:h-16 sm:gap-3">
+          <div className="flex min-w-0 flex-1 items-center gap-3 lg:gap-8">
             <Link
               href="/"
-              className="group flex h-8 shrink-0 items-center gap-2.5"
+              className="group flex h-8 min-w-0 max-w-full items-center gap-2 sm:gap-2.5"
             >
               <span className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-foreground text-[0.65rem] font-semibold tracking-tight text-background transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.04] group-active:scale-[0.97]">
                 td
               </span>
-              <span className="truncate font-sans text-base font-medium leading-none tracking-tight transition-opacity duration-300 group-hover:opacity-80 sm:text-lg md:text-xl">
+              <span className="truncate font-sans text-[0.95rem] font-medium leading-none tracking-tight transition-opacity duration-300 group-hover:opacity-80 sm:text-lg md:text-xl">
                 thedesign.scene
               </span>
             </Link>
