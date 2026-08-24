@@ -359,25 +359,32 @@
 }
 
 /*
+ * Shared calm tile gap — mosaic (columns) + small (grid).
+ */
+:root {
+  --feed-tile-gap: 0.625rem; /* 10px */
+}
+
+@media (min-width: 768px) {
+  :root {
+    --feed-tile-gap: 0.75rem; /* 12px */
+  }
+}
+
+/*
  * True mosaic — CSS columns with a calm Scene gap.
  * Items must be inline-block + overflow hidden so they never bleed
  * across columns (the old break-inside-only approach overlapped).
  */
 .feed-mosaic {
-  column-gap: 0.75rem;
+  column-gap: var(--feed-tile-gap);
   column-fill: balance;
-}
-
-@media (min-width: 768px) {
-  .feed-mosaic {
-    column-gap: 1rem;
-  }
 }
 
 .feed-mosaic-item {
   display: inline-block;
   width: 100%;
-  margin: 0 0 0.75rem;
+  margin: 0 0 var(--feed-tile-gap);
   break-inside: avoid;
   page-break-inside: avoid;
   -webkit-column-break-inside: avoid;
@@ -387,14 +394,16 @@
   transform: translateZ(0);
 }
 
-@media (min-width: 768px) {
-  .feed-mosaic-item {
-    margin-bottom: 1rem;
-  }
-}
-
 .feed-mosaic-item > * {
   height: auto !important;
+}
+
+/* Small cards — same gap token as mosaic. */
+.feed-small {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
+  gap: var(--feed-tile-gap);
 }
 
 /* Page click-through: soft fade + slight rise */

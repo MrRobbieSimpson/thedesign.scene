@@ -44,19 +44,13 @@ export function FeedLayoutGrid({
 
   if (layout === "small") {
     return (
-      <div
-        className={cn(
-          // Match mosaic rhythm; top pad so hover lift isn’t clipped by the page.
-          "grid w-full grid-cols-2 items-start gap-3 pt-1 md:gap-4",
-          className
-        )}
-      >
+      <div className={cn("feed-small w-full pt-1", className)}>
         {items.map((child) => {
           const key = isValidElement(child) ? child.key : undefined;
           return (
             <div
               key={key ?? undefined}
-              className="relative z-0 min-w-0 w-full overflow-visible transition-[z-index] hover:z-10 focus-within:z-10 [&>*]:h-full"
+              className="feed-small-item relative z-0 min-w-0 w-full overflow-visible transition-[z-index] hover:z-10 focus-within:z-10 [&>*]:h-full"
             >
               {child}
             </div>
