@@ -1,8 +1,8 @@
 import { cn } from "@/lib/utils";
 
 /**
- * sit with design mark — folded broadsheet + quiet serif masthead “S”.
- * Uses currentColor so it inverts cleanly in the header chip.
+ * sit with design mark — bold geometric ribbon (modern S / sit curve).
+ * Solid, clean, favicon-friendly. currentColor for chip inversion.
  */
 export function BrandMark({
   className,
@@ -21,83 +21,23 @@ export function BrandMark({
       role={title ? "img" : undefined}
     >
       {title ? <title>{title}</title> : null}
-      {/* Paper body */}
-      <path
-        d="M7.5 6.5h13.2c.4 0 .8.16 1.08.44L25.5 10.7c.28.28.44.66.44 1.06V24.5c0 .83-.67 1.5-1.5 1.5h-15c-.83 0-1.5-.67-1.5-1.5v-16c0-.83.67-1.5 1.5-1.5Z"
-        stroke="currentColor"
-        strokeWidth="1.4"
-        strokeLinejoin="round"
-      />
-      {/* Folded corner */}
-      <path
-        d="M20.7 6.5v3.4c0 .55.45 1 1 1h3.4"
-        stroke="currentColor"
-        strokeWidth="1.4"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M20.7 6.5 25.1 10.9"
-        stroke="currentColor"
-        strokeWidth="1.4"
-        strokeLinecap="round"
-      />
-      {/* Masthead rule */}
-      <path
-        d="M10 14.2h12"
-        stroke="currentColor"
-        strokeWidth="1.35"
-        strokeLinecap="round"
-        opacity="0.95"
-      />
-      {/* Serif S — condensed masthead letter */}
-      <path
-        d="M17.85 11.15c-.55-.42-1.28-.62-2.05-.55-1.22.1-2.05.72-2.05 1.55 0 .78.62 1.22 1.85 1.48l.55.12c1.35.28 2.05.72 2.05 1.62 0 .95-.92 1.58-2.28 1.58-1.05 0-1.95-.35-2.55-.95"
-        stroke="currentColor"
-        strokeWidth="1.35"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      {/* Column rules */}
-      <path
-        d="M15.75 16.6v7.2"
-        stroke="currentColor"
-        strokeWidth="1.1"
-        strokeLinecap="round"
-        opacity="0.35"
-      />
-      {/* Text lines — left column */}
-      <path
-        d="M10 17.6h4.2M10 19.35h4.2M10 21.1h3.4M10 22.85h3.8"
-        stroke="currentColor"
-        strokeWidth="1.15"
-        strokeLinecap="round"
-        opacity="0.55"
-      />
-      {/* Text lines — right column */}
-      <path
-        d="M17.4 17.6h4.6M17.4 19.35h4.6M17.4 21.1h3.8M17.4 22.85h4.2"
-        stroke="currentColor"
-        strokeWidth="1.15"
-        strokeLinecap="round"
-        opacity="0.55"
-      />
+      <path fill="currentColor" d="M8.5 8.8c0-3.4 3.2-5.8 7.6-5.8 3.2 0 5.8 1.3 7 3.5.35.65.15 1.45-.5 1.8-.65.35-1.45.15-1.8-.5-.85-1.5-2.7-2.5-4.7-2.5-2.9 0-4.9 1.5-4.9 3.5 0 1.5.95 2.5 3.1 3.25l5.5 1.9c3.4 1.15 5.3 2.95 5.3 5.85 0 3.7-3.3 6.3-8 6.3-3.5 0-6.2-1.4-7.5-3.7-.4-.7-.2-1.55.5-1.95.7-.4 1.55-.2 1.95.5.95 1.6 2.85 2.65 5.05 2.65 3.15 0 5.3-1.7 5.3-3.8 0-1.55-1-2.55-3.4-3.4l-5.45-1.85C10.2 13.1 8.5 11.4 8.5 8.8Z" />
     </svg>
   );
 }
 
-/** Filled chip used in the site header. */
+/** Filled chip used in the site header / footer. */
 export function BrandMarkChip({ className }: { className?: string }) {
   return (
     <span
       className={cn(
-        "flex size-7 shrink-0 items-center justify-center rounded-lg bg-foreground p-1 text-background",
+        "flex size-7 shrink-0 items-center justify-center rounded-lg bg-foreground p-[0.4rem] text-background",
         "transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
         "group-hover:scale-[1.04] group-active:scale-[0.97]",
         className
       )}
     >
-      <BrandMark className="size-[1.15rem]" />
+      <BrandMark className="size-[1.05rem]" />
     </span>
   );
 }
