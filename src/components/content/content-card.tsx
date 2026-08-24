@@ -477,9 +477,13 @@ function PostCard({
     <Link
       href={contentHref(item)}
       className={cn(
-        "group flex h-full w-full min-w-0 flex-col justify-between rounded-2xl border border-border/50 bg-muted/15 transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
+        "group flex h-full w-full min-w-0 flex-col justify-between border bg-muted/15 transition-colors duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
+        density === "mosaic"
+          ? "rounded-none border-border/40"
+          : "rounded-2xl border-border/50",
         density === "compact" ? "p-4" : "p-5",
-        "hover:border-border/80 hover:bg-muted/30 active:scale-[0.99]"
+        density !== "mosaic" &&
+          "hover:border-border/80 hover:bg-muted/30 active:scale-[0.99]"
       )}
     >
       <div className="space-y-3">
