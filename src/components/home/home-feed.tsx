@@ -10,11 +10,13 @@ import {
   type FeedLayout,
 } from "@/components/content/feed-layout";
 import { FeedLayoutGrid } from "@/components/content/feed-layout-grid";
+import { resolveFeedLayout } from "@/components/content/feed-layout-switcher";
 import { FeedToolbar } from "@/components/content/feed-toolbar";
 import { DigestStrip } from "@/components/home/digest-strip";
 import type { Event } from "@/db/schema";
 import type { ContentWithMaker } from "@/lib/demo-data";
 import type { FeedItem } from "@/lib/feed-mix";
+import { useIsSmUp } from "@/lib/use-media-query";
 import { cn } from "@/lib/utils";
 
 function reviveContent(item: ContentWithMaker): ContentWithMaker {
@@ -102,6 +104,8 @@ export function HomeFeed({
   toolbar?: React.ReactNode;
 }) {
   const [layout, setLayout] = useState<FeedLayout>("big");
+  const smUp = useIsSmUp();
+  const effectiveLayout = resolveFeedLayout(layout, smUp);
   const revived = useMemo(() => items.map(reviveFeedItem), [items]);
 
   useEffect(() => {
@@ -138,12 +142,16 @@ export function HomeFeed({
         </div>
       ) : (
         <>
-          <FeedGrid items={first} layout={layout} />
-          <div className={cn(layout === "big" ? "py-2 sm:py-4" : "py-1")}>
+          <FeedGrid items={first} layout={effectiveLayout} />
+          <div
+            className={cn(
+              effectiveLayout === "big" ? "py-2 sm:py-4" : "py-1"
+            )}
+          >
             <DigestStrip />
           </div>
           {second.length > 0 ? (
-            <FeedGrid items={second} layout={layout} />
+            <FeedGrid items={second} layout={effectiveLayout} />
           ) : null}
         </>
       )}

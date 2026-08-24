@@ -10,10 +10,12 @@ import {
   type FeedLayout,
 } from "@/components/content/feed-layout";
 import { FeedLayoutGrid } from "@/components/content/feed-layout-grid";
+import { resolveFeedLayout } from "@/components/content/feed-layout-switcher";
 import { FeedToolbar } from "@/components/content/feed-toolbar";
 import type { Event } from "@/db/schema";
 import type { ContentWithMaker } from "@/lib/demo-data";
 import type { FeedItem } from "@/lib/feed-mix";
+import { useIsSmUp } from "@/lib/use-media-query";
 
 function reviveContent(item: ContentWithMaker): ContentWithMaker {
   return {
@@ -54,6 +56,8 @@ export function FeedExplorer({
   className?: string;
 }) {
   const [layout, setLayout] = useState<FeedLayout>("big");
+  const smUp = useIsSmUp();
+  const effectiveLayout = resolveFeedLayout(layout, smUp);
   const revived = useMemo(() => items.map(reviveFeedItem), [items]);
 
   useEffect(() => {
@@ -78,7 +82,7 @@ export function FeedExplorer({
     return () => window.removeEventListener("storage", onStorage);
   }, []);
 
-  const listKey = `${layout}:${revived.map((item) => item.id).join("|")}`;
+  const listKey = `${effectiveLayout}:${revived.map((item) => item.id).join("|")}`;
 
   return (
     <div className={className ?? "space-y-8 sm:space-y-10"}>
@@ -91,7 +95,11 @@ export function FeedExplorer({
         />
       ) : null}
 
-      <FeedGridLayout key={listKey} items={revived} layout={layout} />
+      <FeedGridLayout
+        key={listKey}
+        items={revived}
+        layout={effectiveLayout}
+      />
     </div>
   );
 }

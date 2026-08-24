@@ -165,18 +165,26 @@ function ArticleCard({
   density: CardDensity;
 }) {
   const comfortable = density === "comfortable";
+  const mosaic = density === "mosaic";
   return (
     <Link
       href={contentHref(item)}
       className={cn(
-        "group flex h-full w-full min-w-0 flex-col justify-between rounded-2xl border bg-card shadow-[0_1px_0_rgba(0,0,0,0.02)] transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
+        "group flex h-full w-full min-w-0 flex-col justify-between border bg-card transition-colors duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
+        mosaic
+          ? "rounded-none border-border/40 shadow-none"
+          : "rounded-2xl shadow-[0_1px_0_rgba(0,0,0,0.02)]",
         item.featured
           ? "border-foreground/20"
-          : "border-foreground/10",
+          : mosaic
+            ? "border-border/40"
+            : "border-foreground/10",
         comfortable ? "p-5 sm:p-9" : densityPad(density),
         item.featured && comfortable && "sm:p-10",
         density !== "comfortable" && "overflow-hidden",
-        "hover:-translate-y-0.5 hover:border-foreground/30 hover:shadow-[0_24px_60px_-32px_rgba(0,0,0,0.55)] active:translate-y-0 active:scale-[0.99]"
+        !mosaic &&
+          "hover:-translate-y-0.5 hover:border-foreground/30 hover:shadow-[0_24px_60px_-32px_rgba(0,0,0,0.55)] active:translate-y-0 active:scale-[0.99]",
+        mosaic && "hover:bg-card/95 active:opacity-95"
       )}
     >
       <div className={cn(density === "compact" ? "space-y-3" : "space-y-5")}>
@@ -242,13 +250,19 @@ function ThoughtCard({
   item: ContentWithMaker;
   density: CardDensity;
 }) {
+  const mosaic = density === "mosaic";
   return (
     <Link
       href={contentHref(item)}
       className={cn(
-        "group flex h-full w-full min-w-0 flex-col justify-between rounded-2xl border border-foreground/10 bg-card shadow-[0_1px_0_rgba(0,0,0,0.02)] transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
+        "group flex h-full w-full min-w-0 flex-col justify-between border bg-card transition-colors duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
+        mosaic
+          ? "rounded-none border-border/40 shadow-none"
+          : "rounded-2xl border-foreground/10 shadow-[0_1px_0_rgba(0,0,0,0.02)]",
         density === "comfortable" ? "p-5 sm:p-8" : densityPad(density),
-        "hover:-translate-y-0.5 hover:border-foreground/20 hover:shadow-[0_16px_48px_-28px_rgba(0,0,0,0.4)] active:translate-y-0 active:scale-[0.985]"
+        !mosaic &&
+          "hover:-translate-y-0.5 hover:border-foreground/20 hover:shadow-[0_16px_48px_-28px_rgba(0,0,0,0.4)] active:translate-y-0 active:scale-[0.985]",
+        mosaic && "overflow-hidden hover:bg-card/95"
       )}
     >
       <div className={cn(density === "compact" ? "space-y-3" : "space-y-5")}>
@@ -310,12 +324,17 @@ function VisualCard({
   density: CardDensity;
   priority?: boolean;
 }) {
+  const mosaic = density === "mosaic";
   return (
     <Link
       href={contentHref(item)}
       className={cn(
-        "group flex h-full w-full min-w-0 flex-col overflow-hidden rounded-2xl border border-border/70 bg-card shadow-[0_1px_0_rgba(0,0,0,0.02)] transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
-        "hover:-translate-y-0.5 hover:border-border hover:shadow-[0_18px_50px_-28px_rgba(0,0,0,0.45)] active:translate-y-0 active:scale-[0.985]"
+        "group flex h-full w-full min-w-0 flex-col overflow-hidden border bg-card transition-colors duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
+        mosaic
+          ? "rounded-none border-border/40 shadow-none"
+          : "rounded-2xl border-border/70 shadow-[0_1px_0_rgba(0,0,0,0.02)]",
+        !mosaic &&
+          "hover:-translate-y-0.5 hover:border-border hover:shadow-[0_18px_50px_-28px_rgba(0,0,0,0.45)] active:translate-y-0 active:scale-[0.985]"
       )}
     >
       <div
@@ -399,9 +418,13 @@ function NewsCard({
     <Link
       href={contentHref(item)}
       className={cn(
-        "group flex h-full w-full min-w-0 flex-col justify-between rounded-2xl border border-border/50 bg-muted/20 transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
+        "group flex h-full w-full min-w-0 flex-col justify-between border bg-muted/20 transition-colors duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
+        density === "mosaic"
+          ? "rounded-none border-border/40"
+          : "rounded-2xl border-border/50",
         density === "compact" ? "p-4" : "p-5",
-        "hover:border-border/80 hover:bg-muted/35 active:scale-[0.99]"
+        density !== "mosaic" &&
+          "hover:border-border/80 hover:bg-muted/35 active:scale-[0.99]"
       )}
     >
       <div className="space-y-3">

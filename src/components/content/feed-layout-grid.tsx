@@ -4,10 +4,12 @@ import type { FeedLayout } from "@/components/content/feed-layout";
 import { cn } from "@/lib/utils";
 
 /**
- * Renders feed items in big / small / mosaic layouts.
+ * Feed layouts: big / small / mosaic.
  *
- * Mosaic uses CSS Grid — not multi-column. CSS `columns` + `break-inside-avoid`
- * was overlapping cards on mobile and desktop.
+ * Mosaic is a true flush masonry via CSS columns (desktop only — callers
+ * should remap mosaic → small on mobile). Avoids the old CSS-grid “tiled
+ * with gaps” look and the previous overlap bugs by keeping items as
+ * inline-block + overflow hidden (no hover translate on mosaic cards).
  */
 export function FeedLayoutGrid({
   layout,
@@ -21,32 +23,22 @@ export function FeedLayoutGrid({
   const items = Children.toArray(children).filter(Boolean);
   if (items.length === 0) return null;
 
-  const cell = (child: React.ReactNode, extra?: string) => {
-    const key = isValidElement(child) ? child.key : undefined;
-    return (
-      <div
-        key={key ?? undefined}
-        className={cn(
-          "relative z-0 min-w-0 w-full isolate overflow-hidden [&>*]:h-full",
-          extra
-        )}
-      >
-        {child}
-      </div>
-    );
-  };
-
   if (layout === "mosaic") {
     return (
       <div
         className={cn(
-          "grid w-full grid-cols-1 items-start gap-4",
-          "sm:grid-cols-2 sm:gap-5",
-          "md:grid-cols-3",
+          "feed-mosaic w-full columns-2 gap-0 md:columns-3",
           className
         )}
       >
-        {items.map((child) => cell(child))}
+        {items.map((child) => {
+          const key = isValidElement(child) ? child.key : undefined;
+          return (
+            <div key={key ?? undefined} className="feed-mosaic-item">
+              {child}
+            </div>
+          );
+        })}
       </div>
     );
   }
@@ -59,14 +51,31 @@ export function FeedLayoutGrid({
           className
         )}
       >
-        {items.map((child) => cell(child))}
+        {items.map((child) => {
+          const key = isValidElement(child) ? child.key : undefined;
+          return (
+            <div
+              key={key ?? undefined}
+              className="relative z-0 min-w-0 w-full isolate overflow-hidden [&>*]:h-full"
+            >
+              {child}
+            </div>
+          );
+        })}
       </div>
     );
   }
 
   return (
     <div className={cn("flex w-full flex-col gap-10 sm:gap-14", className)}>
-      {items.map((child) => cell(child, "overflow-visible"))}
+      {items.map((child) => {
+        const key = isValidElement(child) ? child.key : undefined;
+        return (
+          <div key={key ?? undefined} className="min-w-0 w-full">
+            {child}
+          </div>
+        );
+      })}
     </div>
   );
 }

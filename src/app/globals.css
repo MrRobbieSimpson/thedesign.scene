@@ -358,6 +358,35 @@
   pointer-events: none;
 }
 
+/*
+ * True mosaic — CSS columns, flush tiles.
+ * Items must be inline-block + overflow hidden so they never bleed
+ * across columns (the old break-inside-only approach overlapped).
+ */
+.feed-mosaic {
+  column-gap: 0;
+  column-fill: balance;
+}
+
+.feed-mosaic-item {
+  display: inline-block;
+  width: 100%;
+  margin: 0;
+  break-inside: avoid;
+  page-break-inside: avoid;
+  -webkit-column-break-inside: avoid;
+  overflow: hidden;
+  vertical-align: top;
+  /* Keep paints inside the tile — hover translate breaks columns. */
+  transform: translateZ(0);
+}
+
+.feed-mosaic-item > * {
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  height: auto !important;
+}
+
 /* Page click-through: soft fade + slight rise */
 @keyframes page-enter {
   from {
