@@ -9,6 +9,7 @@ import {
   isFeedLayout,
   type FeedLayout,
 } from "@/components/content/feed-layout";
+import { FeedLayoutGrid } from "@/components/content/feed-layout-grid";
 import { FeedToolbar } from "@/components/content/feed-toolbar";
 import type { Event } from "@/db/schema";
 import type { ContentWithMaker } from "@/lib/demo-data";
@@ -122,53 +123,19 @@ function FeedGridLayout({
   }
 
   const density = densityFor(layout);
+  const priorityCap = layout === "big" ? 4 : layout === "small" ? 6 : 3;
 
-  // Mosaic: full-width on phones; multi-column from sm up.
-  if (layout === "mosaic") {
-    return (
-      <div className="columns-1 gap-3 sm:columns-2 sm:gap-5 md:columns-3">
-        {items.map((item, index) => (
-          <div
-            key={item.id}
-            className="mb-3 w-full break-inside-avoid sm:mb-5"
-          >
-            <FeedItemCard item={item} density={density} priority={index < 3} />
-          </div>
-        ))}
-      </div>
-    );
-  }
-
-  // Small: dense 2-up; min-w-0 prevents grid blowout on narrow screens.
-  if (layout === "small") {
-    return (
-      <div className="grid grid-cols-2 gap-3 sm:gap-5">
-        {items.map((item, index) => (
-          <div key={item.id} className="min-w-0 w-full">
-            <FeedItemCard
-              item={item}
-              density={density}
-              priority={index < 6}
-            />
-          </div>
-        ))}
-      </div>
-    );
-  }
-
-  // Big — single editorial column, generous rhythm.
   return (
-    <div className="flex w-full flex-col gap-10 sm:gap-14">
+    <FeedLayoutGrid layout={layout}>
       {items.map((item, index) => (
-        <div key={item.id} className="w-full min-w-0">
-          <FeedItemCard
-            item={item}
-            density={density}
-            priority={index < 4}
-          />
-        </div>
+        <FeedItemCard
+          key={item.id}
+          item={item}
+          density={density}
+          priority={index < priorityCap}
+        />
       ))}
-    </div>
+    </FeedLayoutGrid>
   );
 }
 

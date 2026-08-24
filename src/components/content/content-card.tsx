@@ -175,6 +175,7 @@ function ArticleCard({
           : "border-foreground/10",
         comfortable ? "p-5 sm:p-9" : densityPad(density),
         item.featured && comfortable && "sm:p-10",
+        density !== "comfortable" && "overflow-hidden",
         "hover:-translate-y-0.5 hover:border-foreground/30 hover:shadow-[0_24px_60px_-32px_rgba(0,0,0,0.55)] active:translate-y-0 active:scale-[0.99]"
       )}
     >
@@ -193,7 +194,7 @@ function ArticleCard({
         <div className={cn("space-y-3", comfortable && "space-y-4")}>
           <h3
             className={cn(
-              "font-heading text-balance tracking-tight",
+              "font-heading text-balance tracking-tight break-words",
               comfortable
                 ? "text-[1.65rem] leading-[1.15] sm:text-[1.85rem]"
                 : densityTitle(density, true)
