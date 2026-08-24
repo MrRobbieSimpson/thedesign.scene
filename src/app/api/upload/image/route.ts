@@ -14,12 +14,30 @@ const ALLOWED = new Set([
 ]);
 
 function safeName(name: string) {
-  return name
-    .toLowerCase()
-    .replace(/[^a-z0-9._-]+/g, "-")
-    .replace(/-+/g, "-")
-    .replace(/^-|-$/g, "")
-    .slice(0, 80) || "image";
+  return (
+    name
+      .toLowerCase()
+      .replace(/[^a-z0-9._-]+/g, "-")
+      .replace(/-+/g, "-")
+      .replace(/^-|-$/g, "")
+      .slice(0, 80) || "image"
+  );
+}
+
+/** Resolve Blob store id — supports default + custom Vercel prefixes. */
+function resolveStoreId() {
+  return (
+    process.env.BLOB_STORE_ID?.trim() ||
+    process.env.designscene_STORE_ID?.trim() ||
+    null
+  );
+}
+
+function hasBlobCredentials() {
+  return Boolean(
+    process.env.BLOB_READ_WRITE_TOKEN?.trim() ||
+      (process.env.VERCEL_OIDC_TOKEN?.trim() && resolveStoreId())
+  );
 }
 
 export async function POST(request: Request) {
@@ -28,11 +46,11 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Sign in to upload." }, { status: 401 });
   }
 
-  if (!process.env.BLOB_READ_WRITE_TOKEN?.trim()) {
+  if (!hasBlobCredentials()) {
     return NextResponse.json(
       {
         error:
-          "Image uploads aren’t configured yet. Add BLOB_READ_WRITE_TOKEN in Vercel.",
+          "Image uploads aren’t configured yet. Connect the Blob store to this project (include Development) and run `vercel env pull`.",
       },
       { status: 503 }
     );
@@ -65,12 +83,20 @@ export async function POST(request: Request) {
   }
 
   const pathname = `articles/${userId}/${Date.now()}-${safeName(file.name)}`;
+  const storeId = resolveStoreId();
+  const rwToken = process.env.BLOB_READ_WRITE_TOKEN?.trim();
 
   try {
     const blob = await put(pathname, file, {
       access: "public",
       contentType: file.type,
-      token: process.env.BLOB_READ_WRITE_TOKEN,
+      addRandomSuffix: true,
+      // Prefer OIDC on Vercel; fall back to static RW token for local/CI.
+      ...(rwToken
+        ? { token: rwToken }
+        : storeId
+          ? { storeId }
+          : {}),
     });
 
     return NextResponse.json({ url: blob.url });
