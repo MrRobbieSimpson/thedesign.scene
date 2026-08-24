@@ -25,7 +25,7 @@ export function FeedEventCard({
         "event-ticket group relative flex h-full w-full min-w-0 flex-col justify-between rounded-2xl border border-foreground/10 bg-gradient-to-br from-card via-card to-muted/40 shadow-[0_1px_0_rgba(0,0,0,0.02)] transition-colors duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
         compact ? "py-4 pr-4 pl-9" : "py-5 pr-5 pl-9 sm:py-7 sm:pr-7 sm:pl-11",
         !mosaic &&
-          "hover:-translate-y-0.5 hover:border-foreground/20 hover:shadow-[0_18px_50px_-28px_rgba(0,0,0,0.45)] active:translate-y-0 active:scale-[0.985]",
+          "[@media(hover:hover)_and_(pointer:fine)]:hover:-translate-y-0.5 hover:border-foreground/20 [@media(hover:hover)_and_(pointer:fine)]:hover:shadow-[0_18px_50px_-28px_rgba(0,0,0,0.45)] active:translate-y-0 active:scale-[0.985]",
         mosaic && "hover:border-foreground/20"
       )}
     >

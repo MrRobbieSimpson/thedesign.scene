@@ -398,12 +398,50 @@
   height: auto !important;
 }
 
-/* Small cards — same gap token as mosaic. */
+/* Small cards — 1-up on phones (Brief/article text was breaking at ~170px). */
 .feed-small {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  align-items: start;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: stretch;
   gap: var(--feed-tile-gap);
+}
+
+@media (min-width: 640px) {
+  .feed-small {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.feed-small-item {
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  isolation: isolate;
+}
+
+.feed-small-item > * {
+  flex: 1 1 auto;
+  min-width: 0;
+  max-width: 100%;
+  height: auto !important;
+}
+
+/* Fine pointers only — sticky :hover on touch was leaving cards lifted/overlapping. */
+@media (hover: hover) and (pointer: fine) {
+  .feed-small-item:hover,
+  .feed-small-item:focus-within {
+    z-index: 10;
+    overflow: visible;
+  }
+}
+
+/* Never run multi-column mosaic on narrow viewports. */
+@media (max-width: 639px) {
+  .feed-mosaic {
+    columns: 1 !important;
+  }
 }
 
 /* Page click-through: soft fade + slight rise */

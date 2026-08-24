@@ -44,14 +44,11 @@ export function FeedLayoutGrid({
 
   if (layout === "small") {
     return (
-      <div className={cn("feed-small w-full pt-1", className)}>
+      <div className={cn("feed-small w-full", className)}>
         {items.map((child) => {
           const key = isValidElement(child) ? child.key : undefined;
           return (
-            <div
-              key={key ?? undefined}
-              className="feed-small-item relative z-0 min-w-0 w-full overflow-visible transition-[z-index] hover:z-10 focus-within:z-10 [&>*]:h-full"
-            >
+            <div key={key ?? undefined} className="feed-small-item">
               {child}
             </div>
           );

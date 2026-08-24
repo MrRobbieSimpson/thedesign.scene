@@ -24,7 +24,7 @@ import { cn } from "@/lib/utils";
 export type CardDensity = "comfortable" | "compact" | "mosaic";
 
 function densityPad(density: CardDensity) {
-  if (density === "compact") return "p-4";
+  if (density === "compact") return "p-3 sm:p-4";
   if (density === "mosaic") return "p-5";
   return "p-7";
 }
@@ -174,31 +174,33 @@ function ArticleCard({
         item.featured ? "border-foreground/20" : "border-foreground/10",
         comfortable ? "p-5 sm:p-9" : densityPad(density),
         item.featured && comfortable && "sm:p-10",
-        density !== "comfortable" && "overflow-hidden",
+        "overflow-hidden",
         !mosaic &&
-          "hover:-translate-y-0.5 hover:border-foreground/30 hover:shadow-[0_24px_60px_-32px_rgba(0,0,0,0.55)] active:translate-y-0 active:scale-[0.99]",
+          "[@media(hover:hover)_and_(pointer:fine)]:hover:-translate-y-0.5 hover:border-foreground/30 [@media(hover:hover)_and_(pointer:fine)]:hover:shadow-[0_24px_60px_-32px_rgba(0,0,0,0.55)] active:translate-y-0 active:scale-[0.99]",
         mosaic && "hover:border-foreground/25 active:opacity-95"
       )}
     >
-      <div className={cn(density === "compact" ? "space-y-3" : "space-y-5")}>
-        <div className="flex items-center justify-between gap-3">
-          <Badge className="gap-1.5 border-0 bg-foreground text-background">
+      <div className={cn(density === "compact" ? "space-y-2.5" : "space-y-5")}>
+        <div className="flex min-w-0 items-center justify-between gap-2">
+          <Badge className="max-w-full shrink gap-1.5 truncate border-0 bg-foreground text-background">
             <TypeIcon type="article" />
             {contentTypeLabel("article")}
           </Badge>
           {item.featured && density !== "compact" ? (
-            <span className="text-[10px] font-medium tracking-[0.16em] text-muted-foreground/80 uppercase">
+            <span className="shrink-0 text-[10px] font-medium tracking-[0.16em] text-muted-foreground/80 uppercase">
               Editor’s pick
             </span>
           ) : null}
         </div>
-        <div className={cn("space-y-3", comfortable && "space-y-4")}>
+        <div className={cn("min-w-0 space-y-3", comfortable && "space-y-4")}>
           <h3
             className={cn(
               "font-heading text-balance tracking-tight break-words",
               comfortable
                 ? "text-[1.65rem] leading-[1.15] sm:text-[1.85rem]"
-                : densityTitle(density, true)
+                : density === "compact"
+                  ? "line-clamp-4 text-sm leading-snug sm:text-base"
+                  : densityTitle(density, true)
             )}
           >
             {item.title}
@@ -222,13 +224,15 @@ function ArticleCard({
       </div>
       <div
         className={cn(
-          "flex items-center justify-between gap-3 border-t border-border/40",
-          density === "compact" ? "mt-4 pt-3" : "mt-10 pt-4"
+          "flex min-w-0 items-center justify-between gap-2 border-t border-border/40",
+          density === "compact" ? "mt-3 pt-2.5" : "mt-10 pt-4"
         )}
       >
-        <Attribution item={item} date={item.publishedAt} />
-        <span className="inline-flex items-center gap-1 text-sm text-muted-foreground transition-colors group-hover:text-foreground">
-          Read
+        <div className="min-w-0 flex-1 overflow-hidden">
+          <Attribution item={item} date={item.publishedAt} />
+        </div>
+        <span className="inline-flex shrink-0 items-center gap-1 text-sm text-muted-foreground transition-colors group-hover:text-foreground">
+          <span className="hidden sm:inline">Read</span>
           <ArrowUpRight className="size-4" />
         </span>
       </div>
@@ -250,15 +254,15 @@ function ThoughtCard({
       className={cn(
         "group flex h-full w-full min-w-0 flex-col justify-between rounded-2xl border border-foreground/10 bg-card shadow-[0_1px_0_rgba(0,0,0,0.02)] transition-colors duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
         density === "comfortable" ? "p-5 sm:p-8" : densityPad(density),
-        density !== "comfortable" && "overflow-hidden",
+        "overflow-hidden",
         !mosaic &&
-          "hover:-translate-y-0.5 hover:border-foreground/20 hover:shadow-[0_16px_48px_-28px_rgba(0,0,0,0.4)] active:translate-y-0 active:scale-[0.985]",
+          "[@media(hover:hover)_and_(pointer:fine)]:hover:-translate-y-0.5 hover:border-foreground/20 [@media(hover:hover)_and_(pointer:fine)]:hover:shadow-[0_16px_48px_-28px_rgba(0,0,0,0.4)] active:translate-y-0 active:scale-[0.985]",
         mosaic && "hover:border-foreground/20"
       )}
     >
-      <div className={cn(density === "compact" ? "space-y-3" : "space-y-5")}>
-        <div className="flex items-center justify-between gap-3">
-          <Badge className="gap-1.5 border-0 bg-foreground/90 text-background">
+      <div className={cn(density === "compact" ? "space-y-2.5" : "space-y-5")}>
+        <div className="flex min-w-0 items-center justify-between gap-2">
+          <Badge className="max-w-full shrink gap-1.5 truncate border-0 bg-foreground/90 text-background">
             <TypeIcon type="thought" />
             {contentTypeLabel("thought")}
           </Badge>
@@ -272,10 +276,12 @@ function ThoughtCard({
         <div className="space-y-3">
           <h3
             className={cn(
-              "font-heading text-balance transition-colors group-hover:text-foreground",
+              "font-heading text-balance break-words transition-colors group-hover:text-foreground",
               density === "comfortable"
                 ? "text-[1.45rem] leading-[1.2]"
-                : densityTitle(density)
+                : density === "compact"
+                  ? "line-clamp-4 text-sm leading-snug"
+                  : densityTitle(density)
             )}
           >
             {item.title}
@@ -293,12 +299,14 @@ function ThoughtCard({
 
       <div
         className={cn(
-          "flex items-center justify-between gap-3",
-          density === "compact" ? "mt-4" : "mt-8"
+          "flex min-w-0 items-center justify-between gap-2",
+          density === "compact" ? "mt-3" : "mt-8"
         )}
       >
-        <Attribution item={item} date={item.publishedAt} />
-        <span className="text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100">
+        <div className="min-w-0 flex-1 overflow-hidden">
+          <Attribution item={item} date={item.publishedAt} />
+        </div>
+        <span className="shrink-0 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100">
           <ArrowUpRight className="size-4" />
         </span>
       </div>
@@ -322,7 +330,7 @@ function VisualCard({
       className={cn(
         "group flex h-full w-full min-w-0 flex-col overflow-hidden rounded-2xl border border-border/70 bg-card shadow-[0_1px_0_rgba(0,0,0,0.02)] transition-colors duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
         !mosaic &&
-          "hover:-translate-y-0.5 hover:border-border hover:shadow-[0_18px_50px_-28px_rgba(0,0,0,0.45)] active:translate-y-0 active:scale-[0.985]",
+          "[@media(hover:hover)_and_(pointer:fine)]:hover:-translate-y-0.5 hover:border-border [@media(hover:hover)_and_(pointer:fine)]:hover:shadow-[0_18px_50px_-28px_rgba(0,0,0,0.45)] active:translate-y-0 active:scale-[0.985]",
         mosaic && "hover:border-border"
       )}
     >
@@ -403,47 +411,60 @@ function NewsCard({
   priority?: boolean;
 }) {
   // Quieter treatment — secondary to editorial and events.
+  const compact = density === "compact";
   return (
     <Link
       href={contentHref(item)}
       className={cn(
-        "group flex h-full w-full min-w-0 flex-col justify-between rounded-2xl border border-border/50 bg-muted/20 transition-colors duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
-        density === "compact" ? "p-4" : "p-5",
+        "group flex h-full w-full min-w-0 flex-col justify-between overflow-hidden rounded-2xl border border-border/50 bg-muted/20 transition-colors duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
+        compact ? "p-3 sm:p-4" : "p-5",
         density !== "mosaic" &&
           "hover:border-border/80 hover:bg-muted/35 active:scale-[0.99]",
         density === "mosaic" && "hover:border-border/80"
       )}
     >
-      <div className="space-y-3">
-        <div className="flex flex-wrap items-center gap-2">
-          <Badge variant="outline" className="gap-1.5 text-muted-foreground">
+      <div className={cn("min-w-0", compact ? "space-y-2" : "space-y-3")}>
+        <div className="flex min-w-0 flex-wrap items-center gap-1.5">
+          <Badge
+            variant="outline"
+            className="max-w-full shrink gap-1.5 truncate text-muted-foreground"
+          >
             <TypeIcon type="news" />
             Brief
           </Badge>
           {item.sourcePlatform ? (
-            <span className="text-[10px] tracking-wide text-muted-foreground/60 uppercase">
+            <span className="max-w-full truncate text-[10px] tracking-wide text-muted-foreground/60 uppercase">
               {sourcePlatformLabel(item.sourcePlatform)}
             </span>
           ) : null}
         </div>
         <h3
           className={cn(
-            "font-heading text-balance text-foreground/90",
-            density === "compact" ? "text-sm leading-snug" : "text-lg leading-snug"
+            "font-heading text-balance break-words text-foreground/90",
+            compact
+              ? "line-clamp-4 text-sm leading-snug"
+              : "text-lg leading-snug"
           )}
         >
           {item.title}
         </h3>
-        {item.excerpt ? (
+        {item.excerpt && !compact ? (
           <p className="line-clamp-2 text-xs leading-relaxed text-muted-foreground/80">
             {item.excerpt}
           </p>
         ) : null}
       </div>
-      <div className="mt-5 flex items-center justify-between gap-3">
-        <Attribution item={item} date={item.publishedAt} />
-        <span className="inline-flex items-center gap-1 text-xs text-muted-foreground transition-colors group-hover:text-foreground">
-          Open
+      <div
+        className={cn(
+          "flex min-w-0 items-center justify-between gap-2",
+          compact ? "mt-3" : "mt-5"
+        )}
+      >
+        <div className="min-w-0 flex-1 overflow-hidden">
+          <Attribution item={item} date={item.publishedAt} />
+        </div>
+        <span className="inline-flex shrink-0 items-center gap-1 text-xs text-muted-foreground transition-colors group-hover:text-foreground">
+          <span className="hidden sm:inline">Open</span>
           <ArrowUpRight className="size-3.5" />
         </span>
       </div>
@@ -460,45 +481,58 @@ function PostCard({
   priority?: boolean;
 }) {
   // Quiet secondary treatment — never competes with editorial.
+  const compact = density === "compact";
   return (
     <Link
       href={contentHref(item)}
       className={cn(
-        "group flex h-full w-full min-w-0 flex-col justify-between rounded-2xl border border-border/50 bg-muted/15 transition-colors duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
-        density === "compact" ? "p-4" : "p-5",
+        "group flex h-full w-full min-w-0 flex-col justify-between overflow-hidden rounded-2xl border border-border/50 bg-muted/15 transition-colors duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
+        compact ? "p-3 sm:p-4" : "p-5",
         density !== "mosaic" &&
           "hover:border-border/80 hover:bg-muted/30 active:scale-[0.99]",
         density === "mosaic" && "hover:border-border/80"
       )}
     >
-      <div className="space-y-3">
-        <div className="flex flex-wrap items-center gap-2">
-          <Badge variant="outline" className="gap-1.5 text-muted-foreground">
+      <div className={cn("min-w-0", compact ? "space-y-2" : "space-y-3")}>
+        <div className="flex min-w-0 flex-wrap items-center gap-1.5">
+          <Badge
+            variant="outline"
+            className="max-w-full shrink gap-1.5 truncate text-muted-foreground"
+          >
             <TypeIcon type="post" />
             Note
           </Badge>
-          <span className="text-[10px] tracking-wide text-muted-foreground/60 uppercase">
+          <span className="max-w-full truncate text-[10px] tracking-wide text-muted-foreground/60 uppercase">
             {sourcePlatformLabel(item.sourcePlatform) ?? "X"}
           </span>
         </div>
         <h3
           className={cn(
-            "font-heading text-balance text-foreground/90",
-            density === "compact" ? "text-sm leading-snug" : "text-base leading-snug"
+            "font-heading text-balance break-words text-foreground/90",
+            compact
+              ? "line-clamp-4 text-sm leading-snug"
+              : "text-base leading-snug"
           )}
         >
           {item.title}
         </h3>
-        {item.excerpt ? (
+        {item.excerpt && !compact ? (
           <p className="line-clamp-3 text-xs leading-relaxed text-muted-foreground">
             {item.excerpt}
           </p>
         ) : null}
       </div>
-      <div className="mt-5 flex items-center justify-between gap-3 border-t border-border/40 pt-3">
-        <Attribution item={item} date={item.publishedAt} />
-        <span className="inline-flex items-center gap-1 text-xs text-muted-foreground transition-colors group-hover:text-foreground">
-          View
+      <div
+        className={cn(
+          "flex min-w-0 items-center justify-between gap-2 border-t border-border/40",
+          compact ? "mt-3 pt-2.5" : "mt-5 pt-3"
+        )}
+      >
+        <div className="min-w-0 flex-1 overflow-hidden">
+          <Attribution item={item} date={item.publishedAt} />
+        </div>
+        <span className="inline-flex shrink-0 items-center gap-1 text-xs text-muted-foreground transition-colors group-hover:text-foreground">
+          <span className="hidden sm:inline">View</span>
           <ArrowUpRight className="size-3.5" />
         </span>
       </div>
