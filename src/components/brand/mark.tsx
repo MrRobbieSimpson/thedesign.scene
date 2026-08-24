@@ -1,8 +1,8 @@
 import { cn } from "@/lib/utils";
 
 /**
- * sit with design mark — bold geometric ribbon (modern S / sit curve).
- * Solid, clean, favicon-friendly. currentColor for chip inversion.
+ * sit with design mark — folded broadsheet newspaper.
+ * Quiet editorial icon (no letterform). currentColor for chip inversion.
  */
 export function BrandMark({
   className,
@@ -21,7 +21,36 @@ export function BrandMark({
       role={title ? "img" : undefined}
     >
       {title ? <title>{title}</title> : null}
-      <path fill="currentColor" d="M8.5 8.8c0-3.4 3.2-5.8 7.6-5.8 3.2 0 5.8 1.3 7 3.5.35.65.15 1.45-.5 1.8-.65.35-1.45.15-1.8-.5-.85-1.5-2.7-2.5-4.7-2.5-2.9 0-4.9 1.5-4.9 3.5 0 1.5.95 2.5 3.1 3.25l5.5 1.9c3.4 1.15 5.3 2.95 5.3 5.85 0 3.7-3.3 6.3-8 6.3-3.5 0-6.2-1.4-7.5-3.7-.4-.7-.2-1.55.5-1.95.7-.4 1.55-.2 1.95.5.95 1.6 2.85 2.65 5.05 2.65 3.15 0 5.3-1.7 5.3-3.8 0-1.55-1-2.55-3.4-3.4l-5.45-1.85C10.2 13.1 8.5 11.4 8.5 8.8Z" />
+      <g
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        fill="none"
+      >
+        <path
+          strokeWidth="1.5"
+          d="M8 5.5h12.5c.4 0 .78.16 1.06.44l3.5 3.5c.28.28.44.66.44 1.06V24c0 .83-.67 1.5-1.5 1.5H8A1.5 1.5 0 0 1 6.5 24V7A1.5 1.5 0 0 1 8 5.5Z"
+        />
+        <path strokeWidth="1.5" d="M20.5 5.5v3.25c0 .69.56 1.25 1.25 1.25H25" />
+        <path strokeWidth="1.5" d="M20.5 5.5 25 10" />
+        <path strokeWidth="1.6" d="M9.75 12.75h12.5" />
+        <path
+          strokeWidth="1.15"
+          opacity="0.7"
+          d="M11.25 10.6h3.2M16.1 10.6h4.9"
+        />
+        <path strokeWidth="1.15" opacity="0.4" d="M16 14.5v9" />
+        <path
+          strokeWidth="1.25"
+          opacity="0.65"
+          d="M9.75 15.75h4.6M9.75 17.75h4.6M9.75 19.75h3.8M9.75 21.75h4.2"
+        />
+        <path
+          strokeWidth="1.25"
+          opacity="0.65"
+          d="M17.6 15.75h4.6M17.6 17.75h4.6M17.6 19.75h3.9M17.6 21.75h4.3"
+        />
+      </g>
     </svg>
   );
 }
@@ -31,13 +60,13 @@ export function BrandMarkChip({ className }: { className?: string }) {
   return (
     <span
       className={cn(
-        "flex size-7 shrink-0 items-center justify-center rounded-lg bg-foreground p-[0.4rem] text-background",
+        "flex size-7 shrink-0 items-center justify-center rounded-lg bg-foreground p-[0.35rem] text-background",
         "transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
         "group-hover:scale-[1.04] group-active:scale-[0.97]",
         className
       )}
     >
-      <BrandMark className="size-[1.05rem]" />
+      <BrandMark className="size-[1.15rem]" />
     </span>
   );
 }
