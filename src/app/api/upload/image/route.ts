@@ -50,7 +50,7 @@ export async function POST(request: Request) {
     return NextResponse.json(
       {
         error:
-          "Image uploads aren’t configured yet. Connect the Blob store to this project (include Development) and run `vercel env pull`.",
+          "Image uploads aren’t configured yet. Restart the dev server after adding BLOB_READ_WRITE_TOKEN (or run `vercel env pull`).",
       },
       { status: 503 }
     );
