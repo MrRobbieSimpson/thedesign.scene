@@ -75,12 +75,13 @@ export function ReadingProgress({
 
   return (
     <>
+      {/* Track + fill — thin but readable at the top edge */}
       <div
-        className="pointer-events-none fixed inset-x-0 top-0 z-[90] h-0.5 bg-transparent"
+        className="pointer-events-none fixed inset-x-0 top-0 z-[90] h-[3px] bg-foreground/[0.06]"
         aria-hidden
       >
         <div
-          className="h-full origin-left bg-foreground/35 transition-[width] duration-150 ease-out motion-reduce:transition-none"
+          className="h-full origin-left bg-foreground/50 transition-[width] duration-150 ease-out motion-reduce:transition-none"
           style={{ width: `${Math.round(progress * 1000) / 10}%` }}
         />
       </div>
@@ -88,10 +89,10 @@ export function ReadingProgress({
       {statusParts.length > 0 ? (
         <p
           className={cn(
-            "pointer-events-none fixed top-3 right-4 z-[90] max-w-[14rem] text-right",
-            "text-[11px] tracking-wide text-muted-foreground/70",
+            "pointer-events-none fixed top-4 left-4 z-[90] max-w-[16rem]",
+            "text-[11px] tracking-wide text-muted-foreground/75",
             "transition-opacity duration-700 ease-out",
-            "sm:right-6"
+            "sm:left-6 sm:top-5"
           )}
           aria-live="polite"
         >

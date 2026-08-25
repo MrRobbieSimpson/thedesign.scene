@@ -3,6 +3,7 @@
 import { useEffect, useState, useTransition } from "react";
 import Link from "next/link";
 import { useAuth } from "@clerk/nextjs";
+import { Check } from "lucide-react";
 
 import { hasSatWith, toggleSitWith } from "@/app/actions/reading";
 import { isClerkPublishableConfigured } from "@/lib/clerk";
@@ -39,14 +40,16 @@ function SitWithAuthed({ contentId }: { contentId: string }) {
       type="button"
       onClick={onClick}
       disabled={pending}
+      aria-pressed={sat}
       className={cn(
-        "text-sm transition-colors",
+        "inline-flex items-center gap-1.5 text-sm transition-colors",
         sat
           ? "text-foreground"
           : "text-muted-foreground hover:text-foreground"
       )}
     >
-      {sat ? "Sat with" : "I sat with this"}
+      {sat ? <Check className="size-3.5 shrink-0" strokeWidth={2.25} /> : null}
+      I sat with this
     </button>
   );
 }
