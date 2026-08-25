@@ -20,12 +20,14 @@ export async function Footer() {
             A considered selection of writing, visuals, and events — quality
             over quantity.
           </p>
-          <p className="pt-1 text-sm text-muted-foreground">
-            <span className="font-medium tabular-nums text-foreground">
-              {designers.toLocaleString()}
-            </span>{" "}
-            {designers === 1 ? "designer" : "designers"} registered
-          </p>
+          {designers > 30 ? (
+            <p className="pt-1 text-sm text-muted-foreground">
+              <span className="font-medium tabular-nums text-foreground">
+                {designers.toLocaleString()}
+              </span>{" "}
+              designers registered
+            </p>
+          ) : null}
           <p className="pt-1 text-sm text-muted-foreground/80">
             Created by{" "}
             <a

@@ -69,26 +69,32 @@ export default async function HomePage({ searchParams }: HomeProps) {
           A small, considered mix — writing first, then visuals and events.
           Not a firehose. Quality over quantity.
         </p>
-        <p className="text-sm text-muted-foreground/80">
-          <span className="font-medium tabular-nums text-foreground/90">
-            {designers.toLocaleString()}
-          </span>{" "}
-          {designers === 1 ? "designer" : "designers"} registered
-          {filter === "all" ? (
-            <>
-              {" "}
-              · {items.length} selected
-              {featuredCount > 0 ? (
-                <>
-                  {" "}
-                  · {featuredCount} editor{" "}
-                  {featuredCount === 1 ? "pick" : "picks"}
-                </>
-              ) : null}{" "}
-              · {editorialCount} editorial
-            </>
-          ) : null}
-        </p>
+        {designers > 30 || filter === "all" ? (
+          <p className="text-sm text-muted-foreground/80">
+            {designers > 30 ? (
+              <>
+                <span className="font-medium tabular-nums text-foreground/90">
+                  {designers.toLocaleString()}
+                </span>{" "}
+                designers registered
+              </>
+            ) : null}
+            {designers > 30 && filter === "all" ? " · " : null}
+            {filter === "all" ? (
+              <>
+                {items.length} selected
+                {featuredCount > 0 ? (
+                  <>
+                    {" "}
+                    · {featuredCount} editor{" "}
+                    {featuredCount === 1 ? "pick" : "picks"}
+                  </>
+                ) : null}{" "}
+                · {editorialCount} editorial
+              </>
+            ) : null}
+          </p>
+        ) : null}
       </section>
 
       {guest ? <GuestEditorStrip guest={guest} /> : null}
