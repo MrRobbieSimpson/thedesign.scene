@@ -23,7 +23,7 @@ function JobsCountBadge({ count }: { count: number }) {
   return (
     <span
       className={cn(
-        "jobs-count-badge relative ml-1.5 inline-flex h-[1.125rem] min-w-[1.125rem]",
+        "jobs-count-badge relative mr-1.5 inline-flex h-[1.125rem] min-w-[1.125rem]",
         "items-center justify-center overflow-hidden rounded-full px-1.5",
         "text-[10px] font-semibold tabular-nums leading-none tracking-tight",
         "bg-foreground/[0.09] text-foreground/80",
@@ -41,8 +41,8 @@ function navLabel(href: string, label: string, openJobCount: number) {
   if (href !== "/jobs") return label;
   return (
     <span className="inline-flex items-center">
-      {label}
       <JobsCountBadge count={openJobCount} />
+      {label}
     </span>
   );
 }
