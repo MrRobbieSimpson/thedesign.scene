@@ -538,6 +538,7 @@ export async function createJob(formData: FormData): Promise<ActionResult> {
   revalidatePath("/admin");
   revalidatePath("/jobs");
   revalidatePath("/");
+  revalidatePath("/", "layout");
   revalidateTag("jobs");
   return {
     ok: true,
@@ -576,6 +577,7 @@ export async function setJobStatus(
   revalidatePath("/admin");
   revalidatePath("/jobs");
   revalidatePath("/");
+  revalidatePath("/", "layout");
   revalidateTag("jobs");
   return {
     ok: true,

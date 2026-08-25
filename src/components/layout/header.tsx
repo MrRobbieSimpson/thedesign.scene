@@ -14,9 +14,44 @@ const nav = [
   { href: "/", label: "Feed" },
   { href: "/events", label: "Events" },
   { href: "/jobs", label: "Jobs" },
-];
+] as const;
 
-export function Header({ timeZone }: { timeZone?: string | null }) {
+/** Soft count chip — only when openings exist. */
+function JobsCountBadge({ count }: { count: number }) {
+  if (count <= 0) return null;
+
+  return (
+    <span
+      className={cn(
+        "ml-1.5 inline-flex h-[1.125rem] min-w-[1.125rem] items-center justify-center",
+        "rounded-full px-1.5 text-[10px] font-medium tabular-nums leading-none",
+        "bg-foreground/[0.07] text-foreground/70",
+        "ring-1 ring-inset ring-foreground/[0.06]"
+      )}
+      aria-hidden
+    >
+      {count > 99 ? "99+" : count}
+    </span>
+  );
+}
+
+function navLabel(href: string, label: string, openJobCount: number) {
+  if (href !== "/jobs") return label;
+  return (
+    <span className="inline-flex items-center">
+      {label}
+      <JobsCountBadge count={openJobCount} />
+    </span>
+  );
+}
+
+export function Header({
+  timeZone,
+  openJobCount = 0,
+}: {
+  timeZone?: string | null;
+  openJobCount?: number;
+}) {
   const pathname = usePathname();
 
   return (
@@ -44,8 +79,12 @@ export function Header({ timeZone }: { timeZone?: string | null }) {
                 aria-label="Primary"
                 items={nav.map((item) => ({
                   key: item.href,
-                  label: item.label,
+                  label: navLabel(item.href, item.label, openJobCount),
                   href: item.href,
+                  "aria-label":
+                    item.href === "/jobs" && openJobCount > 0
+                      ? `Jobs, ${openJobCount} open`
+                      : undefined,
                   active:
                     item.href === "/"
                       ? pathname === "/"
@@ -75,6 +114,11 @@ export function Header({ timeZone }: { timeZone?: string | null }) {
               <Link
                 key={item.href}
                 href={item.href}
+                aria-label={
+                  item.href === "/jobs" && openJobCount > 0
+                    ? `Jobs, ${openJobCount} open`
+                    : undefined
+                }
                 className={cn(
                   "flex h-8 flex-1 items-center justify-center rounded-full text-sm font-medium transition-colors",
                   active
@@ -82,7 +126,7 @@ export function Header({ timeZone }: { timeZone?: string | null }) {
                     : "text-muted-foreground hover:text-foreground"
                 )}
               >
-                {item.label}
+                {navLabel(item.href, item.label, openJobCount)}
               </Link>
             );
           })}
