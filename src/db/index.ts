@@ -3,15 +3,26 @@ import postgres from "postgres";
 
 import * as schema from "./schema";
 
-const connectionString = process.env.DATABASE_URL;
+/**
+ * Read + validate at call / module init so empty or placeholder
+ * values (e.g. dashboard typos) don’t look “configured”.
+ */
+function readConnectionString() {
+  const value = process.env.DATABASE_URL?.trim() ?? "";
+  if (!value) return null;
+  if (!/^postgres(ql)?:\/\//i.test(value)) return null;
+  return value;
+}
 
 /**
  * Returns true when a Postgres connection string is configured.
  * Useful for falling back to demo data during local UI development.
  */
 export function isDatabaseConfigured() {
-  return Boolean(connectionString);
+  return Boolean(readConnectionString());
 }
+
+const connectionString = readConnectionString();
 
 const client = connectionString
   ? postgres(connectionString, {
