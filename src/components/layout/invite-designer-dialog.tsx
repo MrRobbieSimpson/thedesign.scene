@@ -8,6 +8,7 @@ import {
   useTransition,
   type FormEvent,
 } from "react";
+import { createPortal } from "react-dom";
 import { Check, Copy, Loader2, UserPlus, X } from "lucide-react";
 
 import { inviteDesignerByEmail } from "@/app/actions/invite";
@@ -23,6 +24,7 @@ type InviteDesignerDialogProps = {
 
 /**
  * Calm invite dialog — email (digest-styled) or copy join link.
+ * Portaled to document.body so sticky header doesn’t clip fixed layout.
  */
 export function InviteDesignerDialog({
   open,
@@ -30,6 +32,7 @@ export function InviteDesignerDialog({
 }: InviteDesignerDialogProps) {
   const titleId = useId();
   const inputRef = useRef<HTMLInputElement>(null);
+  const [mounted, setMounted] = useState(false);
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -37,6 +40,10 @@ export function InviteDesignerDialog({
   const [pending, startTransition] = useTransition();
 
   const joinUrl = absoluteUrl("/sign-up");
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     if (!open) return;
@@ -55,11 +62,16 @@ export function InviteDesignerDialog({
       if (event.key === "Escape") onClose();
     }
 
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
     document.addEventListener("keydown", onKeyDown);
-    return () => document.removeEventListener("keydown", onKeyDown);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.removeEventListener("keydown", onKeyDown);
+    };
   }, [open, onClose]);
 
-  if (!open) return null;
+  if (!open || !mounted) return null;
 
   function onSubmit(event: FormEvent) {
     event.preventDefault();
@@ -88,20 +100,25 @@ export function InviteDesignerDialog({
     }
   }
 
-  return (
+  return createPortal(
     <div
-      className="fixed inset-0 z-[60] flex items-center justify-center bg-background/70 px-4 backdrop-blur-sm"
+      className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6"
       role="presentation"
       onMouseDown={(event) => {
         if (event.target === event.currentTarget) onClose();
       }}
     >
       <div
+        className="absolute inset-0 bg-background/70 backdrop-blur-sm"
+        aria-hidden
+      />
+      <div
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
         className={cn(
-          "relative w-full max-w-md overflow-hidden rounded-2xl border border-border/70 bg-card p-6",
+          "relative z-10 w-full max-w-md overflow-y-auto overscroll-contain",
+          "max-h-[min(36rem,calc(100dvh-2rem))] rounded-2xl border border-border/70 bg-card p-6",
           "shadow-[0_24px_60px_-32px_rgba(0,0,0,0.55)]"
         )}
       >
@@ -212,6 +229,7 @@ export function InviteDesignerDialog({
           </p>
         ) : null}
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
