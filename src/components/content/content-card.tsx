@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 
 import { EditorNote } from "@/components/content/editor-note";
+import { SaveButton } from "@/components/save-button";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -63,6 +64,47 @@ function TypeIcon({ type }: { type: ContentWithMaker["type"] }) {
 function contentHref(item: ContentWithMaker) {
   if (item.type === "article" && item.slug) return `/article/${item.slug}`;
   return `/content/${item.id}`;
+}
+
+/** Tiny bookmark — stops the card link from navigating. */
+function CardSave({
+  contentId,
+  className,
+}: {
+  contentId: string;
+  className?: string;
+}) {
+  return (
+    <span
+      className={cn("relative z-10", className)}
+      onClick={(event) => {
+        event.preventDefault();
+        event.stopPropagation();
+      }}
+      onKeyDown={(event) => event.stopPropagation()}
+    >
+      <SaveButton contentId={contentId} variant="icon" />
+    </span>
+  );
+}
+
+function FeaturedNote({
+  note,
+  density,
+}: {
+  note: string | null | undefined;
+  density: CardDensity;
+}) {
+  if (!note?.trim()) return null;
+  return (
+    <EditorNote
+      note={note}
+      variant="feed"
+      className={cn(
+        density === "compact" && "[&_p:last-child]:line-clamp-2"
+      )}
+    />
+  );
 }
 
 function Attribution({
@@ -217,8 +259,8 @@ function ArticleCard({
               {item.excerpt}
             </p>
           ) : null}
-          {item.featured && item.editorNote && density !== "compact" ? (
-            <EditorNote note={item.editorNote} variant="feed" />
+          {item.featured ? (
+            <FeaturedNote note={item.editorNote} density={density} />
           ) : null}
         </div>
       </div>
@@ -231,10 +273,13 @@ function ArticleCard({
         <div className="min-w-0 flex-1 overflow-hidden">
           <Attribution item={item} date={item.publishedAt} />
         </div>
-        <span className="inline-flex shrink-0 items-center gap-1 text-sm text-muted-foreground transition-colors group-hover:text-foreground">
-          <span className="hidden sm:inline">Read</span>
-          <ArrowUpRight className="size-4" />
-        </span>
+        <div className="flex shrink-0 items-center gap-1.5">
+          <CardSave contentId={item.id} />
+          <span className="inline-flex items-center gap-1 text-sm text-muted-foreground transition-colors group-hover:text-foreground">
+            <span className="hidden sm:inline">Read</span>
+            <ArrowUpRight className="size-4" />
+          </span>
+        </div>
       </div>
     </Link>
   );
@@ -291,8 +336,8 @@ function ThoughtCard({
               {item.excerpt}
             </p>
           ) : null}
-          {item.featured && item.editorNote && density !== "compact" ? (
-            <EditorNote note={item.editorNote} variant="feed" />
+          {item.featured ? (
+            <FeaturedNote note={item.editorNote} density={density} />
           ) : null}
         </div>
       </div>
@@ -306,9 +351,12 @@ function ThoughtCard({
         <div className="min-w-0 flex-1 overflow-hidden">
           <Attribution item={item} date={item.publishedAt} />
         </div>
-        <span className="shrink-0 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100">
-          <ArrowUpRight className="size-4" />
-        </span>
+        <div className="flex shrink-0 items-center gap-1.5">
+          <CardSave contentId={item.id} />
+          <span className="shrink-0 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100">
+            <ArrowUpRight className="size-4" />
+          </span>
+        </div>
       </div>
     </Link>
   );
@@ -390,12 +438,15 @@ function VisualCard({
               {item.excerpt}
             </p>
           ) : null}
-          {item.featured && item.editorNote && density !== "compact" ? (
-            <EditorNote note={item.editorNote} variant="feed" />
+          {item.featured ? (
+            <FeaturedNote note={item.editorNote} density={density} />
           ) : null}
         </div>
-        <div className="mt-auto">
-          <Attribution item={item} date={item.publishedAt} />
+        <div className="mt-auto flex items-end justify-between gap-2">
+          <div className="min-w-0 flex-1 overflow-hidden">
+            <Attribution item={item} date={item.publishedAt} />
+          </div>
+          <CardSave contentId={item.id} />
         </div>
       </div>
     </Link>
@@ -463,10 +514,13 @@ function NewsCard({
         <div className="min-w-0 flex-1 overflow-hidden">
           <Attribution item={item} date={item.publishedAt} />
         </div>
-        <span className="inline-flex shrink-0 items-center gap-1 text-xs text-muted-foreground transition-colors group-hover:text-foreground">
-          <span className="hidden sm:inline">Open</span>
-          <ArrowUpRight className="size-3.5" />
-        </span>
+        <div className="flex shrink-0 items-center gap-1">
+          <CardSave contentId={item.id} />
+          <span className="inline-flex items-center gap-1 text-xs text-muted-foreground transition-colors group-hover:text-foreground">
+            <span className="hidden sm:inline">Open</span>
+            <ArrowUpRight className="size-3.5" />
+          </span>
+        </div>
       </div>
     </Link>
   );
@@ -531,10 +585,13 @@ function PostCard({
         <div className="min-w-0 flex-1 overflow-hidden">
           <Attribution item={item} date={item.publishedAt} />
         </div>
-        <span className="inline-flex shrink-0 items-center gap-1 text-xs text-muted-foreground transition-colors group-hover:text-foreground">
-          <span className="hidden sm:inline">View</span>
-          <ArrowUpRight className="size-3.5" />
-        </span>
+        <div className="flex shrink-0 items-center gap-1">
+          <CardSave contentId={item.id} />
+          <span className="inline-flex items-center gap-1 text-xs text-muted-foreground transition-colors group-hover:text-foreground">
+            <span className="hidden sm:inline">View</span>
+            <ArrowUpRight className="size-3.5" />
+          </span>
+        </div>
       </div>
     </Link>
   );

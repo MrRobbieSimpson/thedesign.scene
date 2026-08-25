@@ -444,6 +444,27 @@
   }
 }
 
+@keyframes soft-toast-enter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.soft-toast-enter {
+  animation: soft-toast-enter 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .soft-toast-enter {
+    animation: none;
+  }
+}
+
 /* Jobs nav count — soft diagonal shine, slow and quiet */
 @keyframes jobs-badge-shine {
   0%,

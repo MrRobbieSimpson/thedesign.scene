@@ -1,4 +1,7 @@
-import { FeedGrid } from "@/components/content/feed-grid";
+import {
+  BrowseFeedAction,
+  FeedGrid,
+} from "@/components/content/feed-grid";
 import { getSavedContent } from "@/app/actions/library";
 import type { ContentWithMaker } from "@/lib/demo-data";
 import { buildPageMetadata } from "@/lib/seo";
@@ -23,11 +26,16 @@ export default async function SavesPage() {
         </p>
         <h1 className="font-heading text-4xl tracking-tight">Saves</h1>
         <p className="max-w-xl text-muted-foreground">
-          Pieces you’ve bookmarked for later — private to you.
+          Pieces you’ve bookmarked to sit with later — private to you.
         </p>
       </section>
 
-      <FeedGrid items={items} />
+      <FeedGrid
+        items={items}
+        emptyTitle="Nothing saved yet"
+        emptyDescription="When something is worth returning to, tap the bookmark — it’ll wait here."
+        emptyAction={<BrowseFeedAction />}
+      />
     </div>
   );
 }

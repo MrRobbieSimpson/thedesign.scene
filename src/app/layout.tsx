@@ -8,6 +8,7 @@ import { Footer } from "@/components/layout/footer";
 import { SiteHeader } from "@/components/layout/site-header";
 import { JsonLd } from "@/components/seo/json-ld";
 import { ThemeProvider } from "@/components/theme-provider";
+import { SoftToastProvider } from "@/components/ui/soft-toast";
 import { SiteStage } from "@/components/writing/site-stage";
 import { WritingProvider } from "@/components/writing/writing-context";
 import { clerkAppearance } from "@/lib/clerk-appearance";
@@ -52,13 +53,15 @@ export default function RootLayout({
       disableTransitionOnChange={false}
     >
       <WritingProvider>
-        <EnsureProfile />
-        <SiteStage>
-          <SiteHeader />
-          <main className="flex-1">{children}</main>
-          <Footer />
-        </SiteStage>
-        <DeferredUi />
+        <SoftToastProvider>
+          <EnsureProfile />
+          <SiteStage>
+            <SiteHeader />
+            <main className="flex-1">{children}</main>
+            <Footer />
+          </SiteStage>
+          <DeferredUi />
+        </SoftToastProvider>
       </WritingProvider>
     </ThemeProvider>
   );

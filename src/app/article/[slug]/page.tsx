@@ -96,7 +96,10 @@ export default async function ArticlePage({
       id="article-reading"
       className="reading-surface mx-auto max-w-[40.625rem] px-5 py-16 sm:px-6 sm:py-24"
     >
-      <ReadingProgress targetId="article-reading" />
+      <ReadingProgress
+        targetId="article-reading"
+        readingTimeMinutes={item.readingTimeMinutes}
+      />
 
       {justPublished ? (
         <PublishedBanner

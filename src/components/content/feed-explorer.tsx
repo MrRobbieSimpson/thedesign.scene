@@ -12,6 +12,7 @@ import {
 import { FeedLayoutGrid } from "@/components/content/feed-layout-grid";
 import { resolveFeedLayout } from "@/components/content/feed-layout-switcher";
 import { FeedToolbar } from "@/components/content/feed-toolbar";
+import { EmptyState } from "@/components/ui/empty-state";
 import type { Event } from "@/db/schema";
 import type { ContentWithMaker } from "@/lib/demo-data";
 import type { FeedItem } from "@/lib/feed-mix";
@@ -48,12 +49,18 @@ export function FeedExplorer({
   toolbar,
   showControls = true,
   className,
+  emptyTitle = "Nothing selected yet",
+  emptyDescription = "Editor’s picks, writing, visuals, and events will appear here.",
+  emptyAction,
 }: {
   items: FeedItem[];
   toolbar?: React.ReactNode;
   /** When false, only renders the grid (for mid-page continuations). */
   showControls?: boolean;
   className?: string;
+  emptyTitle?: string;
+  emptyDescription?: string;
+  emptyAction?: React.ReactNode;
 }) {
   const [layout, setLayout] = useState<FeedLayout>("big");
   const smUp = useIsSmUp();
@@ -99,6 +106,9 @@ export function FeedExplorer({
         key={listKey}
         items={revived}
         layout={effectiveLayout}
+        emptyTitle={emptyTitle}
+        emptyDescription={emptyDescription}
+        emptyAction={emptyAction}
       />
     </div>
   );
@@ -113,20 +123,23 @@ function densityFor(layout: FeedLayout) {
 function FeedGridLayout({
   items,
   layout,
+  emptyTitle,
+  emptyDescription,
+  emptyAction,
 }: {
   items: FeedItem[];
   layout: FeedLayout;
+  emptyTitle: string;
+  emptyDescription: string;
+  emptyAction?: React.ReactNode;
 }) {
   if (items.length === 0) {
     return (
-      <div className="rounded-2xl border border-dashed border-border/80 px-6 py-24 text-center">
-        <p className="font-heading text-2xl tracking-tight">
-          Nothing selected yet
-        </p>
-        <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
-          Editor’s picks, writing, visuals, and events will appear here.
-        </p>
-      </div>
+      <EmptyState
+        title={emptyTitle}
+        description={emptyDescription}
+        action={emptyAction}
+      />
     );
   }
 

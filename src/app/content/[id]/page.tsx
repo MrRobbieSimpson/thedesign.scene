@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { ArrowLeft, ArrowUpRight, ExternalLink } from "lucide-react";
 
+import { EditorNote } from "@/components/content/editor-note";
 import { SaveButton } from "@/components/save-button";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -102,6 +103,10 @@ export default async function ContentPage({ params }: ContentPageProps) {
         <h1 className="font-heading text-4xl leading-[1.15] text-balance sm:text-5xl">
           {item.title}
         </h1>
+
+        {item.featured && item.editorNote ? (
+          <EditorNote note={item.editorNote} variant="reading" />
+        ) : null}
 
         <div className="flex flex-wrap items-center justify-between gap-4">
           {item.maker ? (

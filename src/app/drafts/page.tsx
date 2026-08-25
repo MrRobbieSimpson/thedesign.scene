@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { deleteMyDraft, getMyDrafts } from "@/app/actions/write";
+import { EmptyState } from "@/components/ui/empty-state";
 import { ContinueDraftButton } from "@/components/writing/continue-draft-button";
 import { WriteButton } from "@/components/writing/write-button";
 import { Button } from "@/components/ui/button";
@@ -91,16 +92,12 @@ export default async function DraftsPage() {
         </div>
 
         {drafts.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-border/80 px-6 py-16 text-center">
-            <p className="font-heading text-2xl tracking-tight">No drafts yet</p>
-            <p className="mx-auto mt-2 max-w-sm text-sm text-muted-foreground">
-              Open a blank page and start something — you can publish when it’s
-              ready.
-            </p>
-            <div className="mt-6 flex justify-center">
-              <WriteButton />
-            </div>
-          </div>
+          <EmptyState
+            size="md"
+            title="No drafts yet"
+            description="Open a blank page and start something — publish when it’s ready to sit with."
+            action={<WriteButton />}
+          />
         ) : (
           <ul className="divide-y divide-border/70 overflow-hidden rounded-2xl border border-border/70">
             {drafts.map((draft) => (
