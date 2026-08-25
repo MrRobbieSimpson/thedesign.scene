@@ -7,11 +7,14 @@ import { GuestEditorForm } from "@/components/admin/guest-editor-form";
 import { ImportEventForm } from "@/components/admin/import-event-form";
 import { ImportRssPanel } from "@/components/admin/import-rss-panel";
 import { ImportUrlForm } from "@/components/admin/import-url-form";
+import { JobForm } from "@/components/admin/job-form";
+import { JobList } from "@/components/admin/job-list";
 import { isDatabaseConfigured } from "@/db";
 import { isAdmin } from "@/lib/auth";
 import {
   getAllContent,
   getAllEvents,
+  getAllJobs,
   getMakers,
   getProfiles,
 } from "@/lib/queries";
@@ -31,9 +34,10 @@ export default async function AdminPage() {
     redirect("/");
   }
 
-  const [items, eventItems, makers, profiles] = await Promise.all([
+  const [items, eventItems, jobItems, makers, profiles] = await Promise.all([
     getAllContent(),
     getAllEvents(),
+    getAllJobs(),
     getMakers(),
     getProfiles(),
   ]);
@@ -48,8 +52,8 @@ export default async function AdminPage() {
         <h1 className="font-heading text-4xl tracking-tight">Curate</h1>
         <p className="max-w-xl text-muted-foreground">
           Editorial back office — import links, publish with taste, feature
-          picks with notes, manage events, and set the monthly guest editor.
-          Restricted to authorised curators.
+          picks with notes, manage events and openings, and set the monthly
+          guest editor. Restricted to authorised curators.
         </p>
       </section>
 
@@ -95,6 +99,26 @@ export default async function AdminPage() {
                 </p>
               </div>
               <EventList items={eventItems} disabled={!dbReady} />
+            </section>
+          </div>
+        </div>
+
+        <div className="border-t border-border/60 pt-10">
+          <h2 className="font-heading mb-6 text-3xl tracking-tight">
+            Openings
+          </h2>
+          <div className="space-y-10">
+            <JobForm disabled={!dbReady} />
+            <section className="space-y-4">
+              <div className="flex items-end justify-between gap-3">
+                <h3 className="font-heading text-2xl tracking-tight">
+                  All openings
+                </h3>
+                <p className="text-sm text-muted-foreground">
+                  {jobItems.length} total
+                </p>
+              </div>
+              <JobList items={jobItems} disabled={!dbReady} />
             </section>
           </div>
         </div>

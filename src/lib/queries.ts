@@ -5,11 +5,13 @@ import {
   content,
   events,
   guestTerms,
+  jobs,
   makers,
   profiles,
   type ContentType,
   type Event,
   type GuestTerm,
+  type Job,
   type Profile,
 } from "@/db/schema";
 import { db, isDatabaseConfigured } from "@/db";
@@ -158,6 +160,47 @@ export async function getAllEvents() {
 
   return db.query.events.findMany({
     orderBy: (fields, { asc }) => [asc(fields.startDate)],
+  });
+}
+
+function reviveJob(job: Job): Job {
+  return {
+    ...job,
+    publishedAt: asDate(job.publishedAt),
+    createdAt: asDate(job.createdAt) ?? new Date(0),
+    updatedAt: asDate(job.updatedAt) ?? new Date(0),
+  };
+}
+
+async function fetchPublishedJobs() {
+  if (!isDatabaseConfigured() || !db) return [];
+
+  return db.query.jobs.findMany({
+    where: eq(jobs.status, "published"),
+    orderBy: (fields, { desc: d }) => [
+      d(fields.publishedAt),
+      d(fields.createdAt),
+    ],
+  });
+}
+
+export async function getPublishedJobs() {
+  const rows = await unstable_cache(
+    () => fetchPublishedJobs(),
+    ["published-jobs", "v1"],
+    {
+      revalidate: FEED_REVALIDATE_SECONDS,
+      tags: ["jobs"],
+    }
+  )();
+  return rows.map(reviveJob);
+}
+
+export async function getAllJobs() {
+  if (!isDatabaseConfigured() || !db) return [];
+
+  return db.query.jobs.findMany({
+    orderBy: (fields, { desc: d }) => [d(fields.createdAt)],
   });
 }
 

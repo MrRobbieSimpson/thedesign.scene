@@ -55,6 +55,18 @@ export const subscriberStatusEnum = pgEnum("subscriber_status", [
   "unsubscribed",
 ]);
 
+export const jobStatusEnum = pgEnum("job_status", [
+  "draft",
+  "published",
+  "closed",
+]);
+
+export const jobWorkModeEnum = pgEnum("job_work_mode", [
+  "remote",
+  "hybrid",
+  "onsite",
+]);
+
 export const makers = pgTable("makers", {
   id: uuid("id").defaultRandom().primaryKey(),
   name: text("name").notNull(),
@@ -183,6 +195,31 @@ export const events = pgTable(
       ),
   ]
 );
+
+/** High-bar UI / Product Design openings — curated, never scraped. */
+export const jobs = pgTable("jobs", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  title: text("title").notNull(),
+  company: text("company").notNull(),
+  description: text("description"),
+  url: text("url"),
+  location: text("location"),
+  workMode: jobWorkModeEnum("work_mode").notNull().default("remote"),
+  status: jobStatusEnum("status").notNull().default("draft"),
+  /** Why you’d recommend this role to a friend. */
+  editorNote: text("editor_note"),
+  /** Soft label e.g. Product Design, Design Lead. */
+  roleKind: text("role_kind"),
+  companyUrl: text("company_url"),
+  publishedAt: timestamp("published_at", { withTimezone: true }),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
+    .defaultNow()
+    .notNull()
+    .$onUpdate(() => new Date()),
+});
 
 export const saves = pgTable(
   "saves",
@@ -401,6 +438,8 @@ export type Content = typeof content.$inferSelect;
 export type NewContent = typeof content.$inferInsert;
 export type Event = typeof events.$inferSelect;
 export type NewEvent = typeof events.$inferInsert;
+export type Job = typeof jobs.$inferSelect;
+export type NewJob = typeof jobs.$inferInsert;
 export type Profile = typeof profiles.$inferSelect;
 export type Scene = typeof scenes.$inferSelect;
 export type GuestTerm = typeof guestTerms.$inferSelect;
@@ -410,6 +449,8 @@ export type PublicContentType = (typeof PUBLIC_CONTENT_TYPES)[number];
 export type ContentStatus = (typeof contentStatusEnum.enumValues)[number];
 export type EventType = (typeof eventTypeEnum.enumValues)[number];
 export type EventStatus = (typeof eventStatusEnum.enumValues)[number];
+export type JobStatus = (typeof jobStatusEnum.enumValues)[number];
+export type JobWorkMode = (typeof jobWorkModeEnum.enumValues)[number];
 
 export function isContentType(value: string): value is ContentType {
   return (CONTENT_TYPES as readonly string[]).includes(value);

@@ -14,6 +14,7 @@ import {
   getCurrentGuestEditor,
   getPublishedContentPool,
   getPublishedEvents,
+  getPublishedJobs,
   getRegisteredDesignerCount,
 } from "@/lib/queries";
 import { buildPageMetadata } from "@/lib/seo";
@@ -36,15 +37,17 @@ export default async function HomePage({ searchParams }: HomeProps) {
   const rawType = params.type ?? "all";
   const filter: FeedFilter = isFeedFilter(rawType) ? rawType : "all";
 
-  const [content, events, designers, guest] = await Promise.all([
+  const [content, events, openJobs, designers, guest] = await Promise.all([
     getPublishedContentPool(),
     getPublishedEvents(),
+    getPublishedJobs(),
     getRegisteredDesignerCount(),
     getCurrentGuestEditor(),
   ]);
 
   const items = filterFeedItems(filter, content, events);
   const liveFromX = filter === "all" ? pickLiveFromX(content, 4) : [];
+  const featuredJob = openJobs[0] ?? null;
 
   const editorialCount = items.filter(
     (item) =>
@@ -101,6 +104,7 @@ export default async function HomePage({ searchParams }: HomeProps) {
 
       <HomeFeed
         items={items}
+        featuredJob={featuredJob}
         toolbar={
           <Suspense
             fallback={

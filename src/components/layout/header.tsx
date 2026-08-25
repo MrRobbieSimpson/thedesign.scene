@@ -13,6 +13,7 @@ import { cn } from "@/lib/utils";
 const nav = [
   { href: "/", label: "Feed" },
   { href: "/events", label: "Events" },
+  { href: "/jobs", label: "Jobs" },
 ];
 
 export function Header({ timeZone }: { timeZone?: string | null }) {

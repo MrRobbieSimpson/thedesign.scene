@@ -20,6 +20,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.9,
     },
     {
+      url: absoluteUrl("/jobs"),
+      changeFrequency: "daily",
+      priority: 0.85,
+    },
+    {
       url: absoluteUrl("/subscribe"),
       changeFrequency: "monthly",
       priority: 0.6,

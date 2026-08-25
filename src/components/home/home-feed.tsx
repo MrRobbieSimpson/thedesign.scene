@@ -13,7 +13,8 @@ import { FeedLayoutGrid } from "@/components/content/feed-layout-grid";
 import { resolveFeedLayout } from "@/components/content/feed-layout-switcher";
 import { FeedToolbar } from "@/components/content/feed-toolbar";
 import { DigestStrip } from "@/components/home/digest-strip";
-import type { Event } from "@/db/schema";
+import { JobsStrip } from "@/components/home/jobs-strip";
+import type { Event, Job } from "@/db/schema";
 import type { ContentWithMaker } from "@/lib/demo-data";
 import type { FeedItem } from "@/lib/feed-mix";
 import { useIsSmUp } from "@/lib/use-media-query";
@@ -99,9 +100,12 @@ function FeedGrid({
 export function HomeFeed({
   items,
   toolbar,
+  featuredJob = null,
 }: {
   items: FeedItem[];
   toolbar?: React.ReactNode;
+  /** Latest curated opening — quiet mid-feed callout when present. */
+  featuredJob?: Job | null;
 }) {
   const [layout, setLayout] = useState<FeedLayout>("big");
   const smUp = useIsSmUp();
@@ -145,10 +149,12 @@ export function HomeFeed({
           <FeedGrid items={first} layout={effectiveLayout} />
           <div
             className={cn(
+              "space-y-4",
               effectiveLayout === "big" ? "py-2 sm:py-4" : "py-1"
             )}
           >
             <DigestStrip />
+            {featuredJob ? <JobsStrip job={featuredJob} /> : null}
           </div>
           {second.length > 0 ? (
             <FeedGrid items={second} layout={effectiveLayout} />

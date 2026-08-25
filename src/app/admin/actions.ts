@@ -9,10 +9,13 @@ import {
   events,
   isContentType,
   isPublicContentType,
+  jobs,
   type ContentStatus,
   type ContentType,
   type EventStatus,
   type EventType,
+  type JobStatus,
+  type JobWorkMode,
 } from "@/db/schema";
 import { geocodeLocation } from "@/lib/geo";
 import {
@@ -473,5 +476,114 @@ export async function setEventStatus(
   return {
     ok: true,
     message: status === "published" ? "Published." : "Unpublished.",
+  };
+}
+
+function normalizeUrl(raw: string): string | null {
+  const trimmed = raw.trim();
+  if (!trimmed) return null;
+  const withProtocol = /^https?:\/\//i.test(trimmed)
+    ? trimmed
+    : `https://${trimmed}`;
+  try {
+    const parsed = new URL(withProtocol);
+    if (parsed.protocol !== "http:" && parsed.protocol !== "https:") return null;
+    return parsed.toString();
+  } catch {
+    return null;
+  }
+}
+
+export async function createJob(formData: FormData): Promise<ActionResult> {
+  const missing = requireDb();
+  if (missing) return missing;
+
+  const forbidden = await requireAdminAccess();
+  if (forbidden) return forbidden;
+
+  const title = String(formData.get("title") ?? "").trim();
+  const company = String(formData.get("company") ?? "").trim();
+  const description =
+    String(formData.get("description") ?? "").trim() || null;
+  const location = String(formData.get("location") ?? "").trim() || null;
+  const editorNote =
+    String(formData.get("editorNote") ?? "").trim() || null;
+  const roleKind = String(formData.get("roleKind") ?? "").trim() || null;
+  const workModeRaw = String(formData.get("workMode") ?? "remote");
+  const url = normalizeUrl(String(formData.get("url") ?? ""));
+  const companyUrl = normalizeUrl(String(formData.get("companyUrl") ?? ""));
+
+  if (!title) return { ok: false, message: "Title is required." };
+  if (!company) return { ok: false, message: "Company is required." };
+
+  const workMode = (
+    ["remote", "hybrid", "onsite"].includes(workModeRaw)
+      ? workModeRaw
+      : "remote"
+  ) as JobWorkMode;
+
+  await db!.insert(jobs).values({
+    title,
+    company,
+    description,
+    location,
+    editorNote,
+    roleKind,
+    workMode,
+    url,
+    companyUrl,
+    status: "draft",
+  });
+
+  revalidatePath("/admin");
+  revalidatePath("/jobs");
+  revalidatePath("/");
+  revalidateTag("jobs");
+  return {
+    ok: true,
+    message: editorNote
+      ? "Opening saved as draft."
+      : "Opening saved as draft — consider adding “Why this is here” before publishing.",
+  };
+}
+
+export async function setJobStatus(
+  id: string,
+  status: JobStatus
+): Promise<ActionResult> {
+  const missing = requireDb();
+  if (missing) return missing;
+
+  const forbidden = await requireAdminAccess();
+  if (forbidden) return forbidden;
+
+  const existing = await db!.query.jobs.findFirst({
+    where: eq(jobs.id, id),
+    columns: { publishedAt: true },
+  });
+
+  await db!
+    .update(jobs)
+    .set({
+      status,
+      publishedAt:
+        status === "published"
+          ? existing?.publishedAt ?? new Date()
+          : existing?.publishedAt ?? null,
+    })
+    .where(eq(jobs.id, id));
+
+  revalidatePath("/admin");
+  revalidatePath("/jobs");
+  revalidatePath("/");
+  revalidateTag("jobs");
+  return {
+    ok: true,
+    message:
+      status === "published"
+        ? "Published."
+        : status === "closed"
+          ? "Closed."
+          : "Unpublished.",
   };
 }

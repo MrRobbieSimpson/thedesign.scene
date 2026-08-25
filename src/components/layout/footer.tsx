@@ -52,6 +52,12 @@ export async function Footer() {
             Events
           </Link>
           <Link
+            href="/jobs"
+            className="transition-colors hover:text-foreground"
+          >
+            Jobs
+          </Link>
+          <Link
             href="/sign-up"
             className="transition-colors hover:text-foreground"
           >

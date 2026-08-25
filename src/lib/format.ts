@@ -96,3 +96,14 @@ export function eventTypeLabel(type: EventType) {
       return "Remote";
   }
 }
+
+export function jobWorkModeLabel(mode: "remote" | "hybrid" | "onsite") {
+  switch (mode) {
+    case "remote":
+      return "Remote";
+    case "hybrid":
+      return "Hybrid";
+    case "onsite":
+      return "On site";
+  }
+}
