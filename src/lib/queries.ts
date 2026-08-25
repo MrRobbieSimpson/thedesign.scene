@@ -187,7 +187,7 @@ async function fetchPublishedJobs() {
 export async function getPublishedJobs() {
   const rows = await unstable_cache(
     () => fetchPublishedJobs(),
-    ["published-jobs", "v1"],
+    ["published-jobs", "v2"],
     {
       revalidate: FEED_REVALIDATE_SECONDS,
       tags: ["jobs"],

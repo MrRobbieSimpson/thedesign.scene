@@ -16,21 +16,23 @@ const nav = [
   { href: "/jobs", label: "Jobs" },
 ] as const;
 
-/** Soft count chip — only when openings exist. */
+/** Soft count chip with a quiet shine — only when openings exist. */
 function JobsCountBadge({ count }: { count: number }) {
   if (count <= 0) return null;
 
   return (
     <span
       className={cn(
-        "ml-1.5 inline-flex h-[1.125rem] min-w-[1.125rem] items-center justify-center",
-        "rounded-full px-1.5 text-[10px] font-medium tabular-nums leading-none",
-        "bg-foreground/[0.07] text-foreground/70",
-        "ring-1 ring-inset ring-foreground/[0.06]"
+        "jobs-count-badge relative ml-1.5 inline-flex h-[1.125rem] min-w-[1.125rem]",
+        "items-center justify-center overflow-hidden rounded-full px-1.5",
+        "text-[10px] font-semibold tabular-nums leading-none tracking-tight",
+        "bg-foreground/[0.09] text-foreground/80",
+        "ring-1 ring-inset ring-foreground/[0.08]",
+        "shadow-[inset_0_1px_0_0_rgba(255,255,255,0.12)]"
       )}
       aria-hidden
     >
-      {count > 99 ? "99+" : count}
+      <span className="relative z-[1]">{count > 99 ? "99+" : count}</span>
     </span>
   );
 }

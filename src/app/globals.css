@@ -444,6 +444,47 @@
   }
 }
 
+/* Jobs nav count — soft diagonal shine, slow and quiet */
+@keyframes jobs-badge-shine {
+  0%,
+  72% {
+    transform: translateX(-140%) skewX(-18deg);
+    opacity: 0;
+  }
+  78% {
+    opacity: 0.55;
+  }
+  88% {
+    transform: translateX(140%) skewX(-18deg);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(140%) skewX(-18deg);
+    opacity: 0;
+  }
+}
+
+.jobs-count-badge::after {
+  content: "";
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: linear-gradient(
+    105deg,
+    transparent 35%,
+    rgba(255, 255, 255, 0.45) 50%,
+    transparent 65%
+  );
+  animation: jobs-badge-shine 4.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .jobs-count-badge::after {
+    animation: none;
+  }
+}
+
 /* Page click-through: soft fade + slight rise */
 @keyframes page-enter {
   from {
