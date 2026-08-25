@@ -9,10 +9,12 @@ import {
   LogOut,
   Pencil,
   Shield,
+  UserPlus,
   UserRound,
 } from "lucide-react";
 
 import { checkIsAdmin } from "@/app/actions/admin-access";
+import { InviteDesignerDialog } from "@/components/layout/invite-designer-dialog";
 import { Avatar } from "@/components/ui/avatar";
 import {
   bestAvatarFromClerkUser,
@@ -35,6 +37,7 @@ export function AccountMenu() {
   const { user, isLoaded } = useUser();
   const { signOut } = useClerk();
   const [open, setOpen] = useState(false);
+  const [inviteOpen, setInviteOpen] = useState(false);
   const [admin, setAdmin] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
   const menuId = useId();
@@ -164,6 +167,18 @@ export function AccountMenu() {
               role="menuitem"
               onClick={() => {
                 setOpen(false);
+                setInviteOpen(true);
+              }}
+              className="flex w-full items-center gap-2.5 px-3.5 py-2 text-sm text-foreground/90 transition-colors hover:bg-muted/50"
+            >
+              <UserPlus className="size-4 text-muted-foreground" />
+              Invite a designer
+            </button>
+            <button
+              type="button"
+              role="menuitem"
+              onClick={() => {
+                setOpen(false);
                 void signOut({ redirectUrl: "/" });
               }}
               className="flex w-full items-center gap-2.5 px-3.5 py-2 text-sm text-foreground/90 transition-colors hover:bg-muted/50"
@@ -174,6 +189,11 @@ export function AccountMenu() {
           </div>
         </div>
       ) : null}
+
+      <InviteDesignerDialog
+        open={inviteOpen}
+        onClose={() => setInviteOpen(false)}
+      />
     </div>
   );
 }
