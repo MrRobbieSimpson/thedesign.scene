@@ -1,12 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 
 import { cn } from "@/lib/utils";
 
 /**
  * Soft scroll progress + remaining sit-with time.
- * After a quiet dwell, a very light “you’ve been here a while” line.
+ * Portaled to document.body so it stays pinned to the viewport
+ * (SiteStage scale transforms would otherwise unpin `position: fixed`).
  */
 export function ReadingProgress({
   targetId,
@@ -15,8 +17,13 @@ export function ReadingProgress({
   targetId: string;
   readingTimeMinutes?: number | null;
 }) {
+  const [mounted, setMounted] = useState(false);
   const [progress, setProgress] = useState(0);
   const [dwellSeconds, setDwellSeconds] = useState(0);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     function update() {
@@ -73,15 +80,16 @@ export function ReadingProgress({
     statusParts.push("you’ve been here a while");
   }
 
-  return (
+  if (!mounted) return null;
+
+  return createPortal(
     <>
-      {/* Track + fill — thin but readable at the top edge */}
       <div
-        className="pointer-events-none fixed inset-x-0 top-0 z-[90] h-[3px] bg-foreground/[0.06]"
+        className="pointer-events-none fixed inset-x-0 top-0 z-[100] h-[3px] bg-foreground/[0.06]"
         aria-hidden
       >
         <div
-          className="h-full origin-left bg-foreground/50 transition-[width] duration-150 ease-out motion-reduce:transition-none"
+          className="h-full origin-left bg-foreground/55 transition-[width] duration-150 ease-out motion-reduce:transition-none"
           style={{ width: `${Math.round(progress * 1000) / 10}%` }}
         />
       </div>
@@ -89,16 +97,19 @@ export function ReadingProgress({
       {statusParts.length > 0 ? (
         <p
           className={cn(
-            "pointer-events-none fixed top-4 left-4 z-[90] max-w-[16rem]",
+            "pointer-events-none fixed top-4 left-4 z-[100] max-w-[16rem]",
             "text-[11px] tracking-wide text-muted-foreground/75",
             "transition-opacity duration-700 ease-out",
-            "sm:left-6 sm:top-5"
+            "sm:left-6 sm:top-5",
+            // Clear the sticky header when not in focus; focus X owns the right.
+            "reading-progress-status"
           )}
           aria-live="polite"
         >
           {statusParts.join(" · ")}
         </p>
       ) : null}
-    </>
+    </>,
+    document.body
   );
 }
