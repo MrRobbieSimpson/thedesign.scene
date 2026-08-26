@@ -9,12 +9,15 @@ export function ContinueDraftButton({
   body,
   excerpt,
   image,
+  label = "Continue",
 }: {
   id: string;
   title: string;
   body: string;
   excerpt?: string | null;
   image?: string | null;
+  /** Published pieces use “Edit”; drafts stay “Continue”. */
+  label?: "Continue" | "Edit";
 }) {
   const { openWriter } = useWriting();
 
@@ -32,7 +35,7 @@ export function ContinueDraftButton({
         })
       }
     >
-      Continue
+      {label}
     </Button>
   );
 }

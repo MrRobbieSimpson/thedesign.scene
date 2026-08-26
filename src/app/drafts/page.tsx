@@ -50,6 +50,7 @@ function ArticleRow({
           body={draft.body ?? ""}
           excerpt={draft.excerpt}
           image={draft.image}
+          label={draft.status === "published" ? "Edit" : "Continue"}
         />
         <form
           action={async () => {
