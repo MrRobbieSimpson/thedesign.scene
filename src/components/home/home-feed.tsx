@@ -12,6 +12,7 @@ import {
 import { FeedLayoutGrid } from "@/components/content/feed-layout-grid";
 import { resolveFeedLayout } from "@/components/content/feed-layout-switcher";
 import { FeedToolbar } from "@/components/content/feed-toolbar";
+import { DesignersStrip } from "@/components/home/designers-strip";
 import { DigestStrip } from "@/components/home/digest-strip";
 import { JobsStrip } from "@/components/home/jobs-strip";
 import type { Event, Job } from "@/db/schema";
@@ -101,11 +102,14 @@ export function HomeFeed({
   items,
   toolbar,
   featuredJob = null,
+  designerWriting = [],
 }: {
   items: FeedItem[];
   toolbar?: React.ReactNode;
   /** Latest curated opening — quiet mid-feed callout when present. */
   featuredJob?: Job | null;
+  /** Community articles for the From designers strip. */
+  designerWriting?: ContentWithMaker[];
 }) {
   const [layout, setLayout] = useState<FeedLayout>("big");
   const smUp = useIsSmUp();
@@ -154,6 +158,7 @@ export function HomeFeed({
             )}
           >
             <DigestStrip />
+            <DesignersStrip items={designerWriting} />
             {featuredJob ? <JobsStrip job={featuredJob} /> : null}
           </div>
           {second.length > 0 ? (

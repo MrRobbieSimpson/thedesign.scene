@@ -20,6 +20,7 @@ import {
   sourcePlatformLabel,
 } from "@/lib/format";
 import type { ContentWithMaker } from "@/lib/demo-data";
+import { isDesignerWriting } from "@/lib/feed-mix";
 import { cn } from "@/lib/utils";
 
 export type CardDensity = "comfortable" | "compact" | "mosaic";
@@ -232,6 +233,10 @@ function ArticleCard({
             <span className="shrink-0 text-[10px] font-medium tracking-[0.16em] text-muted-foreground/80 uppercase">
               Editor’s pick
             </span>
+          ) : isDesignerWriting(item) && density !== "compact" ? (
+            <span className="shrink-0 text-[10px] font-medium tracking-[0.16em] text-muted-foreground/80 uppercase">
+              Designer’s writing
+            </span>
           ) : null}
         </div>
         <div className={cn("min-w-0 space-y-3", comfortable && "space-y-4")}>
@@ -314,6 +319,10 @@ function ThoughtCard({
           {item.featured && density !== "compact" ? (
             <span className="text-[10px] font-medium tracking-[0.16em] text-muted-foreground/80 uppercase">
               Editor’s pick
+            </span>
+          ) : isDesignerWriting(item) && density !== "compact" ? (
+            <span className="text-[10px] font-medium tracking-[0.16em] text-muted-foreground/80 uppercase">
+              Designer’s writing
             </span>
           ) : null}
         </div>

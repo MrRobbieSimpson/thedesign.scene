@@ -20,6 +20,7 @@ import {
   formatPublishedDate,
   formatSitWithTime,
 } from "@/lib/format";
+import { isDesignerWriting } from "@/lib/feed-mix";
 import {
   getContentBySlug,
   getPublishedContentByProfile,
@@ -144,6 +145,10 @@ export default async function ArticlePage({
           {item.featured ? (
             <Badge variant="outline" className="text-[11px] font-normal">
               Featured
+            </Badge>
+          ) : isDesignerWriting(item) ? (
+            <Badge variant="outline" className="text-[11px] font-normal">
+              Designer’s writing
             </Badge>
           ) : null}
           {item.publishedAt ? (

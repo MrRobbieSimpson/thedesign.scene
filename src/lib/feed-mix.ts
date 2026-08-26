@@ -40,6 +40,8 @@ const MIX_TARGET = 22;
 const CAPS = {
   featuredEditorial: 6,
   featuredOther: 2,
+  /** Community writing from signed-in designers — reserved near the top. */
+  designerWriting: 3,
   editorial: 12,
   visuals: 5,
   events: 3,
@@ -69,6 +71,13 @@ function hasSubstance(item: ContentWithMaker) {
 /** Treat legacy builds as visuals in ranking. */
 function effectiveType(item: ContentWithMaker): ContentType {
   return item.type === "build" ? "visual" : item.type;
+}
+
+/** Article/thought authored by a registered designer (profile), not just ingested. */
+export function isDesignerWriting(item: ContentWithMaker) {
+  const type = effectiveType(item);
+  if (type !== "article" && type !== "thought") return false;
+  return Boolean(item.authorProfileId ?? item.authorProfile?.id ?? null);
 }
 
 function sortQuality(a: ContentWithMaker, b: ContentWithMaker) {
@@ -279,8 +288,18 @@ export function curateHomeFeed(
     (item) => !used.has(item.id) && effectiveType(item) !== "post"
   );
 
-  const editorial = takeByTypes(
+  // Designer-published writing — reserved after editor’s picks, before the mix.
+  const designerWriting = takeByTypes(
     remaining,
+    ["article", "thought"],
+    CAPS.designerWriting,
+    (item) => isDesignerWriting(item) && (hasSubstance(item) || item.featured),
+    { maxPerAuthor: 1, seenAuthors }
+  );
+  designerWriting.forEach((item) => used.add(item.id));
+
+  const editorial = takeByTypes(
+    remaining.filter((item) => !used.has(item.id)),
     ["article", "thought"],
     CAPS.editorial,
     (item) => hasSubstance(item) || item.featured,
@@ -317,8 +336,25 @@ export function curateHomeFeed(
   return [
     ...toContentItems(featuredEditorial),
     ...toContentItems(featuredOther),
+    ...toContentItems(designerWriting),
     ...mixed,
   ].slice(0, target);
+}
+
+/** Recent community writing for the home strip (newest first). */
+export function pickDesignerWriting(
+  content: ContentWithMaker[],
+  count = 3
+): ContentWithMaker[] {
+  return diversifyAuthors(
+    content
+      .filter(
+        (item) =>
+          isDesignerWriting(item) && (hasSubstance(item) || item.featured)
+      )
+      .sort((a, b) => publishedAtMs(b) - publishedAtMs(a)),
+    1
+  ).slice(0, Math.max(0, count));
 }
 
 function liveFromXScore(item: ContentWithMaker) {

@@ -7,6 +7,7 @@ import { LiveFromX } from "@/components/home/live-from-x";
 import {
   filterFeedItems,
   isFeedFilter,
+  pickDesignerWriting,
   pickLiveFromX,
   type FeedFilter,
 } from "@/lib/feed-mix";
@@ -47,6 +48,8 @@ export default async function HomePage({ searchParams }: HomeProps) {
 
   const items = filterFeedItems(filter, content, events);
   const liveFromX = filter === "all" ? pickLiveFromX(content, 4) : [];
+  const designerWriting =
+    filter === "all" ? pickDesignerWriting(content, 3) : [];
   const featuredJob = openJobs[0] ?? null;
 
   const editorialCount = items.filter(
@@ -105,6 +108,7 @@ export default async function HomePage({ searchParams }: HomeProps) {
       <HomeFeed
         items={items}
         featuredJob={featuredJob}
+        designerWriting={designerWriting}
         toolbar={
           <Suspense
             fallback={
