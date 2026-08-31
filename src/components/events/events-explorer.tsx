@@ -110,10 +110,11 @@ export function EventsExplorer({ events }: EventsExplorerProps) {
       );
     }
 
-    // Keep remote + in-radius pinned events; drop far-away mapped events.
+    // Near-me must be honest: only remote + events with a pin inside the radius.
+    // Unmapped in-person events used to leak through (e.g. London when searching Berlin).
     const nearby = withDistance.filter((event) => {
       if (event.type === "remote") return true;
-      if (event.distanceKm == null) return true;
+      if (event.distanceKm == null) return false;
       return event.distanceKm <= EVENTS_NEAR_KM;
     });
 
@@ -315,10 +316,25 @@ export function EventsExplorer({ events }: EventsExplorerProps) {
 
       {located.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-border/80 px-6 py-20 text-center">
-          <p className="font-heading text-2xl tracking-tight">No events yet</p>
-          <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
-            Published events will appear here.
+          <p className="font-heading text-2xl tracking-tight">
+            {nearMe ? "Nothing nearby" : "No events yet"}
           </p>
+          <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
+            {nearMe
+              ? `No mapped events within ${EVENTS_NEAR_KM} km${
+                  placeLabel && placeLabel !== "you" ? ` of ${placeLabel}` : ""
+                }. Try another city, or show all by date.`
+              : "Published events will appear here."}
+          </p>
+          {nearMe ? (
+            <button
+              type="button"
+              onClick={clearNearMe}
+              className="mt-4 text-sm font-medium text-foreground underline underline-offset-4"
+            >
+              Show all by date
+            </button>
+          ) : null}
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-5 md:grid-cols-2">

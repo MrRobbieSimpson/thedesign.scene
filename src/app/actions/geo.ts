@@ -31,11 +31,12 @@ export async function resolveCity(query: string): Promise<ResolveCityResult> {
     };
   }
 
-  const label =
+  const fallback =
     trimmed
       .split(",")[0]
       ?.trim()
       .replace(/\b\w/g, (c) => c.toUpperCase()) || trimmed;
+  const label = coords.label?.split(",")[0]?.trim() || fallback;
 
   return {
     ok: true,

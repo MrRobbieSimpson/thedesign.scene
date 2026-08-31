@@ -30,13 +30,41 @@ export function formatDistanceKm(km: number) {
   return `${Math.round(km / 10) * 10} km`;
 }
 
+export type GeocodeResult = Coordinates & {
+  /** Nominatim display name when available. */
+  label?: string;
+};
+
+/**
+ * Build a geocode query from an event’s location and/or title.
+ * Prefers explicit venue text; falls back to a city name in the title.
+ */
+export function geocodeQueryForEvent(input: {
+  location?: string | null;
+  title?: string | null;
+}): string | null {
+  const location = input.location?.trim();
+  if (location && !/online|remote|virtual/i.test(location)) {
+    return location;
+  }
+
+  const title = input.title?.trim() ?? "";
+  if (!title) return null;
+  if (/online|remote|virtual|on[\s-]?demand/i.test(title)) return null;
+
+  const city = title.match(
+    /\b(London|Berlin|Amsterdam|Belfast|Dublin|Paris|Lisbon|Madrid|Barcelona|Munich|Hamburg|Rotterdam|Utrecht|Manchester|Edinburgh|Glasgow|Brighton|Bristol|New York|San Francisco|Los Angeles|Chicago|Toronto|Copenhagen|Stockholm|Oslo|Helsinki|Vienna|Zurich|Milan|Rome|Prague|Warsaw|Lisbon)\b/i
+  );
+  return city?.[1] ?? null;
+}
+
 /**
  * Lightweight geocode via OpenStreetMap Nominatim (respect usage policy).
  * Returns null when nothing useful is found.
  */
 export async function geocodeLocation(
   query: string
-): Promise<Coordinates | null> {
+): Promise<GeocodeResult | null> {
   const trimmed = query.trim();
   if (!trimmed || /online|remote|virtual/i.test(trimmed)) return null;
 
@@ -44,6 +72,10 @@ export async function geocodeLocation(
   url.searchParams.set("q", trimmed);
   url.searchParams.set("format", "json");
   url.searchParams.set("limit", "1");
+  // Prefer settlements when the query is a bare city name.
+  if (!/,/.test(trimmed) && trimmed.split(/\s+/).length <= 3) {
+    url.searchParams.set("featuretype", "settlement");
+  }
 
   const response = await fetch(url.toString(), {
     headers: {
@@ -55,14 +87,22 @@ export async function geocodeLocation(
 
   if (!response.ok) return null;
 
-  const data = (await response.json()) as Array<{ lat: string; lon: string }>;
+  const data = (await response.json()) as Array<{
+    lat: string;
+    lon: string;
+    display_name?: string;
+  }>;
   if (!data[0]) return null;
 
   const latitude = Number(data[0].lat);
   const longitude = Number(data[0].lon);
   if (Number.isNaN(latitude) || Number.isNaN(longitude)) return null;
 
-  return { latitude, longitude };
+  return {
+    latitude,
+    longitude,
+    label: data[0].display_name?.split(",").slice(0, 2).join(",").trim(),
+  };
 }
 
 /**
