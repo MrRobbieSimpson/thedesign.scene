@@ -29,7 +29,10 @@ export const SITE_ORIGIN = resolveSiteOrigin();
 export const SITE_URL = SITE_ORIGIN;
 
 export const SITE_CREATOR_X = "robbothecreat0r";
-export const SITE_LOCALE = "en_GB";
+/** BCP 47 tag for Intl / HTML lang (hyphen). */
+export const SITE_LOCALE = "en-GB";
+/** Open Graph locale (underscore form). */
+export const SITE_OG_LOCALE = "en_GB";
 
 export function absoluteUrl(path = "/") {
   if (/^https?:\/\//i.test(path)) return path;

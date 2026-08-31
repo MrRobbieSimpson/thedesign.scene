@@ -4,6 +4,7 @@ import {
   SITE_CREATOR_X,
   SITE_DESCRIPTION,
   SITE_LOCALE,
+  SITE_OG_LOCALE,
   SITE_NAME,
   SITE_ORIGIN,
   SITE_TITLE,
@@ -46,7 +47,7 @@ export function buildPageMetadata({
   const openGraph: Metadata["openGraph"] = {
     type: type === "profile" ? "profile" : type,
     siteName: SITE_NAME,
-    locale: SITE_LOCALE,
+    locale: SITE_OG_LOCALE,
     url,
     title: displayTitle,
     description: desc,
@@ -109,7 +110,7 @@ export function rootMetadata(): Metadata {
     openGraph: {
       type: "website",
       siteName: SITE_NAME,
-      locale: SITE_LOCALE,
+      locale: SITE_OG_LOCALE,
       url: SITE_ORIGIN,
       title: SITE_TITLE,
       description: SITE_DESCRIPTION,
