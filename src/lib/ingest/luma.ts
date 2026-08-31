@@ -17,8 +17,11 @@ export const BELFAST_COORDS = {
   longitude: -5.9304,
 } as const;
 
-/** ~60km covers greater Belfast and nearby towns */
-export const BELFAST_NEAR_KM = 60;
+/** ~25km — city / metro; Belfast Design boost stays local */
+export const BELFAST_NEAR_KM = 25;
+
+/** Default radius when sorting/filtering “Find near” events. */
+export const EVENTS_NEAR_KM = 25;
 
 export const BELFAST_DESIGN_LUMA = {
   username: "belfastdesign",

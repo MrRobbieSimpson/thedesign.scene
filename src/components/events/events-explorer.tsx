@@ -19,6 +19,7 @@ import {
   BELFAST_COORDS,
   BELFAST_DESIGN_LUMA,
   BELFAST_NEAR_KM,
+  EVENTS_NEAR_KM,
 } from "@/lib/ingest/luma";
 import { distanceKm, formatDistanceKm, type Coordinates } from "@/lib/geo";
 import { cn } from "@/lib/utils";
@@ -109,8 +110,15 @@ export function EventsExplorer({ events }: EventsExplorerProps) {
       );
     }
 
+    // Keep remote + in-radius pinned events; drop far-away mapped events.
+    const nearby = withDistance.filter((event) => {
+      if (event.type === "remote") return true;
+      if (event.distanceKm == null) return true;
+      return event.distanceKm <= EVENTS_NEAR_KM;
+    });
+
     if (nearBelfast) {
-      return withDistance.sort((a, b) => {
+      return nearby.sort((a, b) => {
         const aLocal = isBelfastDesignEvent(a) ? 0 : 1;
         const bLocal = isBelfastDesignEvent(b) ? 0 : 1;
         if (aLocal !== bLocal) return aLocal - bLocal;
@@ -123,7 +131,7 @@ export function EventsExplorer({ events }: EventsExplorerProps) {
       });
     }
 
-    return withDistance.sort((a, b) => {
+    return nearby.sort((a, b) => {
       if (a.distanceKm == null && b.distanceKm == null) {
         return a.startDate.getTime() - b.startDate.getTime();
       }
@@ -210,10 +218,10 @@ export function EventsExplorer({ events }: EventsExplorerProps) {
 
   const statusLabel = nearMe
     ? nearBelfast
-      ? "Near Belfast · local design events first"
+      ? `Within ${EVENTS_NEAR_KM} km of Belfast · local design events first`
       : placeLabel && placeLabel !== "you"
-        ? `Sorted by distance from ${placeLabel}`
-        : "Sorted by distance from you"
+        ? `Within ${EVENTS_NEAR_KM} km of ${placeLabel}`
+        : `Within ${EVENTS_NEAR_KM} km of you`
     : `${events.length} upcoming · sorted by date`;
 
   return (
