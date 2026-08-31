@@ -4,6 +4,7 @@ import { db, isDatabaseConfigured } from "@/db";
 import { content, type ContentType, type NewContent } from "@/db/schema";
 import type { ResolvedImport, RssCandidate } from "@/lib/ingest/types";
 import type { FeedSource } from "@/lib/ingest/sources";
+import { normalizeImageUrl } from "@/lib/images";
 
 export type ImportResult =
   | { ok: true; id: string; created: boolean }
@@ -54,7 +55,7 @@ export async function insertResolvedDraft(
       type,
       title: overrides?.title ?? resolved.title,
       excerpt: overrides?.excerpt ?? resolved.excerpt,
-      image: overrides?.image ?? resolved.image,
+      image: normalizeImageUrl(overrides?.image ?? resolved.image),
       url: resolved.url,
       sourceUrl: resolved.sourceUrl,
       sourcePlatform: resolved.sourcePlatform,
@@ -96,7 +97,7 @@ export async function insertRssDrafts(
         type: source.defaultType,
         title: item.title,
         excerpt: item.excerpt,
-        image: item.image,
+        image: normalizeImageUrl(item.image),
         url: item.url,
         sourceUrl: item.url,
         sourcePlatform: source.platform,

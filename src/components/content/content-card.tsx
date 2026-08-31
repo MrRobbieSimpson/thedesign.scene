@@ -21,6 +21,7 @@ import {
 } from "@/lib/format";
 import type { ContentWithMaker } from "@/lib/demo-data";
 import { isDesignerWriting } from "@/lib/feed-mix";
+import { normalizeImageUrl } from "@/lib/images";
 import { cn } from "@/lib/utils";
 
 export type CardDensity = "comfortable" | "compact" | "mosaic";
@@ -395,6 +396,8 @@ function VisualCard({
 }) {
   const mosaic = density === "mosaic";
 
+  const image = normalizeImageUrl(item.image);
+
   // Dense inspiration tile — image first, chrome on hover (recent.design feel).
   if (mosaic) {
     const name =
@@ -414,9 +417,9 @@ function VisualCard({
         className="group relative block w-full min-w-0 overflow-hidden rounded-xl bg-muted"
       >
         <div className={cn("relative w-full overflow-hidden", mosaicAspect(item.id))}>
-          {item.image ? (
+          {image ? (
             <Image
-              src={item.image}
+              src={image}
               alt={item.title}
               fill
               priority={priority}
@@ -471,9 +474,9 @@ function VisualCard({
           density === "compact" ? "aspect-[5/4]" : "aspect-[4/3]"
         )}
       >
-        {item.image ? (
+        {image ? (
           <Image
-            src={item.image}
+            src={image}
             alt={item.title}
             fill
             priority={priority}

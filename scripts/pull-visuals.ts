@@ -22,6 +22,7 @@ import * as schema from "../src/db/schema";
 import { content } from "../src/db/schema";
 import { resolveImportUrl } from "../src/lib/ingest/resolve";
 import { fetchRssCandidates } from "../src/lib/ingest/rss";
+import { normalizeImageUrl } from "../src/lib/images";
 
 config({ path: ".env.local" });
 
@@ -115,13 +116,14 @@ async function upsertVisualFromUrl(
     return "rejected";
   }
 
-  if (!resolved.image?.trim() || !resolved.title?.trim()) return "rejected";
+  const image = normalizeImageUrl(resolved.image);
+  if (!image || !resolved.title?.trim()) return "rejected";
   // Skip generic site-wide OG fallbacks.
   if (
-    /\/og\.png/i.test(resolved.image) ||
-    /opengraph-image\.png/i.test(resolved.image) ||
-    /one-page-love-meta/i.test(resolved.image) ||
-    /Link-Share-Img/i.test(resolved.image)
+    /\/og\.png/i.test(image) ||
+    /opengraph-image\.png/i.test(image) ||
+    /one-page-love-meta/i.test(image) ||
+    /Link-Share-Img/i.test(image)
   ) {
     return "rejected";
   }
@@ -150,7 +152,7 @@ async function upsertVisualFromUrl(
         status: "published",
         title: resolved.title,
         excerpt: resolved.excerpt,
-        image: resolved.image,
+        image,
         authorName: resolved.authorName,
         authorHandle: resolved.authorHandle,
         publishedAt: existing.publishedAt ?? new Date(),
@@ -164,7 +166,7 @@ async function upsertVisualFromUrl(
     type: "visual",
     title: resolved.title,
     excerpt: resolved.excerpt,
-    image: resolved.image,
+    image,
     url: resolved.url,
     sourceUrl: resolved.sourceUrl,
     sourcePlatform: resolved.sourcePlatform,
