@@ -145,10 +145,11 @@ export function HomeFeed({
   const mid = Math.max(1, Math.ceil(revived.length / 2));
   const first = revived.slice(0, mid);
   const second = revived.slice(mid);
-  const showMidStrips = articlesMode;
+  /** Mid-strips only in the linear “big” layout — splitting mosaic/small breaks the grid. */
+  const showMidStrips = articlesMode && effectiveLayout === "big";
 
   return (
-    <div className="space-y-8 sm:space-y-10">
+    <div className="w-full min-w-0 space-y-8 overflow-x-hidden sm:space-y-10">
       <FeedToolbar
         toolbar={toolbar}
         layout={effectiveLayout}
@@ -175,12 +176,7 @@ export function HomeFeed({
       ) : showMidStrips ? (
         <>
           <FeedGrid items={first} layout={effectiveLayout} />
-          <div
-            className={cn(
-              "space-y-4",
-              effectiveLayout === "big" ? "py-2 sm:py-4" : "py-1"
-            )}
-          >
+          <div className="space-y-4 py-2 sm:py-4">
             <DigestStrip />
             <DesignersStrip items={designerWriting} />
             {featuredJob ? <JobsStrip job={featuredJob} /> : null}

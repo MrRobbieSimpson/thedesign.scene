@@ -6,9 +6,8 @@ import { cn } from "@/lib/utils";
 /**
  * Feed layouts: big / small / mosaic.
  *
- * Mosaic is CSS-column masonry with a calm gap and rounded tiles
- * (desktop only — callers remap mosaic → small on mobile). Items stay
- * inline-block + overflow hidden so they don’t bleed across columns.
+ * Mosaic is a stable 2-up CSS grid (not multi-column) so cards can’t
+ * fracture the page or let the footer paint through the feed.
  */
 export function FeedLayoutGrid({
   layout,
@@ -19,7 +18,7 @@ export function FeedLayoutGrid({
   layout: FeedLayout;
   children: React.ReactNode;
   className?: string;
-  /** Visuals inspiration grid — tighter gap, more columns. */
+  /** Visuals — tighter gap. */
   dense?: boolean;
 }) {
   const items = Children.toArray(children).filter(Boolean);
@@ -29,9 +28,8 @@ export function FeedLayoutGrid({
     return (
       <div
         className={cn(
-          "feed-mosaic w-full gap-0",
-          // Site column is max-w-[45rem] — keep mosaic to 2-up.
-          dense ? "feed-mosaic--dense columns-2" : "columns-2",
+          "feed-mosaic w-full min-w-0",
+          dense && "feed-mosaic--dense",
           className
         )}
       >
