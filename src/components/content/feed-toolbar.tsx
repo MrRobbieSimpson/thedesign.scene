@@ -13,12 +13,15 @@ export function FeedToolbar({
   layout,
   onLayoutChange,
   count,
+  hideLayoutSwitcher = false,
   className,
 }: {
   toolbar?: React.ReactNode;
   layout: FeedLayout;
   onLayoutChange: (layout: FeedLayout) => void;
   count?: number;
+  /** Visuals tab locks mosaic — no layout chrome. */
+  hideLayoutSwitcher?: boolean;
   className?: string;
 }) {
   return (
@@ -37,7 +40,9 @@ export function FeedToolbar({
             {count}
           </p>
         ) : null}
-        <FeedLayoutSwitcher value={layout} onChange={onLayoutChange} />
+        {hideLayoutSwitcher ? null : (
+          <FeedLayoutSwitcher value={layout} onChange={onLayoutChange} />
+        )}
       </div>
     </div>
   );

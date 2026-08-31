@@ -381,6 +381,17 @@
   column-fill: balance;
 }
 
+/* Visuals tab — recent.design-ish density */
+.feed-mosaic--dense {
+  --feed-tile-gap: 0.375rem; /* 6px */
+}
+
+@media (min-width: 768px) {
+  .feed-mosaic--dense {
+    --feed-tile-gap: 0.5rem; /* 8px */
+  }
+}
+
 .feed-mosaic-item {
   display: inline-block;
   width: 100%;
@@ -437,9 +448,9 @@
   }
 }
 
-/* Never run multi-column mosaic on narrow viewports. */
+/* Default mosaic: single column on phones. Dense visuals keep 2-up. */
 @media (max-width: 639px) {
-  .feed-mosaic {
+  .feed-mosaic:not(.feed-mosaic--dense) {
     columns: 1 !important;
   }
 }

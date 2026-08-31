@@ -416,11 +416,12 @@ export function filterFeedItems(
         )
       );
     case "visuals":
+      // Denser inspiration grid (recent.design-style) — still image-gated.
       return toContentItems(
         takeByTypes(
           content,
           ["visual", "build"],
-          24,
+          36,
           (item) => hasImage(item),
           { maxPerAuthor: 2 }
         )

@@ -371,6 +371,19 @@ function ThoughtCard({
   );
 }
 
+/** Varied tile ratios for dense masonry rhythm (stable per id). */
+function mosaicAspect(id: string) {
+  let hash = 0;
+  for (let i = 0; i < id.length; i += 1) {
+    hash = (hash + id.charCodeAt(i) * (i + 1)) % 5;
+  }
+  if (hash === 0) return "aspect-[1/1]";
+  if (hash === 1) return "aspect-[4/5]";
+  if (hash === 2) return "aspect-[3/4]";
+  if (hash === 3) return "aspect-[5/6]";
+  return "aspect-[2/3]";
+}
+
 function VisualCard({
   item,
   density,
@@ -381,24 +394,81 @@ function VisualCard({
   priority?: boolean;
 }) {
   const mosaic = density === "mosaic";
+
+  // Dense inspiration tile — image first, chrome on hover (recent.design feel).
+  if (mosaic) {
+    const name =
+      item.maker?.name ??
+      item.authorProfile?.displayName ??
+      (item.authorHandle ? `@${item.authorHandle}` : null) ??
+      item.authorName ??
+      sourcePlatformLabel(item.sourcePlatform) ??
+      null;
+    const avatar =
+      item.maker?.avatar ?? item.authorProfile?.avatarUrl ?? null;
+    const xHandle = item.authorProfile?.xHandle ?? item.authorHandle ?? null;
+
+    return (
+      <Link
+        href={contentHref(item)}
+        className="group relative block w-full min-w-0 overflow-hidden rounded-xl bg-muted"
+      >
+        <div className={cn("relative w-full overflow-hidden", mosaicAspect(item.id))}>
+          {item.image ? (
+            <Image
+              src={item.image}
+              alt={item.title}
+              fill
+              priority={priority}
+              sizes="(max-width: 640px) 50vw, (max-width: 1280px) 33vw, 25vw"
+              className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]"
+            />
+          ) : (
+            <div className="flex h-full items-center justify-center text-muted-foreground">
+              <Sparkles className="size-8 opacity-40" />
+            </div>
+          )}
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100 group-focus-visible:opacity-100" />
+          <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-2 p-3 opacity-0 transition-opacity duration-300 group-hover:opacity-100 group-focus-visible:opacity-100">
+            <div className="min-w-0 space-y-1.5">
+              <h3 className="line-clamp-2 font-heading text-sm leading-snug text-balance text-white drop-shadow-sm">
+                {item.title}
+              </h3>
+              {name ? (
+                <div className="flex min-w-0 items-center gap-1.5 text-[11px] text-white/80">
+                  <Avatar
+                    src={avatar}
+                    alt={name}
+                    size={16}
+                    xHandle={xHandle}
+                    className="ring-1 ring-white/30"
+                  />
+                  <span className="truncate">{name}</span>
+                </div>
+              ) : null}
+            </div>
+            <CardSave
+              contentId={item.id}
+              className="shrink-0 [&_button]:text-white [&_button]:hover:text-white"
+            />
+          </div>
+        </div>
+      </Link>
+    );
+  }
+
   return (
     <Link
       href={contentHref(item)}
       className={cn(
         "group flex h-full w-full min-w-0 flex-col overflow-hidden rounded-2xl border border-border/70 bg-card shadow-[0_1px_0_rgba(0,0,0,0.02)] transition-colors duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
-        !mosaic &&
-          "[@media(hover:hover)_and_(pointer:fine)]:hover:-translate-y-0.5 hover:border-border [@media(hover:hover)_and_(pointer:fine)]:hover:shadow-[0_18px_50px_-28px_rgba(0,0,0,0.45)] active:translate-y-0 active:scale-[0.985]",
-        mosaic && "hover:border-border"
+        "[@media(hover:hover)_and_(pointer:fine)]:hover:-translate-y-0.5 hover:border-border [@media(hover:hover)_and_(pointer:fine)]:hover:shadow-[0_18px_50px_-28px_rgba(0,0,0,0.45)] active:translate-y-0 active:scale-[0.985]"
       )}
     >
       <div
         className={cn(
           "relative overflow-hidden bg-muted",
-          density === "mosaic"
-            ? "aspect-[3/4]"
-            : density === "compact"
-              ? "aspect-[5/4]"
-              : "aspect-[4/3]"
+          density === "compact" ? "aspect-[5/4]" : "aspect-[4/3]"
         )}
       >
         {item.image ? (

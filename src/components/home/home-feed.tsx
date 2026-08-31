@@ -17,7 +17,7 @@ import { DigestStrip } from "@/components/home/digest-strip";
 import { JobsStrip } from "@/components/home/jobs-strip";
 import type { Event, Job } from "@/db/schema";
 import type { ContentWithMaker } from "@/lib/demo-data";
-import type { FeedItem } from "@/lib/feed-mix";
+import type { FeedFilter, FeedItem } from "@/lib/feed-mix";
 import { useIsSmUp } from "@/lib/use-media-query";
 import { cn } from "@/lib/utils";
 
@@ -73,16 +73,18 @@ function FeedItemCard({
 function FeedGrid({
   items,
   layout,
+  dense,
 }: {
   items: FeedItem[];
   layout: FeedLayout;
+  dense?: boolean;
 }) {
   if (items.length === 0) return null;
   const density = densityFor(layout);
-  const priorityCap = layout === "big" ? 4 : layout === "small" ? 6 : 3;
+  const priorityCap = layout === "big" ? 4 : layout === "small" ? 6 : 6;
 
   return (
-    <FeedLayoutGrid layout={layout}>
+    <FeedLayoutGrid layout={layout} dense={dense}>
       {items.map((item, index) => (
         <FeedItemCard
           key={item.id}
@@ -97,31 +99,44 @@ function FeedGrid({
 
 /**
  * Home feed with Digest callout inserted about halfway through the selection.
+ * Visuals tab: forced dense mosaic, no mid-feed strips (recent.design feel).
  */
 export function HomeFeed({
   items,
+  filter = "all",
   toolbar,
   featuredJob = null,
   designerWriting = [],
 }: {
   items: FeedItem[];
+  filter?: FeedFilter;
   toolbar?: React.ReactNode;
   /** Latest curated opening — quiet mid-feed callout when present. */
   featuredJob?: Job | null;
   /** Community articles for the From designers strip. */
   designerWriting?: ContentWithMaker[];
 }) {
-  const [layout, setLayout] = useState<FeedLayout>("big");
+  const visualsMode = filter === "visuals";
+  const [layout, setLayout] = useState<FeedLayout>(
+    visualsMode ? "mosaic" : "big"
+  );
   const smUp = useIsSmUp();
-  const effectiveLayout = resolveFeedLayout(layout, smUp);
+  const effectiveLayout = visualsMode
+    ? "mosaic"
+    : resolveFeedLayout(layout, smUp);
   const revived = useMemo(() => items.map(reviveFeedItem), [items]);
 
   useEffect(() => {
+    if (visualsMode) {
+      setLayout("mosaic");
+      return;
+    }
     const stored = window.localStorage.getItem(FEED_LAYOUT_STORAGE_KEY);
     if (stored && isFeedLayout(stored)) setLayout(stored);
-  }, []);
+  }, [visualsMode]);
 
   function onLayoutChange(next: FeedLayout) {
+    if (visualsMode) return;
     setLayout(next);
     window.localStorage.setItem(FEED_LAYOUT_STORAGE_KEY, next);
   }
@@ -134,9 +149,10 @@ export function HomeFeed({
     <div className="space-y-8 sm:space-y-10">
       <FeedToolbar
         toolbar={toolbar}
-        layout={layout}
+        layout={effectiveLayout}
         onLayoutChange={onLayoutChange}
         count={revived.length}
+        hideLayoutSwitcher={visualsMode}
       />
 
       {revived.length === 0 ? (
@@ -145,9 +161,13 @@ export function HomeFeed({
             Nothing selected yet
           </p>
           <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
-            Editor’s picks, writing, visuals, and events will appear here.
+            {visualsMode
+              ? "Published visuals with images will appear here."
+              : "Editor’s picks, writing, visuals, and events will appear here."}
           </p>
         </div>
+      ) : visualsMode ? (
+        <FeedGrid items={revived} layout="mosaic" dense />
       ) : (
         <>
           <FeedGrid items={first} layout={effectiveLayout} />

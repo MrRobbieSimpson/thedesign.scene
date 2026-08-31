@@ -14,10 +14,13 @@ export function FeedLayoutGrid({
   layout,
   children,
   className,
+  dense = false,
 }: {
   layout: FeedLayout;
   children: React.ReactNode;
   className?: string;
+  /** Visuals inspiration grid — tighter gap, more columns. */
+  dense?: boolean;
 }) {
   const items = Children.toArray(children).filter(Boolean);
   if (items.length === 0) return null;
@@ -26,7 +29,10 @@ export function FeedLayoutGrid({
     return (
       <div
         className={cn(
-          "feed-mosaic w-full columns-2 gap-0 md:columns-3",
+          "feed-mosaic w-full gap-0",
+          dense
+            ? "feed-mosaic--dense columns-2 md:columns-3 xl:columns-4"
+            : "columns-2 md:columns-3",
           className
         )}
       >
