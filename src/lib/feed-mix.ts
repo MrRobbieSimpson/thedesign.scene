@@ -177,10 +177,19 @@ function takeByTypes(
   return diversified.slice(0, Math.max(0, count));
 }
 
+/** Still upcoming if end (or start) hasn’t passed — 2h grace for “happening now”. */
+export function isUpcomingEvent(
+  event: Pick<Event, "startDate" | "endDate">,
+  now = Date.now(),
+  graceMs = 2 * 60 * 60 * 1000
+) {
+  const end = asTime(event.endDate ?? event.startDate);
+  return end >= now - graceMs;
+}
+
 function upcomingEvents(events: Event[], count: number) {
-  const now = Date.now();
   return [...events]
-    .filter((event) => asTime(event.startDate) >= now - 12 * 60 * 60 * 1000)
+    .filter((event) => isUpcomingEvent(event))
     .sort((a, b) => asTime(a.startDate) - asTime(b.startDate))
     .slice(0, Math.max(0, count));
 }

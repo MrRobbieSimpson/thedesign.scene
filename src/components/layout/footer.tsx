@@ -2,9 +2,11 @@ import Link from "next/link";
 
 import { BrandMarkChip } from "@/components/brand/mark";
 import { getRegisteredDesignerCount } from "@/lib/queries";
+import { SITE_CREATOR_X } from "@/lib/site";
 
 export async function Footer() {
   const designers = await getRegisteredDesignerCount();
+  const year = 2026;
 
   return (
     <footer className="mt-auto border-t border-border/60">
@@ -23,7 +25,7 @@ export async function Footer() {
           {designers > 30 ? (
             <p className="pt-1 text-sm text-muted-foreground">
               <span className="font-medium tabular-nums text-foreground">
-                {designers.toLocaleString()}
+                {designers.toLocaleString("en-GB")}
               </span>{" "}
               designers registered
             </p>
@@ -31,47 +33,72 @@ export async function Footer() {
           <p className="pt-1 text-sm text-muted-foreground/80">
             Created by{" "}
             <a
-              href="https://x.com/robbothecreat0r"
+              href={`https://x.com/${SITE_CREATOR_X}`}
               target="_blank"
               rel="noreferrer"
               className="underline-offset-4 transition-colors hover:text-foreground hover:underline"
             >
-              robbothecreat0r
+              {SITE_CREATOR_X}
             </a>
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-muted-foreground">
-          <Link href="/" className="transition-colors hover:text-foreground">
-            Feed
-          </Link>
-          <Link
-            href="/events"
-            className="transition-colors hover:text-foreground"
-          >
-            Events
-          </Link>
-          <Link
-            href="/jobs"
-            className="transition-colors hover:text-foreground"
-          >
-            Jobs
-          </Link>
-          <Link
-            href="/sign-up"
-            className="transition-colors hover:text-foreground"
-          >
-            Join
-          </Link>
-          <Link
-            href="/subscribe"
-            className="transition-colors hover:text-foreground"
-          >
-            Digest
-          </Link>
-          <span className="text-border">·</span>
-          <span>© {new Date().getFullYear()}</span>
-        </div>
+        <nav
+          className="flex flex-col gap-4 text-sm text-muted-foreground sm:items-end"
+          aria-label="Footer"
+        >
+          <div className="flex flex-wrap items-center gap-x-5 gap-y-2 sm:justify-end">
+            <Link href="/" className="transition-colors hover:text-foreground">
+              Feed
+            </Link>
+            <Link
+              href="/events"
+              className="transition-colors hover:text-foreground"
+            >
+              Events
+            </Link>
+            <Link
+              href="/jobs"
+              className="transition-colors hover:text-foreground"
+            >
+              Jobs
+            </Link>
+            <Link
+              href="/sign-up"
+              className="transition-colors hover:text-foreground"
+            >
+              Join
+            </Link>
+            <Link
+              href="/subscribe"
+              className="transition-colors hover:text-foreground"
+            >
+              Digest
+            </Link>
+          </div>
+          <div className="flex flex-wrap items-center gap-x-5 gap-y-2 sm:justify-end">
+            <Link
+              href="/about"
+              className="transition-colors hover:text-foreground"
+            >
+              About
+            </Link>
+            <Link
+              href="/privacy"
+              className="transition-colors hover:text-foreground"
+            >
+              Privacy
+            </Link>
+            <Link
+              href="/terms"
+              className="transition-colors hover:text-foreground"
+            >
+              Terms
+            </Link>
+            <span className="text-border">·</span>
+            <span>© {year}</span>
+          </div>
+        </nav>
       </div>
     </footer>
   );

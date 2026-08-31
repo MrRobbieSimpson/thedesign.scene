@@ -1,10 +1,47 @@
-import { format, formatDistanceToNowStrict } from "date-fns";
+import { formatDistanceToNowStrict } from "date-fns";
 
 import type { ContentType, EventType } from "@/db/schema";
+import { SITE_LOCALE } from "@/lib/site";
+
+/** Fixed zone so SSR (Vercel) and client hydrate the same calendar strings. */
+const DISPLAY_TIME_ZONE = "Europe/London";
+
+function asDate(value: Date | string | null | undefined): Date | null {
+  if (!value) return null;
+  if (value instanceof Date) {
+    return Number.isFinite(value.getTime()) ? value : null;
+  }
+  const parsed = new Date(value);
+  return Number.isFinite(parsed.getTime()) ? parsed : null;
+}
+
+function formatInZone(
+  date: Date,
+  options: Intl.DateTimeFormatOptions
+): string {
+  return new Intl.DateTimeFormat(SITE_LOCALE, {
+    timeZone: DISPLAY_TIME_ZONE,
+    ...options,
+  }).format(date);
+}
+
+function ymdInZone(date: Date): string {
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: DISPLAY_TIME_ZONE,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(date);
+}
 
 export function formatPublishedDate(date: Date | null | undefined) {
-  if (!date) return null;
-  return format(date, "MMM d, yyyy");
+  const d = asDate(date);
+  if (!d) return null;
+  return formatInZone(d, {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
 }
 
 /** Quiet reading estimate — never “min read” urgency. */
@@ -20,17 +57,44 @@ export function formatSitWithTimeShort(minutes: number | null | undefined) {
 }
 
 export function formatRelativeDate(date: Date | null | undefined) {
-  if (!date) return null;
-  return formatDistanceToNowStrict(date, { addSuffix: true });
+  const d = asDate(date);
+  if (!d) return null;
+  return formatDistanceToNowStrict(d, { addSuffix: true });
 }
 
 export function formatEventRange(start: Date, end?: Date | null) {
-  if (!end) return format(start, "MMM d, yyyy · h:mm a");
-  const sameDay = format(start, "yyyy-MM-dd") === format(end, "yyyy-MM-dd");
-  if (sameDay) {
-    return `${format(start, "MMM d, yyyy")} · ${format(start, "h:mm a")}–${format(end, "h:mm a")}`;
+  const s = asDate(start);
+  if (!s) return "";
+  const e = asDate(end);
+
+  const dayPart = formatInZone(s, {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+  const timePart = formatInZone(s, {
+    hour: "numeric",
+    minute: "2-digit",
+  });
+
+  if (!e) {
+    return `${dayPart} · ${timePart}`;
   }
-  return `${format(start, "MMM d")} – ${format(end, "MMM d, yyyy")}`;
+
+  if (ymdInZone(s) === ymdInZone(e)) {
+    const endTime = formatInZone(e, {
+      hour: "numeric",
+      minute: "2-digit",
+    });
+    return `${dayPart} · ${timePart}–${endTime}`;
+  }
+
+  const endDay = formatInZone(e, {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+  return `${formatInZone(s, { month: "short", day: "numeric" })} – ${endDay}`;
 }
 
 export function contentTypeLabel(type: ContentType) {
