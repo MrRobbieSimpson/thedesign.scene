@@ -12,7 +12,7 @@ export const metadata = buildPageMetadata({
 
 export default function AboutPage() {
   return (
-    <div className="mx-auto max-w-2xl px-6 py-16 sm:py-24">
+    <div className="mx-auto max-w-[45rem] px-5 py-16 sm:px-6 sm:py-24">
       <p className="text-sm font-medium tracking-[0.14em] text-muted-foreground uppercase">
         About
       </p>

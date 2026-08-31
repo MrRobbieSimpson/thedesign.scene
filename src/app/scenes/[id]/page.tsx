@@ -44,7 +44,7 @@ export default async function SceneDetailPage({ params }: ScenePageProps) {
   }
 
   return (
-    <div className="mx-auto max-w-6xl px-6 py-12 sm:py-16">
+    <div className="mx-auto max-w-[45rem] px-5 py-14 sm:px-6 sm:py-20">
       <Link
         href="/scenes"
         className="mb-8 inline-flex text-sm text-muted-foreground hover:text-foreground"

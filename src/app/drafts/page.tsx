@@ -73,7 +73,7 @@ export default async function DraftsPage() {
   const published = articles.filter((item) => item.status === "published");
 
   return (
-    <div className="mx-auto max-w-3xl px-6 py-12 sm:py-16">
+    <div className="mx-auto max-w-[45rem] px-5 py-14 sm:px-6 sm:py-20">
       <section className="mb-10 space-y-3">
         <p className="text-sm font-medium tracking-[0.14em] text-muted-foreground uppercase">
           Writing

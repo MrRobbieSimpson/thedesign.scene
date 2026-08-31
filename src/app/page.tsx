@@ -20,7 +20,6 @@ import {
   getRegisteredDesignerCount,
 } from "@/lib/queries";
 import { buildPageMetadata } from "@/lib/seo";
-import { cn } from "@/lib/utils";
 
 /** Soft ISR — feed stays fresh without a Neon hit on every request. */
 export const revalidate = 60;
@@ -86,41 +85,19 @@ export default async function HomePage({ searchParams }: HomeProps) {
   ).length;
 
   return (
-    <div
-      className={cn(
-        "mx-auto px-5 py-14 sm:px-6 sm:py-20",
-        visualsMode ? "max-w-7xl" : "max-w-[45rem]"
-      )}
-    >
-      <section
-        className={cn(
-          "space-y-5",
-          visualsMode ? "mb-10 sm:mb-12" : "mb-14 sm:mb-16"
-        )}
-      >
+    <div className="mx-auto max-w-[45rem] px-5 py-14 sm:px-6 sm:py-20">
+      <section className="mb-14 space-y-5 sm:mb-16">
         <p className="text-sm font-medium tracking-[0.16em] text-muted-foreground uppercase">
           {visualsMode ? "Visuals" : eventsMode ? "Events" : "Writing"}
         </p>
-        <h1
-          className={cn(
-            "font-heading tracking-tight text-balance",
-            visualsMode ? "text-3xl sm:text-4xl" : "text-4xl sm:text-5xl"
-          )}
-        >
+        <h1 className="font-heading text-4xl tracking-tight text-balance sm:text-5xl">
           {visualsMode
             ? "Product & UI worth looking at."
             : eventsMode
               ? "Design gatherings worth showing up for."
               : "Design worth sitting with."}
         </h1>
-        <p
-          className={cn(
-            "leading-relaxed text-muted-foreground",
-            visualsMode
-              ? "max-w-xl text-sm sm:text-base"
-              : "text-base sm:text-lg"
-          )}
-        >
+        <p className="text-base leading-relaxed text-muted-foreground sm:text-lg">
           {visualsMode
             ? "High-bar product and interface craft — not a Behance firehose."
             : eventsMode

@@ -17,8 +17,8 @@ export default async function JobsPage() {
   const jobs = await getPublishedJobs();
 
   return (
-    <div className="mx-auto max-w-6xl px-6 py-12 sm:py-16">
-      <section className="mb-12 max-w-2xl space-y-4">
+    <div className="mx-auto max-w-[45rem] px-5 py-14 sm:px-6 sm:py-20">
+      <section className="mb-12 space-y-4">
         <p className="text-sm font-medium tracking-[0.14em] text-muted-foreground uppercase">
           Openings
         </p>

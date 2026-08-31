@@ -19,7 +19,7 @@ export default async function SavesPage() {
   const items = (await getSavedContent()) as ContentWithMaker[];
 
   return (
-    <div className="mx-auto max-w-6xl px-6 py-12 sm:py-16">
+    <div className="mx-auto max-w-[45rem] px-5 py-14 sm:px-6 sm:py-20">
       <section className="mb-10 space-y-3">
         <p className="text-sm font-medium tracking-[0.14em] text-muted-foreground uppercase">
           Library

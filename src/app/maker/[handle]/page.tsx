@@ -39,7 +39,7 @@ export default async function MakerPage({ params }: MakerPageProps) {
   const items = await getPublishedContentByMaker(maker.id);
 
   return (
-    <div className="mx-auto max-w-6xl px-6 py-12 sm:py-16">
+    <div className="mx-auto max-w-[45rem] px-5 py-14 sm:px-6 sm:py-20">
       <section className="mb-12 flex flex-col gap-6 border-b border-border/60 pb-12 sm:flex-row sm:items-end sm:justify-between">
         <div className="flex items-start gap-5">
           <Avatar
