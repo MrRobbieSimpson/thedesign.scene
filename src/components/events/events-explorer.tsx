@@ -336,30 +336,27 @@ export function EventsExplorer({ events }: EventsExplorerProps) {
       ) : (
         <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
           {located.map((event, index) => {
-            const highlight =
-              index === 0 ||
-              (nearMe && nearBelfast && isBelfastDesignEvent(event));
+            const local =
+              nearMe && nearBelfast && isBelfastDesignEvent(event);
+            const highlight = index === 0 || local;
+            const distanceLabel = !nearMe
+              ? null
+              : event.distanceKm != null
+                ? formatDistanceKm(event.distanceKm)
+                : event.type === "remote"
+                  ? "Remote"
+                  : "No map pin";
             return (
               <div
                 key={event.id}
-                className={cn("relative", highlight && "md:col-span-2")}
+                className={cn(highlight && "md:col-span-2")}
               >
-                {nearMe && nearBelfast && isBelfastDesignEvent(event) ? (
-                  <span className="absolute top-4 left-10 z-20 rounded-full border border-border/70 bg-background/90 px-2.5 py-1 text-[11px] font-medium backdrop-blur-md">
-                    Belfast Design
-                  </span>
-                ) : null}
-                {nearMe && event.distanceKm != null ? (
-                  <span className="absolute top-4 right-4 z-10 rounded-full border border-border/70 bg-background/90 px-2.5 py-1 text-[11px] font-medium text-muted-foreground backdrop-blur-md">
-                    {formatDistanceKm(event.distanceKm)}
-                  </span>
-                ) : null}
-                {nearMe && event.distanceKm == null ? (
-                  <span className="absolute top-4 right-4 z-10 rounded-full border border-border/70 bg-background/90 px-2.5 py-1 text-[11px] font-medium text-muted-foreground backdrop-blur-md">
-                    {event.type === "remote" ? "Remote" : "No map pin"}
-                  </span>
-                ) : null}
-                <EventCard event={event} featured={highlight} />
+                <EventCard
+                  event={event}
+                  featured={highlight}
+                  localLabel={local ? "Belfast Design" : null}
+                  distanceLabel={distanceLabel}
+                />
               </div>
             );
           })}

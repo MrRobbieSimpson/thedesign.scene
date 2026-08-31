@@ -15,9 +15,15 @@ function TypeGlyph({ type }: { type: EventType }) {
 export function EventCard({
   event,
   featured = false,
+  localLabel = null,
+  distanceLabel = null,
 }: {
   event: Event;
   featured?: boolean;
+  /** e.g. “Belfast Design” — sits in the badge row, not overlaid. */
+  localLabel?: string | null;
+  /** e.g. “3.2 km” when near-me is active. */
+  distanceLabel?: string | null;
 }) {
   const content = (
     <article
@@ -43,6 +49,16 @@ export function EventCard({
             <TypeGlyph type={event.type} />
             {eventTypeLabel(event.type)}
           </Badge>
+          {localLabel ? (
+            <Badge variant="outline" className="border-border/80">
+              {localLabel}
+            </Badge>
+          ) : null}
+          {distanceLabel ? (
+            <span className="text-[11px] font-medium text-muted-foreground">
+              {distanceLabel}
+            </span>
+          ) : null}
           <span className="inline-flex items-center gap-1.5 text-sm text-muted-foreground">
             <CalendarDays className="size-3.5" />
             {formatEventRange(event.startDate, event.endDate)}
