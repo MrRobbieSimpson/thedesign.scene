@@ -12,7 +12,7 @@ import {
 } from "@/lib/feed-mix";
 
 const labels: Record<FeedFilter, string> = {
-  articles: "Articles",
+  articles: "Writing",
   visuals: "Visuals",
   events: "Events",
 };

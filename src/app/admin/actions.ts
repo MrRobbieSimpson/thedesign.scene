@@ -102,7 +102,7 @@ export async function createContent(formData: FormData): Promise<ActionResult> {
   if (type === "article") {
     slug = slugify(slug || title);
     if (!slug) {
-      return { ok: false, message: "Articles need a valid slug." };
+      return { ok: false, message: "Writing needs a valid slug." };
     }
   } else {
     slug = null;

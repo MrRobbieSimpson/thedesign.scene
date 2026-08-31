@@ -57,7 +57,7 @@ export function ContentForm({
       <div>
         <h2 className="font-heading text-2xl tracking-tight">New content</h2>
         <p className="mt-1 text-sm text-muted-foreground">
-          Prefer Articles for long-form editorial. Sign-in required.
+          Prefer Writing for long-form editorial. Sign-in required.
         </p>
       </div>
 
