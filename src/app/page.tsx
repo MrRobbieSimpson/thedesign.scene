@@ -89,13 +89,13 @@ export default async function HomePage({ searchParams }: HomeProps) {
     <div
       className={cn(
         "mx-auto px-5 py-14 sm:px-6 sm:py-20",
-        visualsMode || eventsMode ? "max-w-7xl" : "max-w-[45rem]"
+        visualsMode ? "max-w-7xl" : "max-w-[45rem]"
       )}
     >
       <section
         className={cn(
           "space-y-5",
-          visualsMode || eventsMode ? "mb-10 sm:mb-12" : "mb-14 sm:mb-16"
+          visualsMode ? "mb-10 sm:mb-12" : "mb-14 sm:mb-16"
         )}
       >
         <p className="text-sm font-medium tracking-[0.16em] text-muted-foreground uppercase">
@@ -104,9 +104,7 @@ export default async function HomePage({ searchParams }: HomeProps) {
         <h1
           className={cn(
             "font-heading tracking-tight text-balance",
-            visualsMode || eventsMode
-              ? "text-3xl sm:text-4xl"
-              : "text-4xl sm:text-5xl"
+            visualsMode ? "text-3xl sm:text-4xl" : "text-4xl sm:text-5xl"
           )}
         >
           {visualsMode
@@ -118,7 +116,7 @@ export default async function HomePage({ searchParams }: HomeProps) {
         <p
           className={cn(
             "leading-relaxed text-muted-foreground",
-            visualsMode || eventsMode
+            visualsMode
               ? "max-w-xl text-sm sm:text-base"
               : "text-base sm:text-lg"
           )}
