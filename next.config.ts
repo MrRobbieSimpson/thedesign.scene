@@ -49,6 +49,13 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "miro.medium.com" },
       { protocol: "https", hostname: "*.medium.com" },
       { protocol: "https", hostname: "cdn.smashingmagazine.com" },
+      { protocol: "https", hostname: "httpster.net" },
+      { protocol: "https", hostname: "www.httpster.net" },
+      { protocol: "https", hostname: "onepagelove.com" },
+      { protocol: "https", hostname: "www.onepagelove.com" },
+      { protocol: "https", hostname: "assets.onepagelove.com" },
+      { protocol: "https", hostname: "saaslandingpage.com" },
+      { protocol: "https", hostname: "www.saaslandingpage.com" },
       {
         protocol: "https",
         hostname: "*.supabase.co",
