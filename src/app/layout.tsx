@@ -75,7 +75,15 @@ export default function RootLayout({
       <body className={`${geistSans.className} min-h-dvh antialiased`}>
         <JsonLd data={websiteJsonLd()} />
         {isClerkPublishableConfigured() ? (
-          <ClerkProvider appearance={clerkAppearance}>{shell}</ClerkProvider>
+          <ClerkProvider
+            appearance={clerkAppearance}
+            publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
+            // Production uses pk_live_; keyless is a dev-only path that can
+            // surface a misleading “development keys” console warning.
+            disableKeyless
+          >
+            {shell}
+          </ClerkProvider>
         ) : (
           shell
         )}
