@@ -70,10 +70,12 @@ export function EventsExplorer({ events }: EventsExplorerProps) {
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
+  // Always start with an empty city field — don’t restore a previous search
+  // (e.g. Amsterdam stuck in the input on reload).
   useEffect(() => {
+    setCityInput("");
     try {
-      const stored = window.localStorage.getItem(CITY_STORAGE_KEY)?.trim();
-      if (stored) setCityInput(stored);
+      window.localStorage.removeItem(CITY_STORAGE_KEY);
     } catch {
       // ignore
     }
@@ -163,11 +165,6 @@ export function EventsExplorer({ events }: EventsExplorerProps) {
       if (!result.ok) {
         setError(result.message);
         return;
-      }
-      try {
-        window.localStorage.setItem(CITY_STORAGE_KEY, result.label);
-      } catch {
-        // ignore
       }
       applyLocation(
         { latitude: result.latitude, longitude: result.longitude },

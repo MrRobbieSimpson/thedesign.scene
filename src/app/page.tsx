@@ -159,8 +159,6 @@ export default async function HomePage({ searchParams }: HomeProps) {
         <div className="space-y-8 sm:space-y-10">
           <FeedToolbar
             toolbar={<HomeFilters />}
-            layout="big"
-            onLayoutChange={() => {}}
             count={upcomingEvents.length}
             hideLayoutSwitcher
           />

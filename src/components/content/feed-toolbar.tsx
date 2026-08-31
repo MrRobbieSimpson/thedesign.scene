@@ -10,17 +10,18 @@ import { cn } from "@/lib/utils";
  */
 export function FeedToolbar({
   toolbar,
-  layout,
+  layout = "big",
   onLayoutChange,
   count,
   hideLayoutSwitcher = false,
   className,
 }: {
   toolbar?: React.ReactNode;
-  layout: FeedLayout;
-  onLayoutChange: (layout: FeedLayout) => void;
+  layout?: FeedLayout;
+  /** Required when the layout switcher is shown. */
+  onLayoutChange?: (layout: FeedLayout) => void;
   count?: number;
-  /** Visuals tab locks mosaic — no layout chrome. */
+  /** Visuals / Events tabs lock layout — no switcher chrome. */
   hideLayoutSwitcher?: boolean;
   className?: string;
 }) {
@@ -40,9 +41,9 @@ export function FeedToolbar({
             {count}
           </p>
         ) : null}
-        {hideLayoutSwitcher ? null : (
+        {!hideLayoutSwitcher && onLayoutChange ? (
           <FeedLayoutSwitcher value={layout} onChange={onLayoutChange} />
-        )}
+        ) : null}
       </div>
     </div>
   );
