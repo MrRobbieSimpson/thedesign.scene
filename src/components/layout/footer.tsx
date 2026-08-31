@@ -44,48 +44,29 @@ export async function Footer() {
         </div>
 
         <nav
-          className="flex flex-col gap-4 text-sm text-muted-foreground sm:items-end"
+          className="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-muted-foreground sm:justify-end"
           aria-label="Footer"
         >
-          <div className="flex flex-wrap items-center gap-x-5 gap-y-2 sm:justify-end">
-            <Link href="/" className="transition-colors hover:text-foreground">
-              Feed
-            </Link>
-            <Link
-              href="/events"
-              className="transition-colors hover:text-foreground"
-            >
-              Events
-            </Link>
-            <Link
-              href="/jobs"
-              className="transition-colors hover:text-foreground"
-            >
-              Jobs
-            </Link>
-          </div>
-          <div className="flex flex-wrap items-center gap-x-5 gap-y-2 sm:justify-end">
-            <Link
-              href="/about"
-              className="transition-colors hover:text-foreground"
-            >
-              About
-            </Link>
-            <Link
-              href="/privacy"
-              className="transition-colors hover:text-foreground"
-            >
-              Privacy
-            </Link>
-            <Link
-              href="/terms"
-              className="transition-colors hover:text-foreground"
-            >
-              Terms
-            </Link>
-            <span className="text-border">·</span>
-            <span>© {year}</span>
-          </div>
+          <Link
+            href="/about"
+            className="transition-colors hover:text-foreground"
+          >
+            About
+          </Link>
+          <Link
+            href="/privacy"
+            className="transition-colors hover:text-foreground"
+          >
+            Privacy
+          </Link>
+          <Link
+            href="/terms"
+            className="transition-colors hover:text-foreground"
+          >
+            Terms
+          </Link>
+          <span className="text-border">·</span>
+          <span>© {year}</span>
         </nav>
       </div>
     </footer>
