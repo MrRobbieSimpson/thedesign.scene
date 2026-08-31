@@ -17,6 +17,7 @@ import { checkIsAdmin } from "@/app/actions/admin-access";
 import { InviteDesignerDialog } from "@/components/layout/invite-designer-dialog";
 import { Avatar } from "@/components/ui/avatar";
 import {
+  avatarSrc,
   bestAvatarFromClerkUser,
   xHandleFromClerkUser,
 } from "@/lib/avatar";
@@ -33,7 +34,14 @@ const baseLinks = [
  * Scene-native account menu — primary signed-in links live here
  * so the header stays Feed / Events only.
  */
-export function AccountMenu() {
+export function AccountMenu({
+  profileAvatarUrl = null,
+  profileXHandle = null,
+}: {
+  /** Sharp photo from our profiles row when Clerk has no real image yet. */
+  profileAvatarUrl?: string | null;
+  profileXHandle?: string | null;
+} = {}) {
   const { user, isLoaded } = useUser();
   const { signOut } = useClerk();
   const [open, setOpen] = useState(false);
@@ -85,8 +93,12 @@ export function AccountMenu() {
     user.primaryEmailAddress?.emailAddress ??
     "Account";
   const email = user.primaryEmailAddress?.emailAddress ?? null;
-  const imageUrl = bestAvatarFromClerkUser(user, 32) ?? user.imageUrl;
-  const xHandle = xHandleFromClerkUser(user);
+  const xHandle = xHandleFromClerkUser(user) ?? profileXHandle;
+  // Prefer a real Clerk/Google/X photo; otherwise the sharp profile CDN URL.
+  const imageUrl =
+    bestAvatarFromClerkUser(user, 96) ??
+    avatarSrc(profileAvatarUrl, 96, { xHandle }) ??
+    null;
 
   return (
     <div ref={rootRef} className="relative">

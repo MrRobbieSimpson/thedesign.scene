@@ -14,10 +14,30 @@ function decodeClerkProxy(url: string): string | null {
     const padded =
       token.replace(/-/g, "+").replace(/_/g, "/") +
       "===".slice((token.length + 3) % 4);
-    const json = JSON.parse(atob(padded)) as { src?: string };
-    return json.src ?? null;
+    const json = JSON.parse(atob(padded)) as { src?: string; type?: string };
+    // Clerk “default” initials placeholders aren’t real photos.
+    if (json.type === "default" || !json.src) return null;
+    return json.src;
   } catch {
     return null;
+  }
+}
+
+/** True when Clerk is serving a default initials glyph, not a user photo. */
+export function isClerkDefaultAvatar(url: string | null | undefined): boolean {
+  if (!url) return true;
+  try {
+    const parsed = new URL(url);
+    if (!parsed.hostname.toLowerCase().includes("img.clerk")) return false;
+    const token = parsed.pathname.split("/").filter(Boolean).pop();
+    if (!token) return true;
+    const padded =
+      token.replace(/-/g, "+").replace(/_/g, "/") +
+      "===".slice((token.length + 3) % 4);
+    const json = JSON.parse(atob(padded)) as { type?: string; src?: string };
+    return json.type === "default" || !json.src;
+  } catch {
+    return false;
   }
 }
 
@@ -146,11 +166,11 @@ export function bestAvatarFromClerkUser(
   const x = accounts.find(isXAccount);
 
   // Prefer X when linked (matches public handle), then Google (often sharper),
-  // then Clerk’s primary imageUrl (may be a soft OAuth thumb).
+  // then Clerk’s primary imageUrl — skip Clerk default initials placeholders.
   const candidates = [
     x ? accountPhoto(x) : null,
     google ? accountPhoto(google) : null,
-    user.imageUrl ?? null,
+    isClerkDefaultAvatar(user.imageUrl) ? null : user.imageUrl ?? null,
   ].filter(Boolean) as string[];
 
   for (const candidate of candidates) {

@@ -34,16 +34,31 @@ function GuestAuthLinks() {
   );
 }
 
-function SignedInControls() {
+function SignedInControls({
+  profileAvatarUrl,
+  profileXHandle,
+}: {
+  profileAvatarUrl?: string | null;
+  profileXHandle?: string | null;
+}) {
   return (
     <div className="flex h-8 items-center gap-1.5">
       <WriteButton />
-      <AccountMenu />
+      <AccountMenu
+        profileAvatarUrl={profileAvatarUrl}
+        profileXHandle={profileXHandle}
+      />
     </div>
   );
 }
 
-function ClerkAuthControls() {
+function ClerkAuthControls({
+  profileAvatarUrl,
+  profileXHandle,
+}: {
+  profileAvatarUrl?: string | null;
+  profileXHandle?: string | null;
+}) {
   const { isLoaded, isSignedIn } = useAuth();
 
   if (!isLoaded) {
@@ -55,7 +70,12 @@ function ClerkAuthControls() {
   }
 
   if (isSignedIn) {
-    return <SignedInControls />;
+    return (
+      <SignedInControls
+        profileAvatarUrl={profileAvatarUrl}
+        profileXHandle={profileXHandle}
+      />
+    );
   }
 
   return (
@@ -75,9 +95,20 @@ function ClerkAuthControls() {
   );
 }
 
-export function AuthControls() {
+export function AuthControls({
+  profileAvatarUrl,
+  profileXHandle,
+}: {
+  profileAvatarUrl?: string | null;
+  profileXHandle?: string | null;
+} = {}) {
   if (!isClerkPublishableConfigured()) {
     return <GuestAuthLinks />;
   }
-  return <ClerkAuthControls />;
+  return (
+    <ClerkAuthControls
+      profileAvatarUrl={profileAvatarUrl}
+      profileXHandle={profileXHandle}
+    />
+  );
 }

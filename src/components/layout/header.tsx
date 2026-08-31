@@ -50,9 +50,13 @@ function navLabel(href: string, label: string, openJobCount: number) {
 export function Header({
   timeZone,
   openJobCount = 0,
+  profileAvatarUrl = null,
+  profileXHandle = null,
 }: {
   timeZone?: string | null;
   openJobCount?: number;
+  profileAvatarUrl?: string | null;
+  profileXHandle?: string | null;
 }) {
   const pathname = usePathname();
 
@@ -99,7 +103,10 @@ export function Header({
           <div className="flex h-8 shrink-0 items-center gap-1 sm:gap-1.5">
             <LocalTime timeZone={timeZone} />
             <ThemeToggle />
-            <AuthControls />
+            <AuthControls
+              profileAvatarUrl={profileAvatarUrl}
+              profileXHandle={profileXHandle}
+            />
           </div>
         </div>
 

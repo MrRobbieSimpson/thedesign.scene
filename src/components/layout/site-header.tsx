@@ -12,19 +12,30 @@ import { getPublishedJobs } from "@/lib/queries";
  */
 export async function SiteHeader() {
   let timeZone: string | null = null;
+  let avatarUrl: string | null = null;
+  let xHandle: string | null = null;
 
   if (isDatabaseConfigured() && db) {
     const userId = await getClerkUserId();
     if (userId) {
       const profile = await db.query.profiles.findFirst({
         where: eq(profiles.clerkUserId, userId),
-        columns: { timezone: true },
+        columns: { timezone: true, avatarUrl: true, xHandle: true },
       });
       timeZone = profile?.timezone ?? null;
+      avatarUrl = profile?.avatarUrl ?? null;
+      xHandle = profile?.xHandle ?? null;
     }
   }
 
   const openJobs = await getPublishedJobs();
 
-  return <Header timeZone={timeZone} openJobCount={openJobs.length} />;
+  return (
+    <Header
+      timeZone={timeZone}
+      openJobCount={openJobs.length}
+      profileAvatarUrl={avatarUrl}
+      profileXHandle={xHandle}
+    />
+  );
 }
