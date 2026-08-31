@@ -62,8 +62,8 @@ export function Header({
 
   return (
     <header className="sticky top-0 z-40 border-b border-border/60 bg-background/80 backdrop-blur-xl">
-      {/* Match the site column so nav lines up with feed content. */}
-      <div className="mx-auto w-full max-w-[45rem] px-5 sm:px-6">
+      {/* Full-width shell so the logo + Feed/Events/Jobs always fit. */}
+      <div className="mx-auto w-full max-w-6xl px-5 sm:px-6">
         <div className="flex h-14 items-center justify-between gap-2 sm:h-16 sm:gap-3">
           <div className="flex min-w-0 flex-1 items-center gap-3 lg:gap-8">
             <Link

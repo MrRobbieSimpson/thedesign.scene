@@ -10,7 +10,7 @@ export async function Footer() {
 
   return (
     <footer className="mt-auto border-t border-border/60">
-      <div className="mx-auto flex max-w-[45rem] flex-col gap-6 px-5 py-12 sm:flex-row sm:items-end sm:justify-between sm:px-6">
+      <div className="mx-auto flex max-w-6xl flex-col gap-6 px-5 py-12 sm:flex-row sm:items-end sm:justify-between sm:px-6">
         <div className="space-y-2">
           <div className="flex items-center gap-2.5">
             <BrandMarkChip className="size-6 rounded-md p-[0.3rem] [&_svg]:size-[0.95rem]" />
