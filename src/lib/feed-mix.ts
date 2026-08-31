@@ -86,18 +86,48 @@ export function isDesignerWriting(item: ContentWithMaker) {
   return Boolean(item.authorProfileId ?? item.authorProfile?.id ?? null);
 }
 
+/** Product/UI inspiration hosts — elevated on the Visuals tab. */
+const PRODUCT_UI_PLATFORMS = new Set([
+  "spottedinprod",
+  "layers",
+]);
+
+function productUiBoost(item: ContentWithMaker) {
+  if (PRODUCT_UI_PLATFORMS.has(item.sourcePlatform ?? "")) return 4;
+  const host = (() => {
+    try {
+      return new URL(item.url || item.sourceUrl || "").hostname.replace(
+        /^www\./,
+        ""
+      );
+    } catch {
+      return "";
+    }
+  })();
+  if (host === "recent.design" || host.endsWith(".recent.design")) return 2;
+  if (host === "handheld.design" || host.endsWith(".handheld.design")) return 2;
+  return 0;
+}
+
 function sortQuality(a: ContentWithMaker, b: ContentWithMaker) {
   if (a.featured !== b.featured) return a.featured ? -1 : 1;
   const aScore =
+    productUiBoost(a) +
     (hasSubstance(a) ? 2 : 0) +
     (hasImage(a) ? 1 : 0) +
     (a.readingTimeMinutes ? 1 : 0);
   const bScore =
+    productUiBoost(b) +
     (hasSubstance(b) ? 2 : 0) +
     (hasImage(b) ? 1 : 0) +
     (b.readingTimeMinutes ? 1 : 0);
   if (aScore !== bScore) return bScore - aScore;
   return publishedAtMs(b) - publishedAtMs(a);
+}
+
+/** Stable copy used by the Visuals filter before takeByTypes. */
+function prioritizeProductUiVisuals(content: ContentWithMaker[]) {
+  return [...content].sort(sortQuality);
 }
 
 /**
@@ -446,15 +476,14 @@ export function filterFeedItems(
         )
       );
     case "visuals":
-      // Dense inspiration grid — image-gated; looser per-author so
-      // platform ingest (Behance / Awwwards) can actually fill the mosaic.
+      // Tight high-bar grid (~30–32). Prefer product/UI sources in sortQuality.
       return toContentItems(
         takeByTypes(
-          content,
+          prioritizeProductUiVisuals(content),
           ["visual", "build"],
-          48,
+          32,
           (item) => hasImage(item),
-          { maxPerAuthor: 8 }
+          { maxPerAuthor: 4 }
         )
       );
     case "events":

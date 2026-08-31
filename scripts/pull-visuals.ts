@@ -1,33 +1,34 @@
 /**
  * High-bar product / UI visuals → published (image required).
  *
- * Sources (quality over volume):
- *   - Spotted in Prod clips (real product UI)
- *   - recent.design interface / product shots
- *   - Httpster featured websites
- *   - One Page Love (RSS)
- *   - SaaS Landing Page (RSS)
+ * Sources (Layers / Spotted / selective recent.design standard):
+ *   - Spotted in Prod clips
+ *   - Layers.to posts that include still-image layers
+ *   - recent.design items whose slug reads as product/UI
  *
- * Also demotes generic Behance + Awwwards out of the live Visuals tab.
+ * Demotes generic Behance / Awwwards / Httpster / One Page Love / SaaS LP
+ * out of the live Visuals tab.
  *
  *   npm run ingest:visuals
  *   npm run ingest:visuals -- --dry-run
  */
 import { config } from "dotenv";
-import { and, eq, inArray } from "drizzle-orm";
+import { and, eq, inArray, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 
 import * as schema from "../src/db/schema";
 import { content } from "../src/db/schema";
 import { resolveImportUrl } from "../src/lib/ingest/resolve";
-import { fetchRssCandidates } from "../src/lib/ingest/rss";
 import { normalizeImageUrl } from "../src/lib/images";
 
 config({ path: ".env.local" });
 
 const UA =
   "sitwithdesign/1.0 (+https://sitwithdesign.online; curated design platform)";
+
+const PRODUCT_UI_SLUG =
+  /app|ui|ux|interface|onboard|dashboard|saas|mobile|product|screen|flow|pay|wallet|bank|finance|health|music|map|chat|inbox|settings|home-screen|icon|portfolio-theme|monitor|feature/i;
 
 async function fetchHtml(url: string) {
   const response = await fetch(url, {
@@ -43,8 +44,12 @@ function unique(items: string[]) {
   return Array.from(new Set(items));
 }
 
+function isStillImage(url: string) {
+  return !/\.(mp4|webm|mov)(\?|$)/i.test(url);
+}
+
 /** Spotted in Prod — maker clip pages with unique OG images. */
-async function discoverSpottedClipUrls(limit = 24): Promise<string[]> {
+async function discoverSpottedClipUrls(limit = 28): Promise<string[]> {
   const home = await fetchHtml("https://www.spottedinprod.com/");
   const paths = new Set(
     Array.from(
@@ -53,7 +58,7 @@ async function discoverSpottedClipUrls(limit = 24): Promise<string[]> {
     )
   );
 
-  for (const path of Array.from(paths).slice(0, 8)) {
+  for (const path of Array.from(paths).slice(0, 10)) {
     try {
       const html = await fetchHtml(`https://www.spottedinprod.com${path}`);
       for (const m of html.matchAll(/href="(\/[A-Za-z0-9_-]+\/clips\/\d+)"/g)) {
@@ -69,43 +74,70 @@ async function discoverSpottedClipUrls(limit = 24): Promise<string[]> {
     .map((path) => `https://www.spottedinprod.com${path}`);
 }
 
-/** recent.design interface / product shots. */
-async function discoverRecentDesignUrls(limit = 28): Promise<string[]> {
+/** recent.design — only product/UI-leaning slugs. */
+async function discoverRecentDesignUrls(limit = 16): Promise<string[]> {
   const html = await fetchHtml("https://recent.design/");
   const paths = unique(
     Array.from(html.matchAll(/href="(\/i\/[a-z0-9-]+)"/g), (m) => m[1])
-  );
+  ).filter((path) => PRODUCT_UI_SLUG.test(path));
   return paths.slice(0, limit).map((path) => `https://recent.design${path}`);
 }
 
-/** Httpster — curated website craft. */
-async function discoverHttpsterUrls(limit = 24): Promise<string[]> {
-  const html = await fetchHtml("https://httpster.net/");
-  const paths = unique(
-    Array.from(
-      html.matchAll(/href=["'](\/website\/[a-z0-9-]+\/?)["']/gi),
-      (m) => m[1].replace(/\/$/, "")
-    )
-  );
-  return paths.slice(0, limit).map((path) => `https://httpster.net${path}`);
-}
+type LayerVisual = {
+  url: string;
+  title: string;
+  excerpt: string | null;
+  image: string;
+  authorName: string | null;
+  authorHandle: string | null;
+  externalId: string;
+};
 
-/** RSS feeds that land on individual product/UI inspiration pages. */
-async function discoverRssVisualUrls(
-  feedUrl: string,
-  limit: number
-): Promise<string[]> {
-  const items = await fetchRssCandidates(feedUrl, limit);
-  return unique(
-    items
-      .map((item) => item.url.trim())
-      .filter((url) => /^https?:\/\//i.test(url))
-  );
+/** Layers.to — public posts API, still-image layers only. */
+async function discoverLayersVisuals(limit = 28): Promise<LayerVisual[]> {
+  const response = await fetch("https://layers.to/api/v1/posts?take=60", {
+    headers: { "User-Agent": UA, Accept: "application/json" },
+    cache: "no-store",
+  });
+  if (!response.ok) throw new Error(`layers posts → ${response.status}`);
+  const payload = (await response.json()) as {
+    data?: Array<{
+      id: string;
+      user?: { username?: string; fullName?: string | null };
+      layers?: Array<{
+        id: string;
+        title?: string | null;
+        description?: string | null;
+        imageUrl?: string | null;
+      }>;
+    }>;
+  };
+
+  const out: LayerVisual[] = [];
+  for (const post of payload.data ?? []) {
+    for (const layer of post.layers ?? []) {
+      const image = normalizeImageUrl(layer.imageUrl);
+      if (!image || !isStillImage(image)) continue;
+      const title = layer.title?.trim() || "Untitled layer";
+      // Skip empty / spammy soft titles without product signal when possible
+      out.push({
+        url: `https://layers.to/posts/${post.id}`,
+        title,
+        excerpt: layer.description?.trim()?.slice(0, 320) || null,
+        image,
+        authorName: post.user?.fullName?.trim() || null,
+        authorHandle: post.user?.username?.trim() || null,
+        externalId: layer.id,
+      });
+      if (out.length >= limit) return out;
+    }
+  }
+  return out;
 }
 
 type Db = ReturnType<typeof drizzle<typeof schema>>;
 
-async function upsertVisualFromUrl(
+async function upsertResolvedVisual(
   db: Db,
   pageUrl: string
 ): Promise<"created" | "updated" | "skipped" | "rejected"> {
@@ -117,8 +149,9 @@ async function upsertVisualFromUrl(
   }
 
   const image = normalizeImageUrl(resolved.image);
-  if (!image || !resolved.title?.trim()) return "rejected";
-  // Skip generic site-wide OG fallbacks.
+  if (!image || !resolved.title?.trim() || !isStillImage(image)) {
+    return "rejected";
+  }
   if (
     /\/og\.png/i.test(image) ||
     /opengraph-image\.png/i.test(image) ||
@@ -128,11 +161,58 @@ async function upsertVisualFromUrl(
     return "rejected";
   }
 
-  const existing = resolved.externalId
+  return upsertRow(db, {
+    type: "visual",
+    title: resolved.title,
+    excerpt: resolved.excerpt,
+    image,
+    url: resolved.url,
+    sourceUrl: resolved.sourceUrl,
+    sourcePlatform: resolved.sourcePlatform,
+    externalId: resolved.externalId,
+    authorHandle: resolved.authorHandle,
+    authorName: resolved.authorName,
+  });
+}
+
+async function upsertLayerVisual(
+  db: Db,
+  layer: LayerVisual
+): Promise<"created" | "updated" | "skipped" | "rejected"> {
+  return upsertRow(db, {
+    type: "visual",
+    title: layer.title,
+    excerpt: layer.excerpt,
+    image: layer.image,
+    url: layer.url,
+    sourceUrl: layer.url,
+    sourcePlatform: "layers",
+    externalId: layer.externalId,
+    authorHandle: layer.authorHandle,
+    authorName: layer.authorName,
+  });
+}
+
+async function upsertRow(
+  db: Db,
+  values: {
+    type: "visual";
+    title: string;
+    excerpt: string | null;
+    image: string;
+    url: string;
+    sourceUrl: string;
+    sourcePlatform: string;
+    externalId: string | null;
+    authorHandle: string | null;
+    authorName: string | null;
+  }
+): Promise<"created" | "updated" | "skipped" | "rejected"> {
+  const existing = values.externalId
     ? await db.query.content.findFirst({
         where: and(
-          eq(content.sourcePlatform, resolved.sourcePlatform),
-          eq(content.externalId, resolved.externalId)
+          eq(content.sourcePlatform, values.sourcePlatform),
+          eq(content.externalId, values.externalId)
         ),
       })
     : null;
@@ -150,11 +230,11 @@ async function upsertVisualFromUrl(
       .set({
         type: "visual",
         status: "published",
-        title: resolved.title,
-        excerpt: resolved.excerpt,
-        image,
-        authorName: resolved.authorName,
-        authorHandle: resolved.authorHandle,
+        title: values.title,
+        excerpt: values.excerpt,
+        image: values.image,
+        authorName: values.authorName,
+        authorHandle: values.authorHandle,
         publishedAt: existing.publishedAt ?? new Date(),
         featured: false,
       })
@@ -163,16 +243,7 @@ async function upsertVisualFromUrl(
   }
 
   await db.insert(content).values({
-    type: "visual",
-    title: resolved.title,
-    excerpt: resolved.excerpt,
-    image,
-    url: resolved.url,
-    sourceUrl: resolved.sourceUrl,
-    sourcePlatform: resolved.sourcePlatform,
-    externalId: resolved.externalId,
-    authorHandle: resolved.authorHandle,
-    authorName: resolved.authorName,
+    ...values,
     status: "published",
     featured: false,
     publishedAt: new Date(),
@@ -181,7 +252,8 @@ async function upsertVisualFromUrl(
 }
 
 async function demoteGenericVisuals(db: Db) {
-  const result = await db
+  // Platform firehoses
+  const byPlatform = await db
     .update(content)
     .set({ status: "draft", featured: false })
     .where(
@@ -192,7 +264,25 @@ async function demoteGenericVisuals(db: Db) {
       )
     )
     .returning({ id: content.id });
-  return result.length;
+
+  // URL-host firehoses we no longer want on the live tab
+  const byHost = await db.execute(sql`
+    update content
+    set status = 'draft', featured = false
+    where type = 'visual'
+      and status = 'published'
+      and (
+        url ilike '%saaslandingpage.com%'
+        or source_url ilike '%saaslandingpage.com%'
+        or url ilike '%onepagelove.com%'
+        or source_url ilike '%onepagelove.com%'
+        or url ilike '%httpster.net%'
+        or source_url ilike '%httpster.net%'
+      )
+    returning id
+  `);
+
+  return byPlatform.length + (Array.isArray(byHost) ? byHost.length : 0);
 }
 
 async function main() {
@@ -206,86 +296,75 @@ async function main() {
   const client = url ? postgres(url, { prepare: false, max: 1 }) : null;
   const db: Db | null = client ? drizzle(client, { schema }) : null;
 
-  const buckets: { name: string; urls: string[] }[] = [];
-
   console.log("Discovering Spotted in Prod clips…");
-  buckets.push({ name: "spotted", urls: await discoverSpottedClipUrls(24) });
+  const spotted = await discoverSpottedClipUrls(28);
+  console.log(`  ${spotted.length}`);
 
-  console.log("Discovering recent.design shots…");
-  buckets.push({ name: "recent", urls: await discoverRecentDesignUrls(28) });
-
-  console.log("Discovering Httpster websites…");
+  console.log("Discovering Layers still-image layers…");
+  let layers: LayerVisual[] = [];
   try {
-    buckets.push({ name: "httpster", urls: await discoverHttpsterUrls(24) });
+    layers = await discoverLayersVisuals(28);
+    console.log(`  ${layers.length}`);
   } catch (error) {
     console.log(
-      `  ✗ ${error instanceof Error ? error.message : "httpster failed"}`
+      `  ✗ ${error instanceof Error ? error.message : "layers failed"}`
     );
   }
 
-  console.log("Discovering One Page Love (RSS)…");
-  try {
-    buckets.push({
-      name: "onepagelove",
-      urls: await discoverRssVisualUrls("https://onepagelove.com/feed", 18),
-    });
-  } catch (error) {
-    console.log(
-      `  ✗ ${error instanceof Error ? error.message : "onepagelove failed"}`
-    );
-  }
+  console.log("Discovering selective recent.design product/UI…");
+  const recent = await discoverRecentDesignUrls(16);
+  console.log(`  ${recent.length}`);
 
-  console.log("Discovering SaaS Landing Page (RSS)…");
-  try {
-    buckets.push({
-      name: "saaslandingpage",
-      urls: await discoverRssVisualUrls(
-        "https://saaslandingpage.com/feed/",
-        18
-      ),
-    });
-  } catch (error) {
-    console.log(
-      `  ✗ ${error instanceof Error ? error.message : "saaslandingpage failed"}`
-    );
-  }
-
-  for (const bucket of buckets) {
-    console.log(`  ${bucket.name}: ${bucket.urls.length}`);
-  }
-
-  const urls = unique(buckets.flatMap((bucket) => bucket.urls));
   let created = 0;
   let updated = 0;
   let skipped = 0;
   let rejected = 0;
 
-  for (const pageUrl of urls) {
+  async function handle(
+    label: string,
+    result: "created" | "updated" | "skipped" | "rejected"
+  ) {
+    if (result === "created") {
+      created += 1;
+      console.log(`  ✓ ${label}`);
+    } else if (result === "updated") {
+      updated += 1;
+      console.log(`  ↑ ${label}`);
+    } else if (result === "skipped") skipped += 1;
+    else rejected += 1;
+  }
+
+  for (const pageUrl of spotted) {
     if (dryRun || !db) {
-      console.log(`  · ${pageUrl}`);
+      console.log(`  · spotted ${pageUrl}`);
       created += 1;
       continue;
     }
-    const result = await upsertVisualFromUrl(db, pageUrl);
-    if (result === "created") {
+    await handle(pageUrl, await upsertResolvedVisual(db, pageUrl));
+  }
+
+  for (const layer of layers) {
+    if (dryRun || !db) {
+      console.log(`  · layers ${layer.title.slice(0, 60)}`);
       created += 1;
-      console.log(`  ✓ ${pageUrl}`);
-    } else if (result === "updated") {
-      updated += 1;
-      console.log(`  ↑ ${pageUrl}`);
-    } else if (result === "skipped") {
-      skipped += 1;
-    } else {
-      rejected += 1;
+      continue;
     }
+    await handle(layer.title.slice(0, 70), await upsertLayerVisual(db, layer));
+  }
+
+  for (const pageUrl of recent) {
+    if (dryRun || !db) {
+      console.log(`  · recent ${pageUrl}`);
+      created += 1;
+      continue;
+    }
+    await handle(pageUrl, await upsertResolvedVisual(db, pageUrl));
   }
 
   let demoted = 0;
   if (db && !dryRun) {
     demoted = await demoteGenericVisuals(db);
-    console.log(
-      `\nDemoted generic Behance/Awwwards visuals → draft: ${demoted}`
-    );
+    console.log(`\nDemoted generic visuals → draft: ${demoted}`);
   }
 
   console.log(
