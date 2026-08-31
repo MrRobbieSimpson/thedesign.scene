@@ -30,9 +30,8 @@ export function FeedLayoutGrid({
       <div
         className={cn(
           "feed-mosaic w-full gap-0",
-          dense
-            ? "feed-mosaic--dense columns-2 md:columns-3 xl:columns-4"
-            : "columns-2 md:columns-3",
+          // Site column is max-w-[45rem] — keep mosaic to 2-up.
+          dense ? "feed-mosaic--dense columns-2" : "columns-2",
           className
         )}
       >
