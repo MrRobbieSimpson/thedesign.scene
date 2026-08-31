@@ -16,6 +16,7 @@
     "ingest:url": "tsx scripts/ingest-url.ts",
     "ingest:writers": "tsx scripts/pull-writers.ts",
     "ingest:writing-drafts": "tsx scripts/ingest-writing-drafts.ts",
+    "ingest:visuals": "tsx scripts/pull-visuals.ts",
     "ingest:live": "tsx scripts/pull-live.ts"
   },
   "dependencies": {

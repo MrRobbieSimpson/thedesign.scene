@@ -98,6 +98,27 @@ function sortQuality(a: ContentWithMaker, b: ContentWithMaker) {
  * Stable author key for diversity — prefer profile/maker ids, then handle/name.
  * Keeps “Robin Rendle × N” from flooding the curated All mix.
  */
+/**
+ * Feed / platform bylines are not real authors. Collapsing every Behance
+ * project under “Behance Projects” left the Visuals tab with only 2 tiles.
+ */
+const PLATFORM_BYLINES = new Set([
+  "behance",
+  "behance projects",
+  "awwwards",
+  "awwwards blog",
+  "awwwards - sites of the day",
+  "sites of the day",
+  "dezeen",
+  "designboom",
+  "sidebar",
+  "dribbble",
+  "dribbble stories",
+  "css-tricks",
+  "smashing magazine",
+  "sit with design",
+]);
+
 export function authorKey(item: ContentWithMaker): string {
   if (item.authorProfileId) return `profile:${item.authorProfileId}`;
   if (item.authorProfile?.id) return `profile:${item.authorProfile.id}`;
@@ -124,7 +145,12 @@ export function authorKey(item: ContentWithMaker): string {
     .trim()
     .toLowerCase()
     .replace(/\s+/g, " ");
-  if (name) return `name:${name}`;
+  if (name && !PLATFORM_BYLINES.has(name)) return `name:${name}`;
+
+  // Prefer stable external ids so inspiration grids stay diverse.
+  if (item.externalId) {
+    return `ext:${item.sourcePlatform ?? "web"}:${item.externalId}`;
+  }
 
   return `item:${item.id}`;
 }
@@ -416,14 +442,15 @@ export function filterFeedItems(
         )
       );
     case "visuals":
-      // Denser inspiration grid (recent.design-style) — still image-gated.
+      // Dense inspiration grid — image-gated; looser per-author so
+      // platform ingest (Behance / Awwwards) can actually fill the mosaic.
       return toContentItems(
         takeByTypes(
           content,
           ["visual", "build"],
-          36,
+          48,
           (item) => hasImage(item),
-          { maxPerAuthor: 2 }
+          { maxPerAuthor: 8 }
         )
       );
     case "events":
