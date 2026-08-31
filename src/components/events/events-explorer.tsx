@@ -1,11 +1,19 @@
 "use client";
 
-import { useMemo, useState, useTransition } from "react";
+import {
+  useEffect,
+  useMemo,
+  useState,
+  useTransition,
+  type FormEvent,
+} from "react";
 import Link from "next/link";
 import { ArrowUpRight, MapPin, Navigation } from "lucide-react";
 
+import { resolveCity } from "@/app/actions/geo";
 import { EventCard } from "@/components/events/event-card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import type { Event } from "@/db/schema";
 import {
   BELFAST_COORDS,
@@ -14,6 +22,8 @@ import {
 } from "@/lib/ingest/luma";
 import { distanceKm, formatDistanceKm, type Coordinates } from "@/lib/geo";
 import { cn } from "@/lib/utils";
+
+const CITY_STORAGE_KEY = "swd-events-near-city";
 
 type SerializedEvent = Omit<
   Event,
@@ -53,9 +63,20 @@ function isBelfastDesignEvent(event: Event) {
 
 export function EventsExplorer({ events }: EventsExplorerProps) {
   const [userLocation, setUserLocation] = useState<Coordinates | null>(null);
+  const [placeLabel, setPlaceLabel] = useState<string | null>(null);
+  const [cityInput, setCityInput] = useState("");
   const [nearMe, setNearMe] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
+
+  useEffect(() => {
+    try {
+      const stored = window.localStorage.getItem(CITY_STORAGE_KEY)?.trim();
+      if (stored) setCityInput(stored);
+    } catch {
+      // ignore
+    }
+  }, []);
 
   const revived = useMemo(() => events.map(reviveEvent), [events]);
 
@@ -88,7 +109,6 @@ export function EventsExplorer({ events }: EventsExplorerProps) {
       );
     }
 
-    // Near Belfast: pin Belfast Design events first, then by distance
     if (nearBelfast) {
       return withDistance.sort((a, b) => {
         const aLocal = isBelfastDesignEvent(a) ? 0 : 1;
@@ -113,30 +133,68 @@ export function EventsExplorer({ events }: EventsExplorerProps) {
     });
   }, [revived, nearMe, userLocation, nearBelfast]);
 
-  function enableNearMe() {
+  function applyLocation(coords: Coordinates, label: string) {
+    setUserLocation(coords);
+    setPlaceLabel(label);
+    setNearMe(true);
+    setError(null);
+  }
+
+  function onCitySubmit(event: FormEvent) {
+    event.preventDefault();
+    setError(null);
+    const query = cityInput.trim();
+    if (!query) {
+      setError("Enter a city to find nearby events.");
+      return;
+    }
+
+    startTransition(async () => {
+      const result = await resolveCity(query);
+      if (!result.ok) {
+        setError(result.message);
+        return;
+      }
+      try {
+        window.localStorage.setItem(CITY_STORAGE_KEY, result.label);
+      } catch {
+        // ignore
+      }
+      applyLocation(
+        { latitude: result.latitude, longitude: result.longitude },
+        result.label
+      );
+    });
+  }
+
+  function enableBrowserLocation() {
     setError(null);
 
     if (!navigator.geolocation) {
-      setError("Location isn’t available in this browser.");
+      setError("Location isn’t available here — try entering a city instead.");
       return;
     }
 
     startTransition(() => {
       navigator.geolocation.getCurrentPosition(
         (position) => {
-          setUserLocation({
-            latitude: position.coords.latitude,
-            longitude: position.coords.longitude,
-          });
-          setNearMe(true);
+          applyLocation(
+            {
+              latitude: position.coords.latitude,
+              longitude: position.coords.longitude,
+            },
+            "you"
+          );
         },
         (err) => {
           if (err.code === err.PERMISSION_DENIED) {
             setError(
-              "Location permission denied. You can enable it in browser settings."
+              "Location permission denied. Enter a city below instead."
             );
           } else {
-            setError("Couldn’t get your location. Try again in a moment.");
+            setError(
+              "Couldn’t get your location. Enter a city below instead."
+            );
           }
         },
         { enableHighAccuracy: false, timeout: 10000, maximumAge: 60_000 }
@@ -146,37 +204,65 @@ export function EventsExplorer({ events }: EventsExplorerProps) {
 
   function clearNearMe() {
     setNearMe(false);
+    setPlaceLabel(null);
     setError(null);
   }
 
+  const statusLabel = nearMe
+    ? nearBelfast
+      ? "Near Belfast · local design events first"
+      : placeLabel && placeLabel !== "you"
+        ? `Sorted by distance from ${placeLabel}`
+        : "Sorted by distance from you"
+    : `${events.length} upcoming · sorted by date`;
+
   return (
     <div className="space-y-8">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex flex-wrap items-center gap-2">
-          {!nearMe ? (
+      <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+          <form
+            onSubmit={onCitySubmit}
+            className="flex w-full max-w-md flex-col gap-2 sm:flex-row sm:items-center"
+          >
+            <label className="sr-only" htmlFor="events-city">
+              City
+            </label>
+            <Input
+              id="events-city"
+              type="text"
+              name="city"
+              placeholder="City — London, Belfast, Berlin…"
+              value={cityInput}
+              onChange={(e) => setCityInput(e.target.value)}
+              disabled={pending}
+              className="h-9"
+              autoComplete="address-level2"
+            />
             <Button
-              type="button"
+              type="submit"
               variant="outline"
               size="sm"
-              onClick={enableNearMe}
+              disabled={pending || !cityInput.trim()}
+              className="gap-1.5 shrink-0"
+            >
+              <MapPin className="size-3.5" />
+              {pending ? "Finding…" : "Find near"}
+            </Button>
+          </form>
+
+          <div className="flex flex-wrap items-center gap-2">
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={enableBrowserLocation}
               disabled={pending}
-              className="gap-1.5"
+              className="gap-1.5 text-muted-foreground"
             >
               <Navigation className="size-3.5" />
-              {pending ? "Locating…" : "Find near me"}
+              Use my location
             </Button>
-          ) : (
-            <>
-              <Button
-                type="button"
-                variant="secondary"
-                size="sm"
-                onClick={clearNearMe}
-                className="gap-1.5"
-              >
-                <MapPin className="size-3.5" />
-                Near me
-              </Button>
+            {nearMe ? (
               <button
                 type="button"
                 onClick={clearNearMe}
@@ -184,17 +270,11 @@ export function EventsExplorer({ events }: EventsExplorerProps) {
               >
                 Show all by date
               </button>
-            </>
-          )}
+            ) : null}
+          </div>
         </div>
 
-        <p className="text-sm text-muted-foreground">
-          {nearMe
-            ? nearBelfast
-              ? "Near Belfast · local design events first"
-              : "Sorted by distance from you"
-            : `${events.length} upcoming · sorted by date`}
-        </p>
+        <p className="text-sm text-muted-foreground">{statusLabel}</p>
       </div>
 
       {nearMe && nearBelfast ? (

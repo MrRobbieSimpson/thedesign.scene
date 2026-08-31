@@ -34,8 +34,8 @@ export default async function EventsPage() {
         </h1>
         <p className="text-base leading-relaxed text-muted-foreground sm:text-lg">
           Talks, meetups, and conferences — curated with the same taste as the
-          writing. In person, hybrid, or remote. Use Find near me when you want
-          what’s close.
+          writing. In person, hybrid, or remote. Enter a city to sort by what’s
+          close — no account needed.
         </p>
         <p className="text-sm text-muted-foreground/80">
           {upcoming.length === 0
