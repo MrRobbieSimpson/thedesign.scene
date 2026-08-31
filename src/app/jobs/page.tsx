@@ -18,11 +18,11 @@ export default async function JobsPage() {
 
   return (
     <div className="mx-auto w-full min-w-0 max-w-[45rem] px-5 py-10 sm:px-6 sm:py-20">
-      <section className="mb-12 space-y-4">
+      <section className="mb-10 space-y-4 sm:mb-12">
         <p className="text-sm font-medium tracking-[0.14em] text-muted-foreground uppercase">
           Openings
         </p>
-        <h1 className="font-heading text-4xl tracking-tight text-balance sm:text-5xl">
+        <h1 className="font-heading text-[1.85rem] tracking-tight text-balance sm:text-5xl">
           Roles you’d recommend to a friend.
         </h1>
         <p className="text-base leading-relaxed text-muted-foreground sm:text-lg">

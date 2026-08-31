@@ -1,5 +1,7 @@
+import { Suspense } from "react";
 import Link from "next/link";
 
+import { FeedFilters } from "@/components/content/feed-filters";
 import { EventsExplorer } from "@/components/events/events-explorer";
 import { isUpcomingEvent } from "@/lib/feed-mix";
 import { getPublishedEvents } from "@/lib/queries";
@@ -47,6 +49,18 @@ export default async function EventsPage() {
           </Link>
         </p>
       </section>
+
+      <div className="mb-8 flex w-full min-w-0 items-center gap-2 sm:gap-3">
+        <div className="min-w-0 flex-1 overflow-x-auto overscroll-x-contain [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <Suspense
+            fallback={
+              <div className="h-10 w-56 max-w-full animate-pulse rounded-full bg-muted" />
+            }
+          >
+            <FeedFilters />
+          </Suspense>
+        </div>
+      </div>
 
       <EventsExplorer events={upcoming} />
     </div>
