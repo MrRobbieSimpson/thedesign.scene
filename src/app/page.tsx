@@ -85,12 +85,12 @@ export default async function HomePage({ searchParams }: HomeProps) {
   ).length;
 
   return (
-    <div className="mx-auto max-w-[45rem] px-5 py-14 sm:px-6 sm:py-20">
-      <section className="mb-14 space-y-5 sm:mb-16">
+    <div className="mx-auto w-full min-w-0 max-w-[45rem] px-5 py-10 sm:px-6 sm:py-20">
+      <section className="mb-10 space-y-4 sm:mb-16 sm:space-y-5">
         <p className="text-sm font-medium tracking-[0.16em] text-muted-foreground uppercase">
           {visualsMode ? "Visuals" : eventsMode ? "Events" : "Writing"}
         </p>
-        <h1 className="font-heading text-4xl tracking-tight text-balance sm:text-5xl">
+        <h1 className="font-heading text-[1.85rem] tracking-tight text-balance sm:text-5xl">
           {visualsMode
             ? "Product & UI worth looking at."
             : eventsMode

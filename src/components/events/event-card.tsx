@@ -28,14 +28,14 @@ export function EventCard({
   const content = (
     <article
       className={cn(
-        "event-ticket group relative flex w-full min-w-0 flex-col justify-between gap-5 rounded-2xl border border-border/70 bg-card py-6 pr-6 pl-10 transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
+        "event-ticket group relative flex w-full min-w-0 flex-col justify-between gap-4 rounded-2xl border border-border/70 bg-card py-5 pr-5 pl-9 transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] sm:gap-5 sm:py-6 sm:pr-6 sm:pl-10",
         featured && "border-foreground/15",
-        "hover:-translate-y-0.5 hover:border-foreground/20 hover:shadow-[0_16px_48px_-28px_rgba(0,0,0,0.4)] active:translate-y-0 active:scale-[0.985]"
+        "[@media(hover:hover)_and_(pointer:fine)]:hover:-translate-y-0.5 hover:border-foreground/20 [@media(hover:hover)_and_(pointer:fine)]:hover:shadow-[0_16px_48px_-28px_rgba(0,0,0,0.4)] active:translate-y-0 active:scale-[0.985]"
       )}
     >
       <span aria-hidden className="event-ticket-stub" />
 
-      <div className="relative min-w-0 space-y-4">
+      <div className="relative min-w-0 space-y-3 sm:space-y-4">
         <div className="flex min-w-0 flex-wrap items-center gap-2">
           <Badge variant="secondary" className="gap-1.5">
             <TypeGlyph type={event.type} />
@@ -51,14 +51,16 @@ export function EventCard({
               {distanceLabel}
             </span>
           ) : null}
-          <span className="inline-flex items-center gap-1.5 text-sm text-muted-foreground">
-            <CalendarDays className="size-3.5" />
-            {formatEventRange(event.startDate, event.endDate)}
+          <span className="inline-flex max-w-full items-center gap-1.5 text-sm text-muted-foreground">
+            <CalendarDays className="size-3.5 shrink-0" />
+            <span className="min-w-0 truncate">
+              {formatEventRange(event.startDate, event.endDate)}
+            </span>
           </span>
         </div>
 
         <div className="min-w-0 space-y-2">
-          <h3 className="font-heading text-2xl leading-snug tracking-tight text-balance break-words">
+          <h3 className="font-heading text-xl leading-snug tracking-tight text-balance break-words sm:text-2xl">
             {event.title}
           </h3>
           {event.description ? (

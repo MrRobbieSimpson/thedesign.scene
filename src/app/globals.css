@@ -395,9 +395,14 @@
   }
 }
 
+/* Phones: articles mosaic → 1-up; visuals dense stays 2-up (image tiles). */
 @media (max-width: 639px) {
   .feed-mosaic:not(.feed-mosaic--dense) {
     grid-template-columns: minmax(0, 1fr);
+  }
+
+  .feed-mosaic--dense {
+    gap: 0.375rem;
   }
 }
 

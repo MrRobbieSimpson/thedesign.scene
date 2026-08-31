@@ -24,7 +24,7 @@ export default async function EventsPage() {
     );
 
   return (
-    <div className="mx-auto max-w-[45rem] px-5 py-14 sm:px-6 sm:py-20">
+    <div className="mx-auto w-full min-w-0 max-w-[45rem] px-5 py-10 sm:px-6 sm:py-20">
       <section className="mb-12 space-y-4">
         <p className="text-sm font-medium tracking-[0.14em] text-muted-foreground uppercase">
           Calendar

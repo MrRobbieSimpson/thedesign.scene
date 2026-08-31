@@ -57,7 +57,7 @@ export default function RootLayout({
           <EnsureProfile />
           <SiteStage>
             <SiteHeader />
-            <main className="flex-1">{children}</main>
+            <main className="min-w-0 flex-1">{children}</main>
             <Footer />
           </SiteStage>
           <DeferredUi />
@@ -72,7 +72,9 @@ export default function RootLayout({
       suppressHydrationWarning
       className={`${geistSans.variable} ${geistMono.variable} ${sourceSerif.variable}`}
     >
-      <body className={`${geistSans.className} min-h-dvh antialiased`}>
+      <body
+        className={`${geistSans.className} min-h-dvh overflow-x-hidden antialiased`}
+      >
         <JsonLd data={websiteJsonLd()} />
         {isClerkPublishableConfigured() ? (
           <ClerkProvider

@@ -227,7 +227,7 @@ export function EventsExplorer({ events }: EventsExplorerProps) {
         <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <form
             onSubmit={onCitySubmit}
-            className="flex w-full max-w-md flex-col gap-2 sm:flex-row sm:items-center"
+            className="flex w-full flex-col gap-2 sm:max-w-md sm:flex-row sm:items-center"
           >
             <label className="sr-only" htmlFor="events-city">
               City
@@ -240,7 +240,7 @@ export function EventsExplorer({ events }: EventsExplorerProps) {
               value={cityInput}
               onChange={(e) => setCityInput(e.target.value)}
               disabled={pending}
-              className="h-9"
+              className="h-10 w-full sm:h-9"
               autoComplete="address-level2"
             />
             <Button
@@ -248,7 +248,7 @@ export function EventsExplorer({ events }: EventsExplorerProps) {
               variant="outline"
               size="sm"
               disabled={pending || !cityInput.trim()}
-              className="gap-1.5 shrink-0"
+              className="h-10 w-full gap-1.5 shrink-0 sm:h-8 sm:w-auto"
             >
               <MapPin className="size-3.5" />
               {pending ? "Finding…" : "Find near"}
@@ -262,7 +262,7 @@ export function EventsExplorer({ events }: EventsExplorerProps) {
               size="sm"
               onClick={enableBrowserLocation}
               disabled={pending}
-              className="gap-1.5 text-muted-foreground"
+              className="h-10 w-full gap-1.5 text-muted-foreground sm:h-8 sm:w-auto"
             >
               <Navigation className="size-3.5" />
               Use my location

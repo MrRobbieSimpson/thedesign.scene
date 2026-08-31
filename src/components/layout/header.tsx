@@ -68,10 +68,10 @@ export function Header({
           <div className="flex min-w-0 flex-1 items-center gap-3 lg:gap-8">
             <Link
               href="/"
-              className="group flex h-8 min-w-0 max-w-full items-center gap-2 sm:gap-2.5"
+              className="group flex h-8 min-w-0 max-w-[min(100%,14rem)] shrink items-center gap-2 sm:max-w-none sm:gap-2.5"
             >
               <BrandMarkChip />
-              <span className="truncate font-sans text-[0.95rem] font-medium leading-none tracking-tight transition-opacity duration-300 group-hover:opacity-80 sm:text-lg md:text-xl">
+              <span className="truncate font-sans text-[0.95rem] font-medium leading-none tracking-tight transition-opacity duration-300 group-hover:opacity-80 max-[360px]:hidden sm:text-lg md:text-xl">
                 sit with design
               </span>
             </Link>
