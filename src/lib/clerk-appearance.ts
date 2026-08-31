@@ -1,6 +1,9 @@
 /**
  * Scene-quiet Clerk chrome — CSS variables + element classes.
  * No @clerk/ui theme package (it dragged mismatched React peers).
+ *
+ * Social SSO (Google / GitHub / X) is hidden for launch — email only.
+ * Re-enable when Production OAuth credentials are wired in Clerk.
  */
 export const clerkAppearance = {
   variables: {
@@ -22,8 +25,13 @@ export const clerkAppearance = {
     card: "border border-border/60 bg-card shadow-none",
     headerTitle: "font-heading tracking-tight",
     headerSubtitle: "text-muted-foreground",
-    socialButtonsBlockButton:
-      "border border-border/60 bg-background hover:bg-muted/40",
+    // Email-only launch: hide broken Google / GitHub / X buttons + “or” divider
+    socialButtonsRoot: "hidden",
+    socialButtons: "hidden",
+    socialButtonsBlockButton: "hidden",
+    dividerRow: "hidden",
+    dividerLine: "hidden",
+    dividerText: "hidden",
     formButtonPrimary:
       "bg-foreground text-background hover:bg-foreground/90 shadow-none",
     footerActionLink: "text-foreground underline-offset-4 hover:underline",
