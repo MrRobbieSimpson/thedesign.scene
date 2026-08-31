@@ -63,18 +63,6 @@ export async function Footer() {
             >
               Jobs
             </Link>
-            <Link
-              href="/sign-up"
-              className="transition-colors hover:text-foreground"
-            >
-              Join
-            </Link>
-            <Link
-              href="/subscribe"
-              className="transition-colors hover:text-foreground"
-            >
-              Digest
-            </Link>
           </div>
           <div className="flex flex-wrap items-center gap-x-5 gap-y-2 sm:justify-end">
             <Link
