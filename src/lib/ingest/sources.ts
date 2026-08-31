@@ -35,26 +35,12 @@ const WRITING_SOURCES: FeedSource[] = WRITER_FEEDS.map((feed) => ({
   writing: true,
 }));
 
-/** Visual / news feeds — keep selective; writing sources own the editorial lane. */
+/**
+ * Non-writing sources.
+ * Visual product/UI ingest prefers Spotted + recent.design via `npm run ingest:visuals`
+ * (no Behance / Awwwards firehose on the Visuals tab).
+ */
 const OTHER_SOURCES: FeedSource[] = [
-  {
-    id: "awwwards-sotd",
-    name: "Awwwards Sites of the Day",
-    feedUrl: "https://www.awwwards.com/feed",
-    platform: "awwwards",
-    defaultType: "visual",
-    siteUrl: "https://www.awwwards.com/websites/sites_of_the_day/",
-    description: "Awarded web craft — high bar visual inspiration",
-  },
-  {
-    id: "behance",
-    name: "Behance Projects",
-    feedUrl: "https://www.behance.net/feeds/projects",
-    platform: "behance",
-    defaultType: "visual",
-    siteUrl: "https://www.behance.net",
-    description: "Creative project showcases (selective)",
-  },
   {
     id: "awwwards",
     name: "Awwwards Blog",

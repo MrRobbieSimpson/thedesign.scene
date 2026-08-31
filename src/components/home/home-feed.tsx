@@ -103,7 +103,7 @@ function FeedGrid({
  */
 export function HomeFeed({
   items,
-  filter = "all",
+  filter = "articles",
   toolbar,
   featuredJob = null,
   designerWriting = [],
@@ -117,6 +117,7 @@ export function HomeFeed({
   designerWriting?: ContentWithMaker[];
 }) {
   const visualsMode = filter === "visuals";
+  const articlesMode = filter === "articles";
   const [layout, setLayout] = useState<FeedLayout>(
     visualsMode ? "mosaic" : "big"
   );
@@ -144,6 +145,7 @@ export function HomeFeed({
   const mid = Math.max(1, Math.ceil(revived.length / 2));
   const first = revived.slice(0, mid);
   const second = revived.slice(mid);
+  const showMidStrips = articlesMode;
 
   return (
     <div className="space-y-8 sm:space-y-10">
@@ -162,13 +164,15 @@ export function HomeFeed({
           </p>
           <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
             {visualsMode
-              ? "Published visuals with images will appear here."
-              : "Editor’s picks, writing, visuals, and events will appear here."}
+              ? "Published product & UI visuals will appear here."
+              : filter === "events"
+                ? "Upcoming events will appear here."
+                : "Writing and editor’s picks will appear here."}
           </p>
         </div>
       ) : visualsMode ? (
         <FeedGrid items={revived} layout="mosaic" dense />
-      ) : (
+      ) : showMidStrips ? (
         <>
           <FeedGrid items={first} layout={effectiveLayout} />
           <div
@@ -185,6 +189,8 @@ export function HomeFeed({
             <FeedGrid items={second} layout={effectiveLayout} />
           ) : null}
         </>
+      ) : (
+        <FeedGrid items={revived} layout={effectiveLayout} />
       )}
     </div>
   );

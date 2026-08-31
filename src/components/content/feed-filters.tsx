@@ -4,10 +4,14 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useTransition } from "react";
 
 import { AnimatedPills } from "@/components/ui/animated-pills";
-import { FEED_FILTERS, isFeedFilter, type FeedFilter } from "@/lib/feed-mix";
+import {
+  DEFAULT_FEED_FILTER,
+  FEED_FILTERS,
+  resolveFeedFilter,
+  type FeedFilter,
+} from "@/lib/feed-mix";
 
 const labels: Record<FeedFilter, string> = {
-  all: "All",
   articles: "Articles",
   visuals: "Visuals",
   events: "Events",
@@ -15,22 +19,21 @@ const labels: Record<FeedFilter, string> = {
 
 /** Shorter labels so filters + layout icons fit one mobile row without crush. */
 const shortLabels: Record<FeedFilter, string> = {
-  all: "All",
   articles: "Writing",
   visuals: "Visual",
   events: "Events",
 };
 
 function hrefFor(filter: FeedFilter) {
-  return filter === "all" ? "/" : `/?type=${filter}`;
+  // Articles is the default home — keep `/` clean.
+  return filter === DEFAULT_FEED_FILTER ? "/" : `/?type=${filter}`;
 }
 
 export function FeedFilters() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [pending, startTransition] = useTransition();
-  const raw = searchParams.get("type") ?? "all";
-  const current: FeedFilter = isFeedFilter(raw) ? raw : "all";
+  const current = resolveFeedFilter(searchParams.get("type"));
 
   return (
     <div

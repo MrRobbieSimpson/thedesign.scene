@@ -34,6 +34,9 @@ function platformFromHost(host: string): SourcePlatform {
   ) {
     return "spottedinprod";
   }
+  if (host === "recent.design" || host.endsWith(".recent.design")) {
+    return "web";
+  }
   if (host === "medium.com" || host.endsWith(".medium.com")) return "medium";
   if (
     host === "smashingmagazine.com" ||

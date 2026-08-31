@@ -1,18 +1,24 @@
 import type { ContentType, Event } from "@/db/schema";
 import type { ContentWithMaker } from "@/lib/demo-data";
 
-/** Public feed filter tabs — intentional, not a noisy timeline. */
-export const FEED_FILTERS = [
-  "all",
-  "articles",
-  "visuals",
-  "events",
-] as const;
+/**
+ * Public feed tabs — writing first.
+ * No “All” mix: Articles is the default home.
+ */
+export const FEED_FILTERS = ["articles", "visuals", "events"] as const;
 
 export type FeedFilter = (typeof FEED_FILTERS)[number];
 
+export const DEFAULT_FEED_FILTER: FeedFilter = "articles";
+
 export function isFeedFilter(value: string): value is FeedFilter {
   return (FEED_FILTERS as readonly string[]).includes(value);
+}
+
+/** Map legacy `?type=all` (and missing type) to Articles. */
+export function resolveFeedFilter(raw: string | null | undefined): FeedFilter {
+  if (!raw || raw === "all") return DEFAULT_FEED_FILTER;
+  return isFeedFilter(raw) ? raw : DEFAULT_FEED_FILTER;
 }
 
 export type FeedContentItem = {
@@ -428,10 +434,8 @@ export function filterFeedItems(
   events: Event[]
 ): FeedItem[] {
   switch (filter) {
-    case "all":
-      return curateHomeFeed(content, events);
     case "articles":
-      // Slightly looser than All — still avoid a single-writer flood.
+      // Default home — writing first, still avoid a single-writer flood.
       return toContentItems(
         takeByTypes(
           content,

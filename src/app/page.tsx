@@ -3,12 +3,10 @@ import { Suspense } from "react";
 import { FeedFilters } from "@/components/content/feed-filters";
 import { GuestEditorStrip } from "@/components/home/guest-editor-strip";
 import { HomeFeed } from "@/components/home/home-feed";
-import { LiveFromX } from "@/components/home/live-from-x";
 import {
   filterFeedItems,
-  isFeedFilter,
   pickDesignerWriting,
-  pickLiveFromX,
+  resolveFeedFilter,
   type FeedFilter,
 } from "@/lib/feed-mix";
 import {
@@ -27,7 +25,7 @@ export const revalidate = 60;
 export const metadata = buildPageMetadata({
   path: "/",
   description:
-    "A calm curation of writing, visuals, and design events — quality over quantity.",
+    "A calm curation of design writing, with visuals and events on the side — quality over quantity.",
 });
 
 type HomeProps = {
@@ -36,9 +34,9 @@ type HomeProps = {
 
 export default async function HomePage({ searchParams }: HomeProps) {
   const params = await searchParams;
-  const rawType = params.type ?? "all";
-  const filter: FeedFilter = isFeedFilter(rawType) ? rawType : "all";
+  const filter: FeedFilter = resolveFeedFilter(params.type);
   const visualsMode = filter === "visuals";
+  const articlesMode = filter === "articles";
 
   const [content, events, openJobs, designers, guest] = await Promise.all([
     getPublishedContentPool(),
@@ -49,10 +47,10 @@ export default async function HomePage({ searchParams }: HomeProps) {
   ]);
 
   const items = filterFeedItems(filter, content, events);
-  const liveFromX = filter === "all" ? pickLiveFromX(content, 4) : [];
-  const designerWriting =
-    filter === "all" ? pickDesignerWriting(content, 3) : [];
-  const featuredJob = openJobs[0] ?? null;
+  const designerWriting = articlesMode
+    ? pickDesignerWriting(content, 3)
+    : [];
+  const featuredJob = articlesMode ? openJobs[0] ?? null : null;
 
   const editorialCount = items.filter(
     (item) =>
@@ -78,31 +76,39 @@ export default async function HomePage({ searchParams }: HomeProps) {
         )}
       >
         <p className="text-sm font-medium tracking-[0.16em] text-muted-foreground uppercase">
-          {visualsMode ? "Visuals" : "Editor’s selection"}
+          {visualsMode
+            ? "Visuals"
+            : filter === "events"
+              ? "Events"
+              : "Writing"}
         </p>
         <h1
           className={cn(
             "font-heading tracking-tight text-balance",
-            visualsMode
-              ? "text-3xl sm:text-4xl"
-              : "text-4xl sm:text-5xl"
+            visualsMode ? "text-3xl sm:text-4xl" : "text-4xl sm:text-5xl"
           )}
         >
           {visualsMode
-            ? "Design worth looking at."
-            : "Design worth sitting with."}
+            ? "Product & UI worth looking at."
+            : filter === "events"
+              ? "Design gatherings worth showing up for."
+              : "Design worth sitting with."}
         </h1>
         <p
           className={cn(
             "leading-relaxed text-muted-foreground",
-            visualsMode ? "max-w-xl text-sm sm:text-base" : "text-base sm:text-lg"
+            visualsMode
+              ? "max-w-xl text-sm sm:text-base"
+              : "text-base sm:text-lg"
           )}
         >
           {visualsMode
-            ? "A dense, considered grid of visual craft — image first."
-            : "A small, considered mix — writing first, then visuals and events. Not a firehose. Quality over quantity."}
+            ? "High-bar product and interface craft — not a Behance firehose."
+            : filter === "events"
+              ? "Upcoming design events, nearby and elsewhere."
+              : "Essays and notes from designers and craft pubs. Writing first — visuals and events are next door."}
         </p>
-        {!visualsMode && (designers > 30 || filter === "all") ? (
+        {articlesMode ? (
           <p className="text-sm text-muted-foreground/80">
             {designers > 30 ? (
               <>
@@ -110,27 +116,23 @@ export default async function HomePage({ searchParams }: HomeProps) {
                   {designers.toLocaleString()}
                 </span>{" "}
                 designers registered
+                {" · "}
               </>
             ) : null}
-            {designers > 30 && filter === "all" ? " · " : null}
-            {filter === "all" ? (
+            {items.length} selected
+            {featuredCount > 0 ? (
               <>
-                {items.length} selected
-                {featuredCount > 0 ? (
-                  <>
-                    {" "}
-                    · {featuredCount} editor{" "}
-                    {featuredCount === 1 ? "pick" : "picks"}
-                  </>
-                ) : null}{" "}
-                · {editorialCount} editorial
+                {" "}
+                · {featuredCount} editor{" "}
+                {featuredCount === 1 ? "pick" : "picks"}
               </>
-            ) : null}
+            ) : null}{" "}
+            · {editorialCount} editorial
           </p>
         ) : null}
       </section>
 
-      {!visualsMode && guest ? <GuestEditorStrip guest={guest} /> : null}
+      {articlesMode && guest ? <GuestEditorStrip guest={guest} /> : null}
 
       <HomeFeed
         items={items}
@@ -147,8 +149,6 @@ export default async function HomePage({ searchParams }: HomeProps) {
           </Suspense>
         }
       />
-
-      {liveFromX.length > 0 ? <LiveFromX items={liveFromX} /> : null}
     </div>
   );
 }
