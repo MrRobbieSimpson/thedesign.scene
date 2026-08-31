@@ -28,24 +28,16 @@ export function EventCard({
   const content = (
     <article
       className={cn(
-        "event-ticket group relative flex h-full flex-col justify-between gap-6 rounded-2xl border bg-card transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
-        featured
-          ? "border-foreground/15 py-7 pr-7 pl-10 shadow-[0_1px_0_rgba(0,0,0,0.02)] sm:py-8 sm:pr-8 sm:pl-11"
-          : "border-border/70 py-6 pr-6 pl-10",
+        "event-ticket group relative flex w-full min-w-0 flex-col justify-between gap-5 rounded-2xl border border-border/70 bg-card py-6 pr-6 pl-10 transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
+        featured && "border-foreground/15",
         "hover:-translate-y-0.5 hover:border-foreground/20 hover:shadow-[0_16px_48px_-28px_rgba(0,0,0,0.4)] active:translate-y-0 active:scale-[0.985]"
       )}
     >
       <span aria-hidden className="event-ticket-stub" />
 
-      <div className="relative space-y-4">
-        <div className="flex flex-wrap items-center gap-2">
-          <Badge
-            variant={featured ? "default" : "secondary"}
-            className={cn(
-              "gap-1.5",
-              featured && "border-0 bg-foreground text-background"
-            )}
-          >
+      <div className="relative min-w-0 space-y-4">
+        <div className="flex min-w-0 flex-wrap items-center gap-2">
+          <Badge variant="secondary" className="gap-1.5">
             <TypeGlyph type={event.type} />
             {eventTypeLabel(event.type)}
           </Badge>
@@ -65,22 +57,12 @@ export function EventCard({
           </span>
         </div>
 
-        <div className="space-y-2">
-          <h3
-            className={cn(
-              "font-heading tracking-tight",
-              featured ? "text-3xl leading-snug" : "text-2xl leading-snug"
-            )}
-          >
+        <div className="min-w-0 space-y-2">
+          <h3 className="font-heading text-2xl leading-snug tracking-tight text-balance break-words">
             {event.title}
           </h3>
           {event.description ? (
-            <p
-              className={cn(
-                "leading-relaxed text-muted-foreground",
-                featured ? "text-[0.95rem]" : "text-sm"
-              )}
-            >
+            <p className="text-sm leading-relaxed text-muted-foreground">
               {event.description}
             </p>
           ) : null}

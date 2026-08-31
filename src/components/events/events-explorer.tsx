@@ -22,7 +22,6 @@ import {
   EVENTS_NEAR_KM,
 } from "@/lib/ingest/luma";
 import { distanceKm, formatDistanceKm, type Coordinates } from "@/lib/geo";
-import { cn } from "@/lib/utils";
 
 const CITY_STORAGE_KEY = "swd-events-near-city";
 
@@ -334,11 +333,10 @@ export function EventsExplorer({ events }: EventsExplorerProps) {
           ) : null}
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-5">
-          {located.map((event, index) => {
+        <div className="flex flex-col gap-5">
+          {located.map((event) => {
             const local =
               nearMe && nearBelfast && isBelfastDesignEvent(event);
-            const highlight = index === 0 || local;
             const distanceLabel = !nearMe
               ? null
               : event.distanceKm != null
@@ -347,17 +345,12 @@ export function EventsExplorer({ events }: EventsExplorerProps) {
                   ? "Remote"
                   : "No map pin";
             return (
-              <div
+              <EventCard
                 key={event.id}
-                className={cn(highlight && "md:col-span-2")}
-              >
-                <EventCard
-                  event={event}
-                  featured={highlight}
-                  localLabel={local ? "Belfast Design" : null}
-                  distanceLabel={distanceLabel}
-                />
-              </div>
+                event={event}
+                localLabel={local ? "Belfast Design" : null}
+                distanceLabel={distanceLabel}
+              />
             );
           })}
         </div>
