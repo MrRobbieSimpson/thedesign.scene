@@ -1,5 +1,5 @@
 import { unstable_cache } from "next/cache";
-import { and, eq, gte, lte, sql } from "drizzle-orm";
+import { and, eq, gte, inArray, lte, sql } from "drizzle-orm";
 
 import {
   content,
@@ -55,22 +55,97 @@ function reviveEvent(event: Event): Event {
   };
 }
 
+/** Lean columns for feed cards — never ship full body / JSON blobs. */
+const feedContentColumns = {
+  id: true,
+  type: true,
+  title: true,
+  slug: true,
+  readingTimeMinutes: true,
+  url: true,
+  excerpt: true,
+  image: true,
+  status: true,
+  featured: true,
+  editorNote: true,
+  makerId: true,
+  authorProfileId: true,
+  sourcePlatform: true,
+  sourceUrl: true,
+  externalId: true,
+  authorHandle: true,
+  authorName: true,
+  publishedAt: true,
+  createdAt: true,
+  updatedAt: true,
+  body: false,
+  sourcePayload: false,
+} as const;
+
+const feedMakerColumns = {
+  id: true,
+  name: true,
+  handle: true,
+  avatar: true,
+  bio: false,
+  website: false,
+  createdAt: false,
+  updatedAt: false,
+} as const;
+
+const feedProfileColumns = {
+  id: true,
+  displayName: true,
+  handle: true,
+  avatarUrl: true,
+  xHandle: true,
+  clerkUserId: false,
+  bio: false,
+  website: false,
+  location: false,
+  timezone: false,
+  links: false,
+  makerId: false,
+  createdAt: false,
+  updatedAt: false,
+} as const;
+
 async function fetchPublishedContent(
-  type: ContentType | "all" = "all",
+  type: ContentType | "all" | "writing" | "visuals" = "all",
   limit = FEED_POOL_LIMIT
 ): Promise<ContentWithMaker[]> {
   if (!isDatabaseConfigured() || !db) {
-    return filterDemoContent(type).slice(0, limit);
+    if (type === "writing") {
+      return [
+        ...filterDemoContent("article"),
+        ...filterDemoContent("thought"),
+      ].slice(0, limit);
+    }
+    if (type === "visuals") {
+      return [
+        ...filterDemoContent("visual"),
+        ...filterDemoContent("build"),
+      ].slice(0, limit);
+    }
+    return filterDemoContent(type === "all" ? "all" : type).slice(0, limit);
   }
 
   const conditions = [eq(content.status, "published")];
-  if (type !== "all") {
+  if (type === "writing") {
+    conditions.push(inArray(content.type, ["article", "thought"]));
+  } else if (type === "visuals") {
+    conditions.push(inArray(content.type, ["visual", "build"]));
+  } else if (type !== "all") {
     conditions.push(eq(content.type, type));
   }
 
   const rows = await db.query.content.findMany({
     where: and(...conditions),
-    with: { maker: true, authorProfile: true },
+    columns: feedContentColumns,
+    with: {
+      maker: { columns: feedMakerColumns },
+      authorProfile: { columns: feedProfileColumns },
+    },
     orderBy: (fields, { desc: d }) => [
       d(fields.featured),
       d(fields.publishedAt),
@@ -79,7 +154,7 @@ async function fetchPublishedContent(
     limit,
   });
 
-  return rows;
+  return rows as ContentWithMaker[];
 }
 
 /** Cached feed pool — mix/curate in feed-mix.ts rather than dumping chronologically. */
@@ -88,7 +163,7 @@ export async function getPublishedContent(
 ): Promise<ContentWithMaker[]> {
   const rows = await unstable_cache(
     () => fetchPublishedContent(type),
-    ["published-content", type, "v17"],
+    ["published-content", type, "v18"],
     { revalidate: FEED_REVALIDATE_SECONDS, tags: ["content"] }
   )();
   return rows.map(reviveContent);
@@ -99,22 +174,24 @@ export async function getPublishedContentPool(): Promise<ContentWithMaker[]> {
   return getPublishedContent("all");
 }
 
-/** Writing tab — articles + thoughts only (smaller payload than full pool). */
+/** Writing tab — one query for articles + thoughts, no bodies. */
 export async function getPublishedWritingPool(): Promise<ContentWithMaker[]> {
-  const [articles, thoughts] = await Promise.all([
-    getPublishedContent("article"),
-    getPublishedContent("thought"),
-  ]);
-  return [...articles, ...thoughts];
+  const rows = await unstable_cache(
+    () => fetchPublishedContent("writing", 60),
+    ["published-content", "writing", "v18"],
+    { revalidate: FEED_REVALIDATE_SECONDS, tags: ["content"] }
+  )();
+  return rows.map(reviveContent);
 }
 
 /** Visuals tab — visuals + legacy builds only. */
 export async function getPublishedVisualsPool(): Promise<ContentWithMaker[]> {
-  const [visuals, builds] = await Promise.all([
-    getPublishedContent("visual"),
-    getPublishedContent("build"),
-  ]);
-  return [...visuals, ...builds];
+  const rows = await unstable_cache(
+    () => fetchPublishedContent("visuals", 48),
+    ["published-content", "visuals", "v18"],
+    { revalidate: FEED_REVALIDATE_SECONDS, tags: ["content"] }
+  )();
+  return rows.map(reviveContent);
 }
 
 export async function getAllContent(): Promise<ContentWithMaker[]> {

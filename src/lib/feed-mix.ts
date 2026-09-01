@@ -70,8 +70,9 @@ function hasImage(item: ContentWithMaker) {
 }
 
 function hasSubstance(item: ContentWithMaker) {
+  // Feed cards never ship full body — rank on excerpt only.
   const excerpt = item.excerpt?.trim() ?? "";
-  return excerpt.length >= 80 || Boolean(item.body?.trim());
+  return excerpt.length >= 80;
 }
 
 /** Treat legacy builds as visuals in ranking. */
