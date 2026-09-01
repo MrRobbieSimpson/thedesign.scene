@@ -50,7 +50,7 @@ export function SoftToastProvider({ children }: { children: ReactNode }) {
       {mounted
         ? createPortal(
             <div
-              className="pointer-events-none fixed inset-x-0 bottom-6 z-[120] flex flex-col items-center gap-2 px-4"
+              className="pointer-events-none fixed inset-x-0 bottom-[calc(4.5rem+env(safe-area-inset-bottom))] z-[120] flex flex-col items-center gap-2 px-4 md:bottom-6"
               aria-live="polite"
             >
               {toasts.map((item) => (

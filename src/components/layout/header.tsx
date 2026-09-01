@@ -108,37 +108,7 @@ export function Header({
             />
           </div>
         </div>
-
-        <nav
-          className="flex h-11 items-center gap-1.5 border-t border-border/40 md:hidden"
-          aria-label="Primary"
-        >
-          {nav.map((item) => {
-            const active =
-              item.href === "/"
-                ? pathname === "/"
-                : pathname.startsWith(item.href);
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                aria-label={
-                  item.href === "/jobs" && openJobCount > 0
-                    ? `Jobs, ${openJobCount} open`
-                    : undefined
-                }
-                className={cn(
-                  "flex h-8 flex-1 items-center justify-center rounded-full text-sm font-medium transition-colors",
-                  active
-                    ? "bg-foreground/[0.07] text-foreground"
-                    : "text-muted-foreground hover:text-foreground"
-                )}
-              >
-                {navLabel(item.href, item.label, openJobCount)}
-              </Link>
-            );
-          })}
-        </nav>
+        {/* Mobile primary nav lives in MobileBottomNav — not duplicated up here. */}
       </div>
     </header>
   );

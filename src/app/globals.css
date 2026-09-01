@@ -558,6 +558,7 @@
 /* Strong Focus — chrome leaves the layout so only the piece remains */
 html.reading-focus header,
 html.reading-focus footer,
+html.reading-focus [data-mobile-nav],
 html.reading-focus [data-hide-on-focus] {
   opacity: 0;
   visibility: hidden;

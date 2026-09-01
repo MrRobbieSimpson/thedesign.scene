@@ -1,6 +1,7 @@
 import { eq } from "drizzle-orm";
 
 import { Header } from "@/components/layout/header";
+import { MobileBottomNav } from "@/components/layout/mobile-bottom-nav";
 import { db, isDatabaseConfigured } from "@/db";
 import { profiles } from "@/db/schema";
 import { getClerkUserId } from "@/lib/auth";
@@ -35,11 +36,14 @@ export async function SiteHeader() {
   }
 
   return (
-    <Header
-      timeZone={timeZone}
-      openJobCount={openJobCount}
-      profileAvatarUrl={avatarUrl}
-      profileXHandle={xHandle}
-    />
+    <>
+      <Header
+        timeZone={timeZone}
+        openJobCount={openJobCount}
+        profileAvatarUrl={avatarUrl}
+        profileXHandle={xHandle}
+      />
+      <MobileBottomNav openJobCount={openJobCount} />
+    </>
   );
 }
