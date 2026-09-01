@@ -72,6 +72,7 @@ export async function subscribeToDigest(formData?: FormData) {
 
   revalidatePath("/");
   revalidatePath("/subscribe");
+  revalidatePath("/", "layout");
 
   if (profile?.location) {
     return {

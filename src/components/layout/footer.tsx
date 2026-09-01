@@ -2,17 +2,21 @@ import Link from "next/link";
 
 import { BrandMarkChip } from "@/components/brand/mark";
 import { FooterJoinCta } from "@/components/layout/footer-join-cta";
+import { isCurrentUserOnDigest } from "@/lib/digest-subscription";
 import { getRegisteredDesignerCount } from "@/lib/queries";
 import { SITE_CREATOR_X } from "@/lib/site";
 
 export async function Footer() {
-  const designers = await getRegisteredDesignerCount();
+  const [designers, subscribedToDigest] = await Promise.all([
+    getRegisteredDesignerCount(),
+    isCurrentUserOnDigest(),
+  ]);
   const year = 2026;
 
   return (
     <footer className="mt-auto border-t border-border/60">
       <div className="mx-auto flex max-w-6xl flex-col gap-8 px-5 py-12 sm:px-6">
-        <FooterJoinCta />
+        <FooterJoinCta subscribedToDigest={subscribedToDigest} />
 
         <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
           <div className="space-y-2">

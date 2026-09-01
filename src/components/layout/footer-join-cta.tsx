@@ -1,11 +1,13 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { SignUpButton, useAuth } from "@clerk/nextjs";
 
 import { BrandMarkChip } from "@/components/brand/mark";
 import { Button } from "@/components/ui/button";
 import { isClerkPublishableConfigured } from "@/lib/clerk";
+import { DIGEST_SUBSCRIBED_STORAGE_KEY } from "@/lib/digest-subscription";
 import { cn } from "@/lib/utils";
 
 const joinBtnClass =
@@ -15,11 +17,35 @@ const ghostBtnClass =
   "h-9 w-full px-3.5 text-sm text-background/80 hover:bg-background/10 hover:text-background sm:w-auto";
 
 /**
- * Footer signup nudge — inverse paper bar (always visible).
- * Guests: Join + digest. Signed-in: digest.
+ * Footer signup nudge — inverse paper bar.
+ * Adjusts when the visitor is already on the Thursday digest.
  */
-export function FooterJoinCta() {
+export function FooterJoinCta({
+  subscribedToDigest = false,
+}: {
+  subscribedToDigest?: boolean;
+}) {
   const clerkReady = isClerkPublishableConfigured();
+  const [localSubscribed, setLocalSubscribed] = useState(false);
+
+  useEffect(() => {
+    try {
+      if (window.localStorage.getItem(DIGEST_SUBSCRIBED_STORAGE_KEY) === "1") {
+        setLocalSubscribed(true);
+      }
+    } catch {
+      /* ignore */
+    }
+
+    function onSubscribed() {
+      setLocalSubscribed(true);
+    }
+    window.addEventListener("tds:digest-subscribed", onSubscribed);
+    return () =>
+      window.removeEventListener("tds:digest-subscribed", onSubscribed);
+  }, []);
+
+  const onDigest = subscribedToDigest || localSubscribed;
 
   return (
     <section
@@ -35,37 +61,62 @@ export function FooterJoinCta() {
             <p className="font-sans text-[0.95rem] font-medium tracking-tight text-background">
               sit with design
             </p>
-            <FooterCopy clerkReady={clerkReady} />
+            {clerkReady ? (
+              <FooterCopyClerk onDigest={onDigest} />
+            ) : (
+              <FooterCopyStatic onDigest={onDigest} />
+            )}
           </div>
         </div>
 
         <div className="flex w-full flex-col gap-2 sm:flex-row sm:items-center">
-          <FooterAuthActions clerkReady={clerkReady} />
+          {clerkReady ? (
+            <FooterAuthActionsClerk onDigest={onDigest} />
+          ) : (
+            <FooterAuthActionsStatic onDigest={onDigest} />
+          )}
         </div>
       </div>
     </section>
   );
 }
 
-function FooterCopy({ clerkReady }: { clerkReady: boolean }) {
-  if (!clerkReady) {
-    return (
-      <p className="mt-1 text-sm leading-relaxed text-background/65">
-        Join to save what resonates — and get the Thursday digest.
-      </p>
-    );
-  }
-
-  return <FooterCopyClerk />;
+function FooterCopyStatic({ onDigest }: { onDigest: boolean }) {
+  return (
+    <p className="mt-1 text-sm leading-relaxed text-background/65">
+      {onDigest
+        ? "You’re on the Thursday digest. Join to save work and set a location for nearby events."
+        : "Join to save what resonates — and get the Thursday digest."}
+    </p>
+  );
 }
 
-function FooterCopyClerk() {
+function FooterCopyClerk({ onDigest }: { onDigest: boolean }) {
   const { isLoaded, isSignedIn } = useAuth();
 
   if (!isLoaded) {
     return (
       <p className="mt-1 text-sm leading-relaxed text-background/65">
-        Join to save what resonates — and get the Thursday digest.
+        {onDigest
+          ? "You’re on the Thursday digest."
+          : "Join to save what resonates — and get the Thursday digest."}
+      </p>
+    );
+  }
+
+  if (onDigest && isSignedIn) {
+    return (
+      <p className="mt-1 text-sm leading-relaxed text-background/65">
+        You’re on the Thursday digest. Add a location for nearby events.
+      </p>
+    );
+  }
+
+  if (onDigest) {
+    return (
+      <p className="mt-1 text-sm leading-relaxed text-background/65">
+        You’re on the Thursday digest. Join to save work and set a location for
+        nearby events.
       </p>
     );
   }
@@ -85,18 +136,18 @@ function FooterCopyClerk() {
   );
 }
 
-function FooterAuthActions({ clerkReady }: { clerkReady: boolean }) {
-  if (!clerkReady) {
-    return (
-      <>
-        <Button
-          size="sm"
-          className={joinBtnClass}
-          render={<Link href="/sign-up" />}
-          nativeButton={false}
-        >
-          Join
-        </Button>
+function FooterAuthActionsStatic({ onDigest }: { onDigest: boolean }) {
+  return (
+    <>
+      <Button
+        size="sm"
+        className={joinBtnClass}
+        render={<Link href="/sign-up" />}
+        nativeButton={false}
+      >
+        Join
+      </Button>
+      {!onDigest ? (
         <Button
           size="sm"
           variant="ghost"
@@ -106,14 +157,12 @@ function FooterAuthActions({ clerkReady }: { clerkReady: boolean }) {
         >
           Get the digest
         </Button>
-      </>
-    );
-  }
-
-  return <FooterAuthActionsClerk />;
+      ) : null}
+    </>
+  );
 }
 
-function FooterAuthActionsClerk() {
+function FooterAuthActionsClerk({ onDigest }: { onDigest: boolean }) {
   const { isLoaded, isSignedIn } = useAuth();
 
   if (!isLoaded) {
@@ -122,6 +171,19 @@ function FooterAuthActionsClerk() {
         className="h-9 w-full animate-pulse rounded-lg bg-background/15 sm:w-40"
         aria-hidden
       />
+    );
+  }
+
+  if (isSignedIn && onDigest) {
+    return (
+      <Button
+        size="sm"
+        className={joinBtnClass}
+        render={<Link href="/settings/profile" />}
+        nativeButton={false}
+      >
+        Update location
+      </Button>
     );
   }
 
@@ -135,6 +197,16 @@ function FooterAuthActionsClerk() {
       >
         Get the digest
       </Button>
+    );
+  }
+
+  if (onDigest) {
+    return (
+      <SignUpButton mode="modal">
+        <Button size="sm" className={joinBtnClass}>
+          Join
+        </Button>
+      </SignUpButton>
     );
   }
 
