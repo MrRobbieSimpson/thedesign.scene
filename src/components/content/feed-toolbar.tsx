@@ -32,7 +32,8 @@ export function FeedToolbar({
         className
       )}
     >
-      <div className="min-w-0 flex-1 overflow-x-auto overscroll-x-contain [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      {/* Feed filters live in the floating mobile capsule — hide duplicate on small screens. */}
+      <div className="hidden min-w-0 flex-1 overflow-x-auto overscroll-x-contain [-ms-overflow-style:none] [scrollbar-width:none] md:block [&::-webkit-scrollbar]:hidden">
         {toolbar}
       </div>
       <div className="flex h-10 shrink-0 items-center gap-2 pl-0.5">

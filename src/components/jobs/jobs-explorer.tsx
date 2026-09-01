@@ -32,8 +32,8 @@ function JobsToolbar({
 }) {
   return (
     <div className="flex w-full min-w-0 flex-col gap-3 md:flex-row md:items-center md:justify-between md:gap-4">
-      {/* Writing / Visuals / Events — own row on mobile, left on desktop */}
-      <div className="min-w-0 w-full overflow-x-auto overscroll-x-contain [-ms-overflow-style:none] [scrollbar-width:none] md:w-auto md:flex-1 [&::-webkit-scrollbar]:hidden">
+      {/* Writing / Visuals / Events — desktop only; mobile uses floating capsule */}
+      <div className="hidden min-w-0 w-full overflow-x-auto overscroll-x-contain [-ms-overflow-style:none] [scrollbar-width:none] md:block md:w-auto md:flex-1 [&::-webkit-scrollbar]:hidden">
         <Suspense
           fallback={
             <div className="h-10 w-56 max-w-full animate-pulse rounded-full bg-muted" />

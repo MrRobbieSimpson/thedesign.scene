@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { eq } from "drizzle-orm";
 
 import { Header } from "@/components/layout/header";
@@ -56,5 +57,9 @@ export async function SiteHeader() {
  */
 export async function SiteMobileNav() {
   const openJobCount = await getPublishedJobCount();
-  return <MobileBottomNav openJobCount={openJobCount} />;
+  return (
+    <Suspense fallback={null}>
+      <MobileBottomNav openJobCount={openJobCount} />
+    </Suspense>
+  );
 }

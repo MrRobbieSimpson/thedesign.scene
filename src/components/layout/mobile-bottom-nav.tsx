@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import {
   useCallback,
   useEffect,
@@ -11,28 +11,48 @@ import {
 } from "react";
 import { createPortal } from "react-dom";
 import {
-  Briefcase,
-  CalendarDays,
+  BookOpen,
   LayoutGrid,
-  Newspaper,
+  PanelsTopLeft,
   RectangleHorizontal,
+  Ticket,
 } from "lucide-react";
 
 import { useFeedLayoutOptional } from "@/components/content/feed-layout-context";
 import type { FeedLayout } from "@/components/content/feed-layout";
 import { useWriting } from "@/components/writing/writing-context";
+import {
+  DEFAULT_FEED_FILTER,
+  resolveFeedFilter,
+  type FeedFilter,
+} from "@/lib/feed-mix";
 import { cn } from "@/lib/utils";
 
-const nav = [
-  { href: "/", label: "Feed", icon: Newspaper, match: "feed" as const },
+const tabs: {
+  filter: FeedFilter;
+  label: string;
+  href: string;
+  icon: typeof BookOpen;
+}[] = [
   {
-    href: "/events",
-    label: "Events",
-    icon: CalendarDays,
-    match: "events" as const,
+    filter: "articles",
+    label: "Writing",
+    href: "/",
+    icon: BookOpen,
   },
-  { href: "/jobs", label: "Jobs", icon: Briefcase, match: "jobs" as const },
-] as const;
+  {
+    filter: "visuals",
+    label: "Visuals",
+    href: "/?type=visuals",
+    icon: PanelsTopLeft,
+  },
+  {
+    filter: "events",
+    label: "Events",
+    href: "/?type=events",
+    icon: Ticket,
+  },
+];
 
 const layoutOptions: {
   value: Extract<FeedLayout, "big" | "small">;
@@ -43,23 +63,11 @@ const layoutOptions: {
   { value: "small", label: "Small cards", icon: LayoutGrid },
 ];
 
-type NavMatch = (typeof nav)[number]["match"];
-
-function matchFromPath(pathname: string): NavMatch {
-  if (pathname.startsWith("/events")) return "events";
-  if (pathname.startsWith("/jobs")) return "jobs";
-  return "feed";
-}
-
-type Indicator = {
-  left: number;
-  width: number;
-  ready: boolean;
-};
+type Indicator = { left: number; width: number; ready: boolean };
 
 /**
- * Mobile-only floating bar — Feed / Events / Jobs + big/small layout.
- * Portaled to document.body so it stays pinned to the viewport.
+ * Figma mobile chrome — floating glass capsule (Writing / Visuals / Events)
+ * + two separate layout circles. Inset from edges, not a full-bleed dock.
  */
 export function MobileBottomNav({
   openJobCount = 0,
@@ -67,11 +75,15 @@ export function MobileBottomNav({
   openJobCount?: number;
 }) {
   const pathname = usePathname();
-  const active = matchFromPath(pathname);
-  const onFeed = active === "feed";
+  const searchParams = useSearchParams();
   const feedLayout = useFeedLayoutOptional();
   const { open: writingOpen, visible: writingVisible } = useWriting();
   const [mounted, setMounted] = useState(false);
+
+  const onHome = pathname === "/";
+  const activeFilter: FeedFilter = onHome
+    ? resolveFeedFilter(searchParams.get("type"))
+    : DEFAULT_FEED_FILTER;
 
   const trackRef = useRef<HTMLDivElement>(null);
   const itemRefs = useRef(new Map<string, HTMLElement>());
@@ -81,7 +93,7 @@ export function MobileBottomNav({
     ready: false,
   });
   const [traveling, setTraveling] = useState(false);
-  const prevActive = useRef(active);
+  const prevFilter = useRef(activeFilter);
 
   useEffect(() => {
     setMounted(true);
@@ -89,7 +101,7 @@ export function MobileBottomNav({
 
   const measure = useCallback(() => {
     const track = trackRef.current;
-    const el = itemRefs.current.get(active);
+    const el = itemRefs.current.get(activeFilter);
     if (!track || !el) {
       setIndicator((current) => ({ ...current, ready: false }));
       return;
@@ -101,20 +113,20 @@ export function MobileBottomNav({
       width: elRect.width,
       ready: true,
     });
-  }, [active]);
+  }, [activeFilter]);
 
   useLayoutEffect(() => {
     measure();
   }, [measure]);
 
   useEffect(() => {
-    if (prevActive.current !== active) {
+    if (prevFilter.current !== activeFilter) {
       setTraveling(true);
-      prevActive.current = active;
+      prevFilter.current = activeFilter;
       const id = window.setTimeout(() => setTraveling(false), 480);
       return () => window.clearTimeout(id);
     }
-  }, [active]);
+  }, [activeFilter]);
 
   useEffect(() => {
     const track = trackRef.current;
@@ -145,113 +157,84 @@ export function MobileBottomNav({
 
   const activeLayout =
     feedLayout?.layout === "mosaic" ? "small" : feedLayout?.layout ?? "big";
+  const layoutEnabled = onHome && activeFilter !== "visuals" && Boolean(feedLayout);
+
+  // Silence unused prop until Jobs returns to this chrome.
+  void openJobCount;
 
   return createPortal(
-    <nav
+    <div
       data-mobile-nav
-      aria-label="Primary"
       className={cn(
-        "fixed inset-x-0 bottom-0 z-[60] md:hidden",
-        "border-t border-border/50 bg-background/85 backdrop-blur-2xl",
-        "shadow-[0_-12px_40px_-28px_rgba(0,0,0,0.55)]",
-        "pb-[env(safe-area-inset-bottom)]"
+        "pointer-events-none fixed inset-x-0 bottom-0 z-[60] md:hidden",
+        "pb-[max(0.75rem,env(safe-area-inset-bottom))]"
       )}
     >
-      <div className="mx-auto flex h-[3.75rem] max-w-6xl items-stretch gap-1 px-2">
-        {/* Primary tabs */}
-        <div
-          ref={trackRef}
-          className="relative flex min-w-0 flex-1 items-stretch"
+      <div className="pointer-events-auto mx-auto flex w-full max-w-6xl items-center gap-2.5 px-3">
+        {/* Glass capsule — Writing / Visuals / Events */}
+        <nav
+          aria-label="Feed"
+          className={cn(
+            "relative flex h-12 min-w-0 flex-1 items-center",
+            "rounded-full border border-[rgba(238,234,227,0.2)]",
+            "bg-[rgba(30,25,22,0.45)] backdrop-blur-[6px]",
+            "shadow-[0_8px_32px_-12px_rgba(0,0,0,0.55)]",
+            "px-1.5"
+          )}
         >
-          <span
-            aria-hidden
-            className={cn(
-              "mobile-nav-liquid pointer-events-none absolute top-1.5 bottom-1.5 z-0 rounded-[1.15rem]",
-              "bg-foreground/[0.07] ring-1 ring-inset ring-foreground/[0.06]",
-              "shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06)]",
-              indicator.ready ? "opacity-100" : "opacity-0",
-              traveling && "mobile-nav-liquid--travel"
-            )}
-            style={{
-              width: indicator.width,
-              transform: `translate3d(${indicator.left}px, 0, 0)`,
-            }}
-          />
+          <div ref={trackRef} className="relative flex h-full w-full items-center">
+            <span
+              aria-hidden
+              className={cn(
+                "mobile-nav-liquid pointer-events-none absolute top-1 bottom-1 z-0 rounded-full",
+                "bg-white/10",
+                indicator.ready ? "opacity-100" : "opacity-0",
+                traveling && "mobile-nav-liquid--travel"
+              )}
+              style={{
+                width: indicator.width,
+                transform: `translate3d(${indicator.left}px, 0, 0)`,
+              }}
+            />
 
-          {nav.map((item) => {
-            const isActive = active === item.match;
-            const Icon = item.icon;
-
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                prefetch
-                ref={(node) => setItemRef(item.match, node)}
-                aria-current={isActive ? "page" : undefined}
-                aria-label={
-                  item.href === "/jobs" && openJobCount > 0
-                    ? `Jobs, ${openJobCount} open`
-                    : item.label
-                }
-                className={cn(
-                  "relative z-10 flex flex-1 flex-col items-center justify-center gap-0.5",
-                  "text-[10px] font-medium tracking-[0.04em] uppercase",
-                  "touch-manipulation select-none",
-                  "transition-colors duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
-                  isActive
-                    ? "text-foreground"
-                    : "text-muted-foreground/75 active:text-foreground/90"
-                )}
-              >
-                <span className="relative inline-flex">
-                  <Icon
-                    className={cn(
-                      "size-[1.2rem] stroke-[1.6] transition-transform duration-500",
-                      "ease-[cubic-bezier(0.22,1,0.36,1)] will-change-transform",
-                      isActive
-                        ? "scale-110 -translate-y-px opacity-100"
-                        : "scale-100 opacity-70"
-                    )}
-                    aria-hidden
-                  />
-                  {item.href === "/jobs" && openJobCount > 0 ? (
-                    <span
-                      className={cn(
-                        "absolute -top-1.5 -right-2.5 inline-flex h-3.5 min-w-3.5 items-center justify-center",
-                        "rounded-full bg-foreground px-1 text-[8px] font-semibold tabular-nums leading-none text-background"
-                      )}
-                      aria-hidden
-                    >
-                      {openJobCount > 99 ? "99+" : openJobCount}
-                    </span>
-                  ) : null}
-                </span>
-                <span
+            {tabs.map((tab) => {
+              const isActive = onHome && activeFilter === tab.filter;
+              const Icon = tab.icon;
+              return (
+                <Link
+                  key={tab.filter}
+                  href={tab.href}
+                  prefetch
+                  ref={(node) => setItemRef(tab.filter, node)}
+                  aria-current={isActive ? "page" : undefined}
                   className={cn(
+                    "relative z-10 flex h-9 flex-1 items-center justify-center gap-1 rounded-full px-1.5",
+                    "text-[12px] font-normal tracking-tight text-white",
+                    "touch-manipulation select-none",
                     "transition-opacity duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
-                    isActive ? "opacity-100" : "opacity-70"
+                    isActive ? "opacity-100" : "opacity-70 active:opacity-100"
                   )}
                 >
-                  {item.label}
-                </span>
-              </Link>
-            );
-          })}
-        </div>
+                  <Icon
+                    className="size-4 shrink-0 stroke-[1.5]"
+                    aria-hidden
+                  />
+                  <span className="truncate">{tab.label}</span>
+                </Link>
+              );
+            })}
+          </div>
+        </nav>
 
-        {/* Layout controls — big / small */}
+        {/* Layout circles — Figma: frosted active + glass inactive */}
         <div
-          className={cn(
-            "flex shrink-0 items-center gap-0.5 border-l border-border/50 pl-2",
-            !onFeed && "opacity-40"
-          )}
+          className="flex shrink-0 items-center gap-1.5"
           role="group"
           aria-label="Feed layout"
         >
           {layoutOptions.map((option) => {
             const Icon = option.icon;
-            const isActive = onFeed && activeLayout === option.value;
+            const isActive = layoutEnabled && activeLayout === option.value;
             return (
               <button
                 key={option.value}
@@ -259,25 +242,27 @@ export function MobileBottomNav({
                 title={option.label}
                 aria-label={option.label}
                 aria-pressed={isActive}
-                disabled={!onFeed || !feedLayout}
+                disabled={!layoutEnabled}
                 onClick={() => feedLayout?.setLayout(option.value)}
                 className={cn(
-                  "inline-flex size-10 items-center justify-center rounded-xl",
+                  "inline-flex size-12 shrink-0 items-center justify-center rounded-full",
+                  "border border-[rgba(238,234,227,0.2)] backdrop-blur-[6px]",
                   "touch-manipulation transition-all duration-300",
                   "ease-[cubic-bezier(0.22,1,0.36,1)]",
-                  "disabled:pointer-events-none",
+                  "disabled:pointer-events-none disabled:opacity-40",
+                  "shadow-[0_8px_28px_-14px_rgba(0,0,0,0.5)]",
                   isActive
-                    ? "bg-foreground/[0.1] text-foreground ring-1 ring-inset ring-foreground/10"
-                    : "text-muted-foreground/70 active:bg-foreground/[0.06] active:text-foreground"
+                    ? "bg-[rgba(255,255,255,0.82)] text-foreground"
+                    : "bg-[rgba(30,25,22,0.45)] text-white"
                 )}
               >
-                <Icon className="size-[1.05rem] stroke-[1.6]" aria-hidden />
+                <Icon className="size-4 stroke-[1.5]" aria-hidden />
               </button>
             );
           })}
         </div>
       </div>
-    </nav>,
+    </div>,
     document.body
   );
 }

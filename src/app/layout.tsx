@@ -65,7 +65,7 @@ export default function RootLayout({
               <Footer />
               {/* Clears fixed mobile bottom nav so footer CTAs aren’t covered. */}
               <div
-                className="h-[calc(3.5rem+env(safe-area-inset-bottom))] shrink-0 md:hidden"
+                className="h-[calc(4.25rem+env(safe-area-inset-bottom))] shrink-0 md:hidden"
                 aria-hidden
               />
             </SiteStage>

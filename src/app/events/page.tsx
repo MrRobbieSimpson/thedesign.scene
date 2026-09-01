@@ -50,7 +50,7 @@ export default async function EventsPage() {
         </p>
       </section>
 
-      <div className="mb-8 flex w-full min-w-0 items-center gap-2 sm:gap-3">
+      <div className="mb-8 hidden w-full min-w-0 items-center gap-2 md:flex md:gap-3">
         <div className="min-w-0 flex-1 overflow-x-auto overscroll-x-contain [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           <Suspense
             fallback={
