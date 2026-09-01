@@ -1,3 +1,5 @@
+import "server-only";
+
 import { and, eq } from "drizzle-orm";
 import { currentUser } from "@clerk/nextjs/server";
 
@@ -5,8 +7,7 @@ import { db, isDatabaseConfigured } from "@/db";
 import { newsletterSubscribers, profiles } from "@/db/schema";
 import { getClerkUserId } from "@/lib/auth";
 
-/** Client hint after a successful guest/signed-in subscribe. */
-export const DIGEST_SUBSCRIBED_STORAGE_KEY = "tds-digest-subscribed";
+export { DIGEST_SUBSCRIBED_STORAGE_KEY } from "@/lib/digest-subscription-client";
 
 /**
  * True when the current visitor is an active digest subscriber

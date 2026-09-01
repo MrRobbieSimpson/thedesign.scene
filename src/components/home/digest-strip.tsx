@@ -8,17 +8,8 @@ import { subscribeToDigest } from "@/app/actions/newsletter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { isClerkPublishableConfigured } from "@/lib/clerk";
-import { DIGEST_SUBSCRIBED_STORAGE_KEY } from "@/lib/digest-subscription";
+import { markDigestSubscribedLocally } from "@/lib/digest-subscription-client";
 import { cn } from "@/lib/utils";
-
-function markDigestSubscribedLocally() {
-  try {
-    window.localStorage.setItem(DIGEST_SUBSCRIBED_STORAGE_KEY, "1");
-    window.dispatchEvent(new Event("tds:digest-subscribed"));
-  } catch {
-    /* ignore */
-  }
-}
 
 function DigestShell({
   action,

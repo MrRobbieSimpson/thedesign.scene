@@ -6,7 +6,7 @@ import { SignUpButton, useAuth } from "@clerk/nextjs";
 
 import { Button } from "@/components/ui/button";
 import { isClerkPublishableConfigured } from "@/lib/clerk";
-import { DIGEST_SUBSCRIBED_STORAGE_KEY } from "@/lib/digest-subscription";
+import { DIGEST_SUBSCRIBED_STORAGE_KEY } from "@/lib/digest-subscription-client";
 
 const primaryBtnClass =
   "h-9 w-full border border-border/70 bg-transparent px-4 text-sm font-medium text-foreground hover:bg-muted/50 sm:w-auto";
