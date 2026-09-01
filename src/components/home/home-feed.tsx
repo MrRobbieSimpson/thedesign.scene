@@ -134,7 +134,7 @@ export function HomeFeed({
   const showMidStrips = articlesMode && effectiveLayout === "big";
 
   return (
-    <div className="w-full min-w-0 space-y-8 overflow-x-hidden sm:space-y-10">
+    <div className="w-full min-w-0 space-y-5 overflow-x-hidden sm:space-y-10">
       <FeedToolbar
         toolbar={toolbar}
         layout={effectiveLayout}

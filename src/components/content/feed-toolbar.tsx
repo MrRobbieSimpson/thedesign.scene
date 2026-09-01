@@ -28,24 +28,22 @@ export function FeedToolbar({
   return (
     <div
       className={cn(
-        "flex w-full min-w-0 items-center gap-2 sm:gap-3",
+        /* Mobile uses the floating capsule — don’t leave an empty toolbar gap. */
+        "hidden w-full min-w-0 items-center gap-2 md:flex md:gap-3",
         className
       )}
     >
-      {/* Feed filters live in the floating mobile capsule — hide duplicate on small screens. */}
-      <div className="hidden min-w-0 flex-1 overflow-x-auto overscroll-x-contain [-ms-overflow-style:none] [scrollbar-width:none] md:block [&::-webkit-scrollbar]:hidden">
+      <div className="min-w-0 flex-1 overflow-x-auto overscroll-x-contain [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {toolbar}
       </div>
       <div className="flex h-10 shrink-0 items-center gap-2 pl-0.5">
         {typeof count === "number" ? (
-          <p className="hidden text-xs tabular-nums text-muted-foreground/70 sm:block">
+          <p className="text-xs tabular-nums text-muted-foreground/70">
             {count}
           </p>
         ) : null}
         {!hideLayoutSwitcher && onLayoutChange ? (
-          <div className="hidden md:block">
-            <FeedLayoutSwitcher value={layout} onChange={onLayoutChange} />
-          </div>
+          <FeedLayoutSwitcher value={layout} onChange={onLayoutChange} />
         ) : null}
       </div>
     </div>

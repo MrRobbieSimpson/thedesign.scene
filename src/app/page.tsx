@@ -133,7 +133,7 @@ export default async function HomePage({ searchParams }: HomeProps) {
   return (
     <div className="mx-auto w-full min-w-0 max-w-[45rem] px-5 py-10 sm:px-6 sm:py-20">
       <FeedViewTransition viewKey={filter}>
-        <section className="mb-10 space-y-4 sm:mb-16 sm:space-y-5">
+        <section className="mb-6 space-y-4 sm:mb-16 sm:space-y-5">
           <p className="text-sm font-medium tracking-[0.16em] text-muted-foreground uppercase">
             {visualsMode ? "Visuals" : eventsMode ? "Events" : "Writing"}
           </p>
@@ -178,7 +178,7 @@ export default async function HomePage({ searchParams }: HomeProps) {
         {articlesMode && guest ? <GuestEditorStrip guest={guest} /> : null}
 
         {eventsMode ? (
-          <div className="space-y-8 sm:space-y-10">
+          <div className="space-y-5 sm:space-y-10">
             {/* Same row as Writing/Visuals: filters left, count right */}
             <FeedToolbar
               toolbar={filters}
