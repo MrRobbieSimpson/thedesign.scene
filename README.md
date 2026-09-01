@@ -33,10 +33,15 @@ Open [http://localhost:3000](http://localhost:3000).
 | `NEXT_PUBLIC_CLERK_SIGN_IN_URL` | `/sign-in` |
 | `NEXT_PUBLIC_CLERK_SIGN_UP_URL` | `/sign-up` |
 | `BLOB_READ_WRITE_TOKEN` | Vercel Blob — article image uploads (Hobby free tier is fine) |
+| `STRIPE_SECRET_KEY` | Stripe — paid job posts ($70) |
+| `STRIPE_WEBHOOK_SECRET` | Stripe webhook for `/api/stripe/webhook` |
+| `ADMIN_NOTIFY_EMAIL` | Optional alert when a paid job awaits review |
 
 Create a Clerk app, enable **Google**, **X**, and **LinkedIn**, then paste keys into `.env.local` and Vercel.
 
 **Article images:** Vercel → Storage → Create Blob store → copy the read-write token into `BLOB_READ_WRITE_TOKEN` (local + Vercel env). No paid plan required to start.
+
+**Paid jobs:** Companies post at `/jobs/post` (signed in) → Stripe Checkout $70 → admin reviews in `/admin` → publish. Point a Stripe webhook at `https://sitwithdesign.online/api/stripe/webhook` for `checkout.session.completed`.
 
 Without `DATABASE_URL`, the app runs on **demo data**. Admin / Saves / Scenes require Clerk sign-in.
 

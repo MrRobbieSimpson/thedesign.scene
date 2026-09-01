@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { JobsExplorer } from "@/components/jobs/jobs-explorer";
+import { JobsPostCta } from "@/components/jobs/jobs-post-cta";
 import { getPublishedJobs } from "@/lib/queries";
 import { buildPageMetadata } from "@/lib/seo";
 
@@ -39,6 +40,10 @@ export default async function JobsPage() {
           </Link>
         </p>
       </section>
+
+      <div className="mb-8 sm:mb-10">
+        <JobsPostCta />
+      </div>
 
       <JobsExplorer jobs={jobs} />
     </div>

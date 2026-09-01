@@ -57,6 +57,8 @@ export const subscriberStatusEnum = pgEnum("subscriber_status", [
 
 export const jobStatusEnum = pgEnum("job_status", [
   "draft",
+  "pending_payment",
+  "pending_review",
   "published",
   "closed",
 ]);
@@ -197,29 +199,49 @@ export const events = pgTable(
 );
 
 /** High-bar UI / Product Design openings — curated, never scraped. */
-export const jobs = pgTable("jobs", {
-  id: uuid("id").defaultRandom().primaryKey(),
-  title: text("title").notNull(),
-  company: text("company").notNull(),
-  description: text("description"),
-  url: text("url"),
-  location: text("location"),
-  workMode: jobWorkModeEnum("work_mode").notNull().default("remote"),
-  status: jobStatusEnum("status").notNull().default("draft"),
-  /** Why you’d recommend this role to a friend. */
-  editorNote: text("editor_note"),
-  /** Soft label e.g. Product Design, Design Lead. */
-  roleKind: text("role_kind"),
-  companyUrl: text("company_url"),
-  publishedAt: timestamp("published_at", { withTimezone: true }),
-  createdAt: timestamp("created_at", { withTimezone: true })
-    .defaultNow()
-    .notNull(),
-  updatedAt: timestamp("updated_at", { withTimezone: true })
-    .defaultNow()
-    .notNull()
-    .$onUpdate(() => new Date()),
-});
+export const jobs = pgTable(
+  "jobs",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    title: text("title").notNull(),
+    company: text("company").notNull(),
+    description: text("description"),
+    url: text("url"),
+    location: text("location"),
+    workMode: jobWorkModeEnum("work_mode").notNull().default("remote"),
+    status: jobStatusEnum("status").notNull().default("draft"),
+    /** Why you’d recommend this role to a friend. */
+    editorNote: text("editor_note"),
+    /** Soft label e.g. Product Design, Design Lead. */
+    roleKind: text("role_kind"),
+    companyUrl: text("company_url"),
+    /** `admin` curated vs `paid` company submission. */
+    source: text("source").notNull().default("admin"),
+    contactEmail: text("contact_email"),
+    postedByProfileId: uuid("posted_by_profile_id").references(
+      () => profiles.id,
+      { onDelete: "set null" }
+    ),
+    stripeCheckoutSessionId: text("stripe_checkout_session_id"),
+    stripePaymentIntentId: text("stripe_payment_intent_id"),
+    amountCents: integer("amount_cents"),
+    currency: text("currency"),
+    paidAt: timestamp("paid_at", { withTimezone: true }),
+    publishedAt: timestamp("published_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .defaultNow()
+      .notNull()
+      .$onUpdate(() => new Date()),
+  },
+  (table) => [
+    uniqueIndex("jobs_stripe_checkout_session_uidx").on(
+      table.stripeCheckoutSessionId
+    ),
+  ]
+);
 
 export const saves = pgTable(
   "saves",

@@ -8,6 +8,10 @@ import { WriteButton } from "@/components/writing/write-button";
 import { Button } from "@/components/ui/button";
 import { isClerkPublishableConfigured } from "@/lib/clerk";
 
+/** Inverse CTA — dark on light, light on dark. */
+const joinBtnClass =
+  "h-8 border-0 bg-foreground px-2.5 text-sm text-background hover:bg-foreground/90 hover:text-background";
+
 function GuestAuthLinks() {
   return (
     <div className="flex h-8 items-center gap-1">
@@ -21,14 +25,12 @@ function GuestAuthLinks() {
         Sign in
       </Button>
       <Button
-        variant="outline"
         size="sm"
-        className="h-8 px-2.5 text-sm"
+        className={joinBtnClass}
         render={<Link href="/sign-up" />}
         nativeButton={false}
       >
-        <span className="sm:hidden">Join</span>
-        <span className="hidden sm:inline">Register</span>
+        Join
       </Button>
     </div>
   );
@@ -86,9 +88,8 @@ function ClerkAuthControls({
         </Button>
       </SignInButton>
       <SignUpButton mode="modal">
-        <Button variant="outline" size="sm" className="h-8 px-2.5 text-sm">
-          <span className="sm:hidden">Join</span>
-          <span className="hidden sm:inline">Register</span>
+        <Button size="sm" className={joinBtnClass}>
+          Join
         </Button>
       </SignUpButton>
     </div>

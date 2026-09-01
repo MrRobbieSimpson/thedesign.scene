@@ -146,7 +146,7 @@ export default async function HomePage({ searchParams }: HomeProps) {
           </h1>
           <p className="text-base leading-relaxed text-muted-foreground sm:text-lg">
             {visualsMode
-              ? "High-bar product and interface craft — not a Behance firehose."
+              ? "High-bar product and interface craft."
               : eventsMode
                 ? "Talks, meetups, and conferences. Enter a city to see what’s nearby — works signed in or out."
                 : "Essays and notes from designers and craft pubs. Writing first — visuals and events are next door."}

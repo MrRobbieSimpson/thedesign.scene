@@ -3,23 +3,19 @@ import { and, desc, eq, gte } from "drizzle-orm";
 import { db } from "@/db";
 import { content, events, type Event } from "@/db/schema";
 
-import { SITE_ORIGIN } from "@/lib/site";
+import {
+  EMAIL,
+  EMAIL_FONT,
+  EMAIL_SERIF,
+  emailCardFooter,
+  emailEyebrow,
+  escapeHtml,
+  wrapEmailHtml,
+} from "@/lib/email-layout";
+import { SITE_NAME, SITE_ORIGIN } from "@/lib/site";
 
 const SITE = SITE_ORIGIN;
-
-/** Light (paper) — inline fallbacks for clients that strip <style>. */
-const PAPER = "#f7f4ef";
-const CARD = "#fffefb";
-const INK = "#1c1914";
-const MUTED = "#7a7468";
-const RULE = "rgba(28,25,20,0.12)";
-
-/** Dark (ink) — applied via prefers-color-scheme where supported. */
-const DARK_PAPER = "#16130f";
-const DARK_CARD = "#1e1b16";
-const DARK_INK = "#f4f0ea";
-const DARK_MUTED = "#a39e94";
-const DARK_RULE = "rgba(244,240,234,0.12)";
+const { ink, muted, rule } = EMAIL;
 
 export type DigestPayload = {
   html: string;
@@ -35,14 +31,6 @@ export type DigestPayload = {
 export type DigestOptions = {
   location?: string | null;
 };
-
-function escapeHtml(value: string) {
-  return value
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
-}
 
 function locationTokens(location: string) {
   return location
@@ -135,14 +123,14 @@ function pickRecentXPosts<
   return out;
 }
 
-/** Build this week’s digest HTML — Scene aesthetic + OS dark/light. */
+/** Build this week’s digest HTML — shared email aesthetic + OS dark/light. */
 export async function buildWeeklyDigest(
   options: DigestOptions = {}
 ): Promise<DigestPayload> {
   if (!db) {
     return {
       html: "",
-      subject: "This week in sit with design",
+      subject: `This week in ${SITE_NAME}`,
       picks: 0,
       writing: 0,
       events: 0,
@@ -197,7 +185,7 @@ export async function buildWeeklyDigest(
   if (picks.length + writing.length + upcoming.length + xPosts.length < 2) {
     return {
       html: "",
-      subject: "This week in sit with design",
+      subject: `This week in ${SITE_NAME}`,
       picks: picks.length,
       writing: writing.length,
       events: upcoming.length,
@@ -207,45 +195,34 @@ export async function buildWeeklyDigest(
     };
   }
 
-  const fontStack =
-    "'Geist', 'Helvetica Neue', Helvetica, Arial, ui-sans-serif, system-ui, sans-serif";
-  const serifStack =
-    "'Source Serif 4', 'Source Serif Pro', Georgia, 'Times New Roman', serif";
-
   const sections: string[] = [];
 
   sections.push(`
-    <p class="muted eyebrow" style="margin:0 0 10px;font-family:${fontStack};font-size:11px;font-weight:500;letter-spacing:0.16em;text-transform:uppercase;color:${MUTED}">
-      Editor’s selection
-    </p>
-    <h1 class="ink title" style="margin:0 0 12px;font-family:${serifStack};font-weight:500;font-size:32px;line-height:1.15;letter-spacing:-0.02em;color:${INK}">
+    ${emailEyebrow("Editor’s selection", "0 0 10px")}
+    <h1 class="ink title" style="margin:0 0 12px;font-family:${EMAIL_SERIF};font-weight:500;font-size:32px;line-height:1.15;letter-spacing:-0.02em;color:${ink}">
       Design worth sitting with
     </h1>
-    <p class="muted" style="margin:0 0 28px;font-family:${fontStack};font-size:15px;line-height:1.65;color:${MUTED}">
-      A small weekly note from sit with design — writing first, then events${
+    <p class="muted" style="margin:0 0 28px;font-family:${EMAIL_FONT};font-size:15px;line-height:1.65;color:${muted}">
+      A small weekly note from ${escapeHtml(SITE_NAME)} — writing first, then events${
         locationLabel ? ` near ${escapeHtml(locationLabel)}` : ""
       }.
     </p>
   `);
 
   if (picks.length) {
-    sections.push(`
-      <p class="muted eyebrow" style="margin:0 0 14px;font-family:${fontStack};font-size:11px;font-weight:500;letter-spacing:0.14em;text-transform:uppercase;color:${MUTED}">
-        Editor’s picks
-      </p>
-    `);
+    sections.push(emailEyebrow("Editor’s picks"));
     for (const item of picks) {
       const href = item.slug
         ? `${SITE}/article/${item.slug}`
         : `${SITE}/content/${item.id}`;
       sections.push(`
-        <div class="rule-b" style="margin:0 0 22px;padding:0 0 22px;border-bottom:1px solid ${RULE}">
-          <a class="ink link" href="${href}" style="font-family:${serifStack};font-size:20px;line-height:1.3;font-weight:500;letter-spacing:-0.02em;color:${INK};text-decoration:none">
+        <div class="rule-b" style="margin:0 0 22px;padding:0 0 22px;border-bottom:1px solid ${rule}">
+          <a class="ink link" href="${href}" style="font-family:${EMAIL_SERIF};font-size:20px;line-height:1.3;font-weight:500;letter-spacing:-0.02em;color:${ink};text-decoration:none">
             ${escapeHtml(item.title)}
           </a>
           ${
             item.editorNote
-              ? `<p class="muted note" style="margin:10px 0 0;padding-left:12px;border-left:1px solid ${RULE};font-family:${fontStack};font-size:13px;line-height:1.55;color:${MUTED}">
+              ? `<p class="muted note" style="margin:10px 0 0;padding-left:12px;border-left:1px solid ${rule};font-family:${EMAIL_FONT};font-size:13px;line-height:1.55;color:${muted}">
                   <span class="eyebrow" style="display:block;margin-bottom:4px;font-size:10px;letter-spacing:0.14em;text-transform:uppercase">Why this is here</span>
                   ${escapeHtml(item.editorNote)}
                 </p>`
@@ -258,9 +235,7 @@ export async function buildWeeklyDigest(
 
   if (writing.length) {
     sections.push(`
-      <p class="muted eyebrow" style="margin:8px 0 14px;font-family:${fontStack};font-size:11px;font-weight:500;letter-spacing:0.14em;text-transform:uppercase;color:${MUTED}">
-        New writing
-      </p>
+      ${emailEyebrow("New writing", "8px 0 14px")}
       <ul style="margin:0 0 28px;padding:0;list-style:none">
     `);
     for (const item of writing.slice(0, 4)) {
@@ -269,7 +244,7 @@ export async function buildWeeklyDigest(
         : `${SITE}/content/${item.id}`;
       sections.push(`
         <li style="margin:0 0 12px">
-          <a class="ink link" href="${href}" style="font-family:${serifStack};font-size:17px;line-height:1.35;font-weight:500;color:${INK};text-decoration:none">
+          <a class="ink link" href="${href}" style="font-family:${EMAIL_SERIF};font-size:17px;line-height:1.35;font-weight:500;color:${ink};text-decoration:none">
             ${escapeHtml(item.title)}
           </a>
         </li>
@@ -280,25 +255,26 @@ export async function buildWeeklyDigest(
 
   if (upcoming.length) {
     sections.push(`
-      <p class="muted eyebrow" style="margin:8px 0 14px;font-family:${fontStack};font-size:11px;font-weight:500;letter-spacing:0.14em;text-transform:uppercase;color:${MUTED}">
-        ${locationLabel ? `Near ${escapeHtml(locationLabel)}` : "Upcoming events"}
-      </p>
+      ${emailEyebrow(
+        locationLabel ? `Near ${locationLabel}` : "Upcoming events",
+        "8px 0 14px"
+      )}
       <ul style="margin:0 0 8px;padding:0;list-style:none">
     `);
     for (const event of upcoming) {
       sections.push(`
-        <li class="event-card" style="margin:0 0 14px;padding:14px 16px;border:1px solid ${RULE};border-radius:14px">
-          <div class="ink" style="font-family:${fontStack};font-size:15px;font-weight:500;color:${INK}">
+        <li class="event-card" style="margin:0 0 14px;padding:14px 16px;border:1px solid ${rule};border-radius:14px">
+          <div class="ink" style="font-family:${EMAIL_FONT};font-size:15px;font-weight:500;color:${ink}">
             ${escapeHtml(event.title)}
           </div>
           ${
             event.location
-              ? `<div class="muted" style="margin-top:4px;font-family:${fontStack};font-size:12px;color:${MUTED}">${escapeHtml(event.location)}</div>`
+              ? `<div class="muted" style="margin-top:4px;font-family:${EMAIL_FONT};font-size:12px;color:${muted}">${escapeHtml(event.location)}</div>`
               : ""
           }
           ${
             event.url
-              ? `<div style="margin-top:8px"><a class="ink" href="${event.url}" style="font-family:${fontStack};font-size:12px;color:${INK};text-decoration:underline">Details</a></div>`
+              ? `<div style="margin-top:8px"><a class="ink" href="${event.url}" style="font-family:${EMAIL_FONT};font-size:12px;color:${ink};text-decoration:underline">Details</a></div>`
               : ""
           }
         </li>
@@ -309,119 +285,54 @@ export async function buildWeeklyDigest(
 
   if (xPosts.length) {
     sections.push(`
-      <p class="muted eyebrow" style="margin:20px 0 14px;font-family:${fontStack};font-size:11px;font-weight:500;letter-spacing:0.14em;text-transform:uppercase;color:${MUTED}">
-        Notes from X
-      </p>
-      <p class="muted" style="margin:0 0 14px;font-family:${fontStack};font-size:13px;line-height:1.5;color:${MUTED}">
+      ${emailEyebrow("Notes from X", "20px 0 14px")}
+      <p class="muted" style="margin:0 0 14px;font-family:${EMAIL_FONT};font-size:13px;line-height:1.5;color:${muted}">
         A few craft notes — separate from the editor’s selection.
       </p>
     `);
     for (const item of xPosts) {
-      const href =
-        item.url ||
-        item.sourceUrl ||
-        `${SITE}/content/${item.id}`;
+      const href = item.url || item.sourceUrl || `${SITE}/content/${item.id}`;
       const handle = item.authorHandle?.replace(/^@/, "");
       const body = (item.excerpt?.trim() || item.title).slice(0, 220);
       sections.push(`
-        <div class="event-card" style="margin:0 0 12px;padding:14px 16px;border:1px solid ${RULE};border-radius:14px">
+        <div class="event-card" style="margin:0 0 12px;padding:14px 16px;border:1px solid ${rule};border-radius:14px">
           ${
             handle
-              ? `<div class="muted" style="margin:0 0 6px;font-family:${fontStack};font-size:11px;letter-spacing:0.04em;color:${MUTED}">@${escapeHtml(handle)}</div>`
+              ? `<div class="muted" style="margin:0 0 6px;font-family:${EMAIL_FONT};font-size:11px;letter-spacing:0.04em;color:${muted}">@${escapeHtml(handle)}</div>`
               : ""
           }
-          <div class="ink" style="font-family:${fontStack};font-size:14px;line-height:1.55;color:${INK}">
+          <div class="ink" style="font-family:${EMAIL_FONT};font-size:14px;line-height:1.55;color:${ink}">
             ${escapeHtml(body)}${body.length >= 220 ? "…" : ""}
           </div>
           <div style="margin-top:8px">
-            <a class="ink" href="${href}" style="font-family:${fontStack};font-size:12px;color:${INK};text-decoration:underline">Open on X</a>
+            <a class="ink" href="${href}" style="font-family:${EMAIL_FONT};font-size:12px;color:${ink};text-decoration:underline">Open on X</a>
           </div>
         </div>
       `);
     }
   }
 
-  sections.push(`
-    <p class="muted rule-t" style="margin:32px 0 0;padding-top:20px;border-top:1px solid ${RULE};font-family:${fontStack};font-size:12px;line-height:1.5;color:${MUTED}">
-      <a class="muted" href="${SITE}" style="color:${MUTED};text-decoration:underline">Open the scene</a>
+  sections.push(
+    emailCardFooter(
+      `<a class="muted" href="${SITE}" style="color:${muted};text-decoration:underline">Open the scene</a>
       ·
-      <a class="muted" href="${SITE}/settings/profile" style="color:${MUTED};text-decoration:underline">Update location</a>
+      <a class="muted" href="${SITE}/settings/profile" style="color:${muted};text-decoration:underline">Update location</a>
       ·
-      <a class="muted" href="${SITE}/subscribe" style="color:${MUTED};text-decoration:underline">Digest</a>
-    </p>
-  `);
+      <a class="muted" href="${SITE}/subscribe" style="color:${muted};text-decoration:underline">Digest</a>`,
+      "32px 0 0"
+    )
+  );
 
-  const html = `
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="color-scheme" content="light dark" />
-  <meta name="supported-color-schemes" content="light dark" />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,500;8..60,600&display=swap" rel="stylesheet" />
-  <style>
-    :root { color-scheme: light dark; }
-    /* Dark mode — Apple Mail, iOS, many desktop clients. Gmail often keeps light inlines. */
-    @media (prefers-color-scheme: dark) {
-      .body-bg { background: ${DARK_PAPER} !important; }
-      .shell { background: ${DARK_PAPER} !important; }
-      .card {
-        background: ${DARK_CARD} !important;
-        border-color: ${DARK_RULE} !important;
-      }
-      .brand, .ink, .ink a, a.ink, a.link {
-        color: ${DARK_INK} !important;
-      }
-      .muted, .muted a, a.muted, .eyebrow {
-        color: ${DARK_MUTED} !important;
-      }
-      .rule-b, .rule-t, .note {
-        border-color: ${DARK_RULE} !important;
-      }
-      .event-card {
-        border-color: ${DARK_RULE} !important;
-        background: ${DARK_CARD} !important;
-      }
-    }
-  </style>
-</head>
-<body class="body-bg" style="margin:0;padding:0;background:${PAPER}">
-  <div style="display:none;max-height:0;overflow:hidden;opacity:0">
-    A small weekly selection from sit with design.
-  </div>
-  <table class="shell" role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:${PAPER}">
-    <tr>
-      <td align="center" style="padding:40px 16px">
-        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:42rem;width:100%">
-          <tr>
-            <td class="brand" style="padding:0 0 28px;font-family:${fontStack};font-size:14px;font-weight:500;letter-spacing:-0.02em;color:${INK}">
-              sit with design
-            </td>
-          </tr>
-          <tr>
-            <td class="card" style="padding:28px 24px;border:1px solid ${RULE};border-radius:18px;background:${CARD}">
-              ${sections.join("\n")}
-            </td>
-          </tr>
-          <tr>
-            <td class="muted" style="padding:16px 4px 0;font-family:${fontStack};font-size:11px;color:${MUTED};text-align:center">
-              Follows your device light/dark setting where supported.
-            </td>
-          </tr>
-        </table>
-      </td>
-    </tr>
-  </table>
-</body>
-</html>`.trim();
+  const html = wrapEmailHtml({
+    preheader: `A small weekly selection from ${SITE_NAME}.`,
+    body: sections.join("\n"),
+  });
 
   return {
     html,
     subject: locationLabel
-      ? `This week in sit with design · ${locationLabel}`
-      : "This week in sit with design",
+      ? `This week in ${SITE_NAME} · ${locationLabel}`
+      : `This week in ${SITE_NAME}`,
     picks: picks.length,
     writing: writing.length,
     events: upcoming.length,

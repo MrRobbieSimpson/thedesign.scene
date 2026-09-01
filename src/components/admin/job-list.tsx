@@ -6,8 +6,36 @@ import { useTransition } from "react";
 import { setJobStatus } from "@/app/admin/actions";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import type { Job } from "@/db/schema";
+import type { Job, JobStatus } from "@/db/schema";
 import { jobWorkModeLabel } from "@/lib/format";
+
+function statusLabel(status: JobStatus) {
+  switch (status) {
+    case "pending_payment":
+      return "awaiting payment";
+    case "pending_review":
+      return "pending review";
+    default:
+      return status;
+  }
+}
+
+function statusPriority(status: JobStatus) {
+  switch (status) {
+    case "pending_review":
+      return 0;
+    case "pending_payment":
+      return 1;
+    case "draft":
+      return 2;
+    case "published":
+      return 3;
+    case "closed":
+      return 4;
+    default:
+      return 5;
+  }
+}
 
 export function JobList({
   items,
@@ -18,16 +46,25 @@ export function JobList({
 }) {
   const [pending, startTransition] = useTransition();
 
-  function setStatus(id: string, next: "draft" | "published" | "closed") {
+  function setStatus(id: string, next: JobStatus) {
     startTransition(async () => {
       await setJobStatus(id, next);
     });
   }
 
-  if (items.length === 0) {
+  const sorted = [...items].sort((a, b) => {
+    const byStatus = statusPriority(a.status) - statusPriority(b.status);
+    if (byStatus !== 0) return byStatus;
+    return (
+      new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    );
+  });
+
+  if (sorted.length === 0) {
     return (
       <div className="rounded-2xl border border-dashed border-border/80 px-6 py-12 text-center text-sm text-muted-foreground">
-        No openings yet. Add a role above when you’d recommend it to a friend.
+        No openings yet. Add a role above when you’d recommend it to a friend —
+        or wait for a paid company submission.
       </div>
     );
   }
@@ -35,7 +72,7 @@ export function JobList({
   return (
     <div className="overflow-hidden rounded-2xl border border-border/70">
       <ul className="divide-y divide-border/70">
-        {items.map((item) => (
+        {sorted.map((item) => (
           <li
             key={item.id}
             className="flex flex-col gap-4 bg-card px-5 py-4 sm:flex-row sm:items-center sm:justify-between"
@@ -49,13 +86,18 @@ export function JobList({
                   variant={
                     item.status === "published"
                       ? "default"
-                      : item.status === "closed"
-                        ? "outline"
+                      : item.status === "pending_review"
+                        ? "default"
                         : "outline"
                   }
                 >
-                  {item.status}
+                  {statusLabel(item.status)}
                 </Badge>
+                {item.source === "paid" ? (
+                  <Badge variant="outline">
+                    {item.paidAt ? "paid $70" : "paid path"}
+                  </Badge>
+                ) : null}
                 {item.roleKind ? (
                   <Badge variant="outline">{item.roleKind}</Badge>
                 ) : null}
@@ -64,7 +106,10 @@ export function JobList({
               <p className="text-xs text-muted-foreground">
                 {item.company}
                 {item.location ? ` · ${item.location}` : ""}
-                {!item.editorNote ? " · missing note" : ""}
+                {item.contactEmail ? ` · ${item.contactEmail}` : ""}
+                {!item.editorNote && item.status !== "pending_payment"
+                  ? " · missing note"
+                  : ""}
               </p>
               {item.url ? (
                 <Link
@@ -98,6 +143,41 @@ export function JobList({
                     Close
                   </Button>
                 </>
+              ) : item.status === "pending_review" ? (
+                <>
+                  <Button
+                    size="sm"
+                    disabled={disabled || pending}
+                    onClick={() => setStatus(item.id, "published")}
+                  >
+                    Publish
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={disabled || pending}
+                    onClick={() => setStatus(item.id, "closed")}
+                  >
+                    Reject
+                  </Button>
+                </>
+              ) : item.status === "pending_payment" ? (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={disabled || pending}
+                  onClick={() => setStatus(item.id, "closed")}
+                >
+                  Discard
+                </Button>
+              ) : item.status === "closed" ? (
+                <Button
+                  size="sm"
+                  disabled={disabled || pending}
+                  onClick={() => setStatus(item.id, "published")}
+                >
+                  Reopen
+                </Button>
               ) : (
                 <Button
                   size="sm"

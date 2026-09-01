@@ -283,6 +283,7 @@ function reviveJob(job: Job): Job {
   return {
     ...job,
     publishedAt: asDate(job.publishedAt),
+    paidAt: asDate(job.paidAt),
     createdAt: asDate(job.createdAt) ?? new Date(0),
     updatedAt: asDate(job.updatedAt) ?? new Date(0),
   };

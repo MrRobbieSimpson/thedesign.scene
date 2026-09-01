@@ -586,6 +586,8 @@ export async function setJobStatus(
         ? "Published."
         : status === "closed"
           ? "Closed."
-          : "Unpublished.",
+          : status === "pending_review"
+            ? "Moved to review."
+            : "Unpublished.",
   };
 }

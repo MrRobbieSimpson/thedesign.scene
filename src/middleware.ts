@@ -13,6 +13,7 @@ const isProtectedRoute = createRouteMatcher([
   "/drafts(.*)",
   "/settings(.*)",
   "/me",
+  "/jobs/post(.*)",
 ]);
 
 const isAdminRoute = createRouteMatcher(["/admin(.*)"]);
