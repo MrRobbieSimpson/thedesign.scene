@@ -233,15 +233,17 @@ export function MobileBottomNav({
                       : tab.label
                   }
                   className={cn(
-                    "relative z-10 flex h-9 min-w-0 flex-1 items-center justify-center gap-0.5 rounded-full px-0.5",
-                    "text-[11px] font-normal tracking-tight text-white sm:gap-1 sm:text-[12px]",
+                    "relative z-10 flex h-9 items-center justify-center gap-1 rounded-full",
+                    "text-[12px] font-normal tracking-tight text-white",
                     "touch-manipulation select-none",
-                    "transition-opacity duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
-                    isActive ? "opacity-100" : "opacity-70 active:opacity-100"
+                    "transition-[flex-grow,opacity,padding] duration-400 ease-[cubic-bezier(0.22,1,0.36,1)]",
+                    isActive
+                      ? "min-w-0 flex-[1.35] px-2.5 opacity-100"
+                      : "flex-1 px-1.5 opacity-70 active:opacity-100"
                   )}
                 >
                   <span className="relative inline-flex shrink-0">
-                    <Icon className="size-3.5 stroke-[1.5] sm:size-4" aria-hidden />
+                    <Icon className="size-4 stroke-[1.5]" aria-hidden />
                     {tab.key === "jobs" && openJobCount > 0 ? (
                       <span
                         className={cn(
@@ -254,7 +256,18 @@ export function MobileBottomNav({
                       </span>
                     ) : null}
                   </span>
-                  <span className="truncate">{tab.shortLabel}</span>
+                  <span
+                    className={cn(
+                      "overflow-hidden whitespace-nowrap transition-[max-width,opacity] duration-400",
+                      "ease-[cubic-bezier(0.22,1,0.36,1)]",
+                      isActive
+                        ? "max-w-[4.5rem] opacity-100"
+                        : "max-w-0 opacity-0"
+                    )}
+                    aria-hidden={!isActive}
+                  >
+                    {tab.label}
+                  </span>
                 </Link>
               );
             })}
