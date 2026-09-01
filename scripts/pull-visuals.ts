@@ -1,13 +1,12 @@
 /**
  * High-bar product / UI visuals → published (image required).
  *
- * Sources (Layers / Spotted / selective recent.design standard):
- *   - Spotted in Prod clips
- *   - Layers.to posts that include still-image layers
+ * Sources:
+ *   - Layers.to posts that include still-image layers (thumbnails)
  *   - recent.design items whose slug reads as product/UI
  *
- * Demotes generic Behance / Awwwards / Httpster / One Page Love / SaaS LP
- * out of the live Visuals tab.
+ * Spotted in Prod is excluded — OG full-frames, not thumbnails.
+ * Also demotes Behance / Awwwards / Httpster / One Page Love / SaaS LP / Spotted.
  *
  *   npm run ingest:visuals
  *   npm run ingest:visuals -- --dry-run
@@ -46,32 +45,6 @@ function unique(items: string[]) {
 
 function isStillImage(url: string) {
   return !/\.(mp4|webm|mov)(\?|$)/i.test(url);
-}
-
-/** Spotted in Prod — maker clip pages with unique OG images. */
-async function discoverSpottedClipUrls(limit = 28): Promise<string[]> {
-  const home = await fetchHtml("https://www.spottedinprod.com/");
-  const paths = new Set(
-    Array.from(
-      home.matchAll(/href="(\/[A-Za-z0-9_-]+\/clips\/\d+)"/g),
-      (m) => m[1]
-    )
-  );
-
-  for (const path of Array.from(paths).slice(0, 10)) {
-    try {
-      const html = await fetchHtml(`https://www.spottedinprod.com${path}`);
-      for (const m of html.matchAll(/href="(\/[A-Za-z0-9_-]+\/clips\/\d+)"/g)) {
-        paths.add(m[1]);
-      }
-    } catch {
-      // ignore
-    }
-  }
-
-  return Array.from(paths)
-    .slice(0, limit)
-    .map((path) => `https://www.spottedinprod.com${path}`);
 }
 
 /** recent.design — only product/UI-leaning slugs. */
@@ -252,7 +225,7 @@ async function upsertRow(
 }
 
 async function demoteGenericVisuals(db: Db) {
-  // Platform firehoses
+  // Platform firehoses + Spotted (non-thumbnail OG frames)
   const byPlatform = await db
     .update(content)
     .set({ status: "draft", featured: false })
@@ -260,7 +233,11 @@ async function demoteGenericVisuals(db: Db) {
       and(
         eq(content.type, "visual"),
         eq(content.status, "published"),
-        inArray(content.sourcePlatform, ["behance", "awwwards"])
+        inArray(content.sourcePlatform, [
+          "behance",
+          "awwwards",
+          "spottedinprod",
+        ])
       )
     )
     .returning({ id: content.id });
@@ -278,6 +255,8 @@ async function demoteGenericVisuals(db: Db) {
         or source_url ilike '%onepagelove.com%'
         or url ilike '%httpster.net%'
         or source_url ilike '%httpster.net%'
+        or url ilike '%spottedinprod.com%'
+        or source_url ilike '%spottedinprod.com%'
       )
     returning id
   `);
@@ -295,10 +274,6 @@ async function main() {
 
   const client = url ? postgres(url, { prepare: false, max: 1 }) : null;
   const db: Db | null = client ? drizzle(client, { schema }) : null;
-
-  console.log("Discovering Spotted in Prod clips…");
-  const spotted = await discoverSpottedClipUrls(28);
-  console.log(`  ${spotted.length}`);
 
   console.log("Discovering Layers still-image layers…");
   let layers: LayerVisual[] = [];
@@ -332,15 +307,6 @@ async function main() {
       console.log(`  ↑ ${label}`);
     } else if (result === "skipped") skipped += 1;
     else rejected += 1;
-  }
-
-  for (const pageUrl of spotted) {
-    if (dryRun || !db) {
-      console.log(`  · spotted ${pageUrl}`);
-      created += 1;
-      continue;
-    }
-    await handle(pageUrl, await upsertResolvedVisual(db, pageUrl));
   }
 
   for (const layer of layers) {

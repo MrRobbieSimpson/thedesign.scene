@@ -87,10 +87,7 @@ export function isDesignerWriting(item: ContentWithMaker) {
 }
 
 /** Product/UI inspiration hosts — elevated on the Visuals tab. */
-const PRODUCT_UI_PLATFORMS = new Set([
-  "spottedinprod",
-  "layers",
-]);
+const PRODUCT_UI_PLATFORMS = new Set(["layers"]);
 
 function productUiBoost(item: ContentWithMaker) {
   if (PRODUCT_UI_PLATFORMS.has(item.sourcePlatform ?? "")) return 4;
