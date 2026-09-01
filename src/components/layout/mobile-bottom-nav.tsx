@@ -252,7 +252,7 @@ export function MobileBottomNav({
                   "disabled:pointer-events-none disabled:opacity-40",
                   "shadow-[0_8px_28px_-14px_rgba(0,0,0,0.5)]",
                   isActive
-                    ? "bg-[rgba(255,255,255,0.82)] text-foreground"
+                    ? "bg-[rgba(255,255,255,0.45)] text-foreground"
                     : "bg-[rgba(30,25,22,0.45)] text-white"
                 )}
               >
