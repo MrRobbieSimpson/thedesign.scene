@@ -1,7 +1,7 @@
 "use client";
 
+import { useEffect, useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useTransition } from "react";
 
 import { AnimatedPills } from "@/components/ui/animated-pills";
 import {
@@ -35,9 +35,20 @@ export function FeedFilters() {
   const [pending, startTransition] = useTransition();
   const current = resolveFeedFilter(searchParams.get("type"));
 
+  // Warm the Writing / Visuals / Events RSC payloads so switches feel instant.
+  useEffect(() => {
+    for (const filter of FEED_FILTERS) {
+      router.prefetch(hrefFor(filter));
+    }
+  }, [router]);
+
   return (
     <div
-      className={pending ? "opacity-70 transition-opacity" : undefined}
+      className={
+        pending
+          ? "opacity-70 transition-opacity duration-200"
+          : "transition-opacity duration-200"
+      }
       aria-busy={pending || undefined}
     >
       <AnimatedPills
@@ -55,8 +66,10 @@ export function FeedFilters() {
           "aria-label": `Show ${labels[filter]}`,
           onClick: () => {
             if (filter === current) return;
+            const href = hrefFor(filter);
+            router.prefetch(href);
             startTransition(() => {
-              router.push(hrefFor(filter), { scroll: false });
+              router.push(href, { scroll: false });
             });
           },
         }))}

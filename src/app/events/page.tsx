@@ -7,7 +7,7 @@ import { isUpcomingEvent } from "@/lib/feed-mix";
 import { getPublishedEvents } from "@/lib/queries";
 import { buildPageMetadata } from "@/lib/seo";
 
-export const revalidate = 60;
+export const revalidate = 120;
 
 export const metadata = buildPageMetadata({
   title: "Events",

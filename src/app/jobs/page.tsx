@@ -4,7 +4,7 @@ import { JobsExplorer } from "@/components/jobs/jobs-explorer";
 import { getPublishedJobs } from "@/lib/queries";
 import { buildPageMetadata } from "@/lib/seo";
 
-export const revalidate = 60;
+export const revalidate = 120;
 
 export const metadata = buildPageMetadata({
   title: "Jobs",

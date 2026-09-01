@@ -24,8 +24,9 @@ import {
 
 export type GuestTermWithProfile = GuestTerm & { profile: Profile };
 
-const FEED_POOL_LIMIT = 120;
-const FEED_REVALIDATE_SECONDS = 60;
+const FEED_POOL_LIMIT = 100;
+/** Longer soft cache — feed switches stay fast; admin publish still busts tags. */
+const FEED_REVALIDATE_SECONDS = 120;
 
 function asDate(value: Date | string | null | undefined): Date | null {
   if (!value) return null;
@@ -87,7 +88,7 @@ export async function getPublishedContent(
 ): Promise<ContentWithMaker[]> {
   const rows = await unstable_cache(
     () => fetchPublishedContent(type),
-    ["published-content", type, "v16"],
+    ["published-content", type, "v17"],
     { revalidate: FEED_REVALIDATE_SECONDS, tags: ["content"] }
   )();
   return rows.map(reviveContent);
@@ -96,6 +97,24 @@ export async function getPublishedContent(
 /** All published types for the curated home mix. */
 export async function getPublishedContentPool(): Promise<ContentWithMaker[]> {
   return getPublishedContent("all");
+}
+
+/** Writing tab — articles + thoughts only (smaller payload than full pool). */
+export async function getPublishedWritingPool(): Promise<ContentWithMaker[]> {
+  const [articles, thoughts] = await Promise.all([
+    getPublishedContent("article"),
+    getPublishedContent("thought"),
+  ]);
+  return [...articles, ...thoughts];
+}
+
+/** Visuals tab — visuals + legacy builds only. */
+export async function getPublishedVisualsPool(): Promise<ContentWithMaker[]> {
+  const [visuals, builds] = await Promise.all([
+    getPublishedContent("visual"),
+    getPublishedContent("build"),
+  ]);
+  return [...visuals, ...builds];
 }
 
 export async function getAllContent(): Promise<ContentWithMaker[]> {

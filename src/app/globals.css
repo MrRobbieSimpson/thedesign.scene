@@ -527,7 +527,7 @@
 @keyframes page-enter {
   from {
     opacity: 0;
-    transform: translateY(10px);
+    transform: translateY(8px);
   }
   to {
     opacity: 1;
@@ -536,7 +536,23 @@
 }
 
 .page-enter {
-  animation: page-enter 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: page-enter 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Writing ↔ Visuals ↔ Events — quieter than full page enter */
+@keyframes feed-enter {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.feed-enter {
+  animation: feed-enter 0.32s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 /* Strong Focus — chrome leaves the layout so only the piece remains */
@@ -586,7 +602,8 @@ html.reading-focus main {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .page-enter {
+  .page-enter,
+  .feed-enter {
     animation: none;
   }
 
