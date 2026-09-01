@@ -12,6 +12,7 @@ import {
 import { createPortal } from "react-dom";
 import {
   BookOpen,
+  Briefcase,
   LayoutGrid,
   PanelsTopLeft,
   RectangleHorizontal,
@@ -21,36 +22,45 @@ import {
 import { useFeedLayoutOptional } from "@/components/content/feed-layout-context";
 import type { FeedLayout } from "@/components/content/feed-layout";
 import { useWriting } from "@/components/writing/writing-context";
-import {
-  DEFAULT_FEED_FILTER,
-  resolveFeedFilter,
-  type FeedFilter,
-} from "@/lib/feed-mix";
+import { resolveFeedFilter } from "@/lib/feed-mix";
 import { cn } from "@/lib/utils";
 
+type NavKey = "articles" | "visuals" | "events" | "jobs";
+
 const tabs: {
-  filter: FeedFilter;
+  key: NavKey;
   label: string;
+  shortLabel: string;
   href: string;
   icon: typeof BookOpen;
 }[] = [
   {
-    filter: "articles",
+    key: "articles",
     label: "Writing",
+    shortLabel: "Write",
     href: "/",
     icon: BookOpen,
   },
   {
-    filter: "visuals",
+    key: "visuals",
     label: "Visuals",
+    shortLabel: "Visual",
     href: "/?type=visuals",
     icon: PanelsTopLeft,
   },
   {
-    filter: "events",
+    key: "events",
     label: "Events",
+    shortLabel: "Events",
     href: "/?type=events",
     icon: Ticket,
+  },
+  {
+    key: "jobs",
+    label: "Jobs",
+    shortLabel: "Jobs",
+    href: "/jobs",
+    icon: Briefcase,
   },
 ];
 
@@ -65,9 +75,21 @@ const layoutOptions: {
 
 type Indicator = { left: number; width: number; ready: boolean };
 
+function activeNavKey(pathname: string, typeParam: string | null): NavKey {
+  if (pathname.startsWith("/jobs")) return "jobs";
+  if (pathname.startsWith("/events")) return "events";
+  if (pathname === "/") {
+    const filter = resolveFeedFilter(typeParam);
+    if (filter === "visuals") return "visuals";
+    if (filter === "events") return "events";
+    return "articles";
+  }
+  return "articles";
+}
+
 /**
- * Figma mobile chrome — floating glass capsule (Writing / Visuals / Events)
- * + two separate layout circles. Inset from edges, not a full-bleed dock.
+ * Figma floating chrome — glass capsule (Writing / Visuals / Events / Jobs)
+ * + two layout circles. Inset from edges, not a full-bleed dock.
  */
 export function MobileBottomNav({
   openJobCount = 0,
@@ -80,10 +102,9 @@ export function MobileBottomNav({
   const { open: writingOpen, visible: writingVisible } = useWriting();
   const [mounted, setMounted] = useState(false);
 
-  const onHome = pathname === "/";
-  const activeFilter: FeedFilter = onHome
-    ? resolveFeedFilter(searchParams.get("type"))
-    : DEFAULT_FEED_FILTER;
+  const active = activeNavKey(pathname, searchParams.get("type"));
+  const layoutEnabled =
+    pathname === "/" && active !== "visuals" && Boolean(feedLayout);
 
   const trackRef = useRef<HTMLDivElement>(null);
   const itemRefs = useRef(new Map<string, HTMLElement>());
@@ -93,7 +114,7 @@ export function MobileBottomNav({
     ready: false,
   });
   const [traveling, setTraveling] = useState(false);
-  const prevFilter = useRef(activeFilter);
+  const prevActive = useRef(active);
 
   useEffect(() => {
     setMounted(true);
@@ -101,7 +122,7 @@ export function MobileBottomNav({
 
   const measure = useCallback(() => {
     const track = trackRef.current;
-    const el = itemRefs.current.get(activeFilter);
+    const el = itemRefs.current.get(active);
     if (!track || !el) {
       setIndicator((current) => ({ ...current, ready: false }));
       return;
@@ -113,20 +134,20 @@ export function MobileBottomNav({
       width: elRect.width,
       ready: true,
     });
-  }, [activeFilter]);
+  }, [active]);
 
   useLayoutEffect(() => {
     measure();
   }, [measure]);
 
   useEffect(() => {
-    if (prevFilter.current !== activeFilter) {
+    if (prevActive.current !== active) {
       setTraveling(true);
-      prevFilter.current = activeFilter;
+      prevActive.current = active;
       const id = window.setTimeout(() => setTraveling(false), 480);
       return () => window.clearTimeout(id);
     }
-  }, [activeFilter]);
+  }, [active]);
 
   useEffect(() => {
     const track = trackRef.current;
@@ -157,10 +178,6 @@ export function MobileBottomNav({
 
   const activeLayout =
     feedLayout?.layout === "mosaic" ? "small" : feedLayout?.layout ?? "big";
-  const layoutEnabled = onHome && activeFilter !== "visuals" && Boolean(feedLayout);
-
-  // Silence unused prop until Jobs returns to this chrome.
-  void openJobCount;
 
   return createPortal(
     <div
@@ -170,19 +187,22 @@ export function MobileBottomNav({
         "pb-[max(0.75rem,env(safe-area-inset-bottom))]"
       )}
     >
-      <div className="pointer-events-auto mx-auto flex w-full max-w-6xl items-center gap-2.5 px-3">
-        {/* Glass capsule — Writing / Visuals / Events */}
+      <div className="pointer-events-auto mx-auto flex w-full max-w-6xl items-center gap-2 px-3">
+        {/* Glass capsule */}
         <nav
-          aria-label="Feed"
+          aria-label="Primary"
           className={cn(
             "relative flex h-12 min-w-0 flex-1 items-center",
             "rounded-full border border-[rgba(238,234,227,0.2)]",
             "bg-[rgba(30,25,22,0.45)] backdrop-blur-[6px]",
             "shadow-[0_8px_32px_-12px_rgba(0,0,0,0.55)]",
-            "px-1.5"
+            "px-1"
           )}
         >
-          <div ref={trackRef} className="relative flex h-full w-full items-center">
+          <div
+            ref={trackRef}
+            className="relative flex h-full w-full items-center"
+          >
             <span
               aria-hidden
               className={cn(
@@ -198,35 +218,50 @@ export function MobileBottomNav({
             />
 
             {tabs.map((tab) => {
-              const isActive = onHome && activeFilter === tab.filter;
+              const isActive = active === tab.key;
               const Icon = tab.icon;
               return (
                 <Link
-                  key={tab.filter}
+                  key={tab.key}
                   href={tab.href}
                   prefetch
-                  ref={(node) => setItemRef(tab.filter, node)}
+                  ref={(node) => setItemRef(tab.key, node)}
                   aria-current={isActive ? "page" : undefined}
+                  aria-label={
+                    tab.key === "jobs" && openJobCount > 0
+                      ? `Jobs, ${openJobCount} open`
+                      : tab.label
+                  }
                   className={cn(
-                    "relative z-10 flex h-9 flex-1 items-center justify-center gap-1 rounded-full px-1.5",
-                    "text-[12px] font-normal tracking-tight text-white",
+                    "relative z-10 flex h-9 min-w-0 flex-1 items-center justify-center gap-0.5 rounded-full px-0.5",
+                    "text-[11px] font-normal tracking-tight text-white sm:gap-1 sm:text-[12px]",
                     "touch-manipulation select-none",
                     "transition-opacity duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
                     isActive ? "opacity-100" : "opacity-70 active:opacity-100"
                   )}
                 >
-                  <Icon
-                    className="size-4 shrink-0 stroke-[1.5]"
-                    aria-hidden
-                  />
-                  <span className="truncate">{tab.label}</span>
+                  <span className="relative inline-flex shrink-0">
+                    <Icon className="size-3.5 stroke-[1.5] sm:size-4" aria-hidden />
+                    {tab.key === "jobs" && openJobCount > 0 ? (
+                      <span
+                        className={cn(
+                          "absolute -top-1.5 -right-2 inline-flex h-3.5 min-w-3.5 items-center justify-center",
+                          "rounded-full bg-white px-0.5 text-[8px] font-semibold tabular-nums leading-none text-[rgba(30,25,22,0.9)]"
+                        )}
+                        aria-hidden
+                      >
+                        {openJobCount > 99 ? "99+" : openJobCount}
+                      </span>
+                    ) : null}
+                  </span>
+                  <span className="truncate">{tab.shortLabel}</span>
                 </Link>
               );
             })}
           </div>
         </nav>
 
-        {/* Layout circles — Figma: frosted active + glass inactive */}
+        {/* Layout circles */}
         <div
           className="flex shrink-0 items-center gap-1.5"
           role="group"
