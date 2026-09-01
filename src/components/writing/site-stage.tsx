@@ -15,7 +15,8 @@ export function SiteStage({ children }: { children: React.ReactNode }) {
   return (
     <div
       className={cn(
-        "flex min-h-dvh flex-col transition-[opacity,filter] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
+        "flex min-h-dvh w-full max-w-full min-w-0 flex-col overflow-x-clip",
+        "transition-[opacity,filter] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
         recessed
           ? "pointer-events-none scale-[0.98] opacity-25 blur-[2px] transition-all"
           : "opacity-100 blur-0"

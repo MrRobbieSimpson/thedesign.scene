@@ -59,7 +59,9 @@ export default function RootLayout({
             <EnsureProfile />
             <SiteStage>
               <SiteHeader />
-              <main className="min-w-0 flex-1">{children}</main>
+              <main className="min-w-0 w-full max-w-full flex-1 overflow-x-clip">
+                {children}
+              </main>
               <Footer />
               {/* Clears fixed mobile bottom nav so footer CTAs aren’t covered. */}
               <div
@@ -82,7 +84,7 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} ${sourceSerif.variable}`}
     >
       <body
-        className={`${geistSans.className} min-h-dvh overflow-x-hidden antialiased`}
+        className={`${geistSans.className} min-h-dvh max-w-full overflow-x-clip antialiased`}
       >
         <JsonLd data={websiteJsonLd()} />
         {isClerkPublishableConfigured() ? (

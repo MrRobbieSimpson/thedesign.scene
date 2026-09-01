@@ -128,11 +128,17 @@
 
   html {
     @apply font-sans scroll-smooth antialiased;
+    overflow-x: clip;
+    max-width: 100%;
+    overscroll-behavior-x: none;
   }
 
   body {
     @apply bg-background font-sans text-foreground;
     font-feature-settings: "ss01" on, "cv11" on;
+    overflow-x: clip;
+    max-width: 100%;
+    overscroll-behavior-x: none;
     transition:
       background-color 0.45s cubic-bezier(0.22, 1, 0.36, 1),
       color 0.45s cubic-bezier(0.22, 1, 0.36, 1);
