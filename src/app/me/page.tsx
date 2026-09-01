@@ -15,7 +15,7 @@ export const metadata = buildPageMetadata({
  */
 export default async function MePage() {
   await requireClerkUserId();
-  const profile = await getOrCreateProfile();
+  const profile = await getOrCreateProfile({ syncFromClerk: true });
   if (!profile?.handle) {
     redirect("/settings/profile");
   }

@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { BrandMarkChip } from "@/components/brand/mark";
 import { AuthControls } from "@/components/layout/auth-controls";
 import { LocalTime } from "@/components/layout/local-time";
+import { NavPrefetch } from "@/components/layout/nav-prefetch";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { AnimatedPills } from "@/components/ui/animated-pills";
 import { cn } from "@/lib/utils";
@@ -62,6 +63,7 @@ export function Header({
 
   return (
     <header className="sticky top-0 z-40 border-b border-border/60 bg-background/80 backdrop-blur-xl">
+      <NavPrefetch />
       {/* Full-width shell so the logo + Feed/Events/Jobs always fit. */}
       <div className="mx-auto w-full max-w-6xl px-5 sm:px-6">
         <div className="flex h-14 items-center justify-between gap-2 sm:h-16 sm:gap-3">

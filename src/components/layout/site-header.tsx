@@ -4,36 +4,40 @@ import { Header } from "@/components/layout/header";
 import { db, isDatabaseConfigured } from "@/db";
 import { profiles } from "@/db/schema";
 import { getClerkUserId } from "@/lib/auth";
-import { getPublishedJobs } from "@/lib/queries";
+import { getPublishedJobCount } from "@/lib/queries";
 
 /**
  * Server wrapper so the header clock can use the signed-in
  * profile timezone (from Location) when available.
+ * Profile + job count run in parallel; job badge uses COUNT only.
  */
 export async function SiteHeader() {
+  const userIdPromise = getClerkUserId();
+  const jobCountPromise = getPublishedJobCount();
+
   let timeZone: string | null = null;
   let avatarUrl: string | null = null;
   let xHandle: string | null = null;
 
-  if (isDatabaseConfigured() && db) {
-    const userId = await getClerkUserId();
-    if (userId) {
-      const profile = await db.query.profiles.findFirst({
-        where: eq(profiles.clerkUserId, userId),
-        columns: { timezone: true, avatarUrl: true, xHandle: true },
-      });
-      timeZone = profile?.timezone ?? null;
-      avatarUrl = profile?.avatarUrl ?? null;
-      xHandle = profile?.xHandle ?? null;
-    }
-  }
+  const [userId, openJobCount] = await Promise.all([
+    userIdPromise,
+    jobCountPromise,
+  ]);
 
-  const openJobs = await getPublishedJobs();
+  if (userId && isDatabaseConfigured() && db) {
+    const profile = await db.query.profiles.findFirst({
+      where: eq(profiles.clerkUserId, userId),
+      columns: { timezone: true, avatarUrl: true, xHandle: true },
+    });
+    timeZone = profile?.timezone ?? null;
+    avatarUrl = profile?.avatarUrl ?? null;
+    xHandle = profile?.xHandle ?? null;
+  }
 
   return (
     <Header
       timeZone={timeZone}
-      openJobCount={openJobs.length}
+      openJobCount={openJobCount}
       profileAvatarUrl={avatarUrl}
       profileXHandle={xHandle}
     />

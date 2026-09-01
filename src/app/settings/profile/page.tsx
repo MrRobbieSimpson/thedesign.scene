@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { requireProfile } from "@/lib/auth";
+import { getOrCreateProfile } from "@/lib/auth";
 import { buildPageMetadata } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
@@ -24,7 +24,10 @@ export default async function ProfileSettingsPage({
 }: {
   searchParams: Promise<{ saved?: string; error?: string }>;
 }) {
-  const profile = await requireProfile();
+  const profile = await getOrCreateProfile({ syncFromClerk: true });
+  if (!profile) {
+    redirect("/sign-in");
+  }
   const params = await searchParams;
 
   async function saveAction(formData: FormData) {

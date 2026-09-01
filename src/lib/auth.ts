@@ -80,8 +80,13 @@ export async function requireAdmin() {
 
 /**
  * Ensure a local profile row exists for the signed-in Clerk user.
+ * Existing profiles return immediately (no Clerk API). Clerk is only
+ * contacted when creating a new row or when `syncFromClerk` is true
+ * (e.g. settings / explicit refresh).
  */
-export async function getOrCreateProfile(): Promise<Profile | null> {
+export async function getOrCreateProfile(options?: {
+  syncFromClerk?: boolean;
+}): Promise<Profile | null> {
   if (!db) return null;
 
   const userId = await getClerkUserId();
@@ -90,6 +95,13 @@ export async function getOrCreateProfile(): Promise<Profile | null> {
   const existing = await db.query.profiles.findFirst({
     where: eq(profiles.clerkUserId, userId),
   });
+
+  const syncFromClerk = options?.syncFromClerk === true;
+
+  // Hot path: profile already exists and caller doesn’t need a Clerk sync.
+  if (existing && !syncFromClerk) {
+    return existing;
+  }
 
   // Backend user includes external-account imageUrls that unwrap to
   // pbs.twimg / Google CDNs. currentUser() alone often only has the soft thumb.
@@ -125,7 +137,8 @@ export async function getOrCreateProfile(): Promise<Profile | null> {
     const needsUpdate =
       (nextAvatar && nextAvatar !== existing.avatarUrl) ||
       (xHandle && xHandle !== existing.xHandle) ||
-      (!existing.xHandle && xHandle);
+      (!existing.xHandle && xHandle) ||
+      (!existing.displayName && displayName);
 
     if (needsUpdate) {
       const [updated] = await db

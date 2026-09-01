@@ -523,11 +523,11 @@
   }
 }
 
-/* Page click-through: soft fade + slight rise */
+/* Page click-through: soft fade + slight rise (kept short — long delays felt sluggish) */
 @keyframes page-enter {
   from {
     opacity: 0;
-    transform: translateY(8px);
+    transform: translateY(4px);
   }
   to {
     opacity: 1;
@@ -536,14 +536,14 @@
 }
 
 .page-enter {
-  animation: page-enter 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: page-enter 0.18s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 /* Writing ↔ Visuals ↔ Events — quieter than full page enter */
 @keyframes feed-enter {
   from {
     opacity: 0;
-    transform: translateY(6px);
+    transform: translateY(4px);
   }
   to {
     opacity: 1;
@@ -552,7 +552,7 @@
 }
 
 .feed-enter {
-  animation: feed-enter 0.32s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: feed-enter 0.16s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 /* Strong Focus — chrome leaves the layout so only the piece remains */

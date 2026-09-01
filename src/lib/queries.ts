@@ -313,6 +313,26 @@ export async function getPublishedJobs() {
   return rows.map(reviveJob);
 }
 
+/** Lean count for the header badge — avoid loading every job on each page. */
+export async function getPublishedJobCount(): Promise<number> {
+  if (!isDatabaseConfigured() || !db) return 0;
+
+  return unstable_cache(
+    async () => {
+      const [row] = await db!
+        .select({ count: sql<number>`count(*)::int` })
+        .from(jobs)
+        .where(eq(jobs.status, "published"));
+      return Number(row?.count ?? 0);
+    },
+    ["published-job-count", "v1"],
+    {
+      revalidate: FEED_REVALIDATE_SECONDS,
+      tags: ["jobs"],
+    }
+  )();
+}
+
 export async function getAllJobs() {
   if (!isDatabaseConfigured() || !db) return [];
 
