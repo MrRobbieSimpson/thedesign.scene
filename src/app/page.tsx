@@ -1,9 +1,9 @@
 import { Suspense } from "react";
+import dynamic from "next/dynamic";
 
 import { FeedFilters } from "@/components/content/feed-filters";
 import { FeedToolbar } from "@/components/content/feed-toolbar";
 import { FeedViewTransition } from "@/components/content/feed-view-transition";
-import { EventsExplorer } from "@/components/events/events-explorer";
 import { GuestEditorStrip } from "@/components/home/guest-editor-strip";
 import { HomeFeed } from "@/components/home/home-feed";
 import {
@@ -27,6 +27,9 @@ import { buildPageMetadata } from "@/lib/seo";
 /** Soft ISR — longer TTL; publish actions still bust cache tags. */
 export const revalidate = 120;
 
+/** Cap what we hydrate on the Events tab — keeps switches snappy. */
+const EVENTS_TAB_LIMIT = 20;
+
 export const metadata = buildPageMetadata({
   path: "/",
   description:
@@ -49,9 +52,33 @@ function HomeFilters() {
   );
 }
 
-/** Drop heavy JSON blobs before shipping events to the client. */
+const EventsExplorer = dynamic(
+  () =>
+    import("@/components/events/events-explorer").then((mod) => ({
+      default: mod.EventsExplorer,
+    })),
+  {
+    loading: () => (
+      <div className="space-y-5">
+        <div className="h-10 w-full animate-pulse rounded-xl bg-muted/70" />
+        <div className="h-36 animate-pulse rounded-2xl bg-muted/50" />
+        <div className="h-36 animate-pulse rounded-2xl bg-muted/40" />
+      </div>
+    ),
+  }
+);
+
+/** Minimal event shape for the client list — no JSON blobs, short copy. */
 function slimEvent(event: Event): Event {
-  return { ...event, sourcePayload: null };
+  const description = event.description?.trim() ?? null;
+  return {
+    ...event,
+    description:
+      description && description.length > 160
+        ? `${description.slice(0, 157)}…`
+        : description,
+    sourcePayload: null,
+  };
 }
 
 export default async function HomePage({ searchParams }: HomeProps) {
@@ -61,14 +88,14 @@ export default async function HomePage({ searchParams }: HomeProps) {
   const articlesMode = filter === "articles";
   const eventsMode = filter === "events";
 
-  // Fetch only what this tab needs — keeps RSC payloads small and switches fast.
+  // Fetch only what this tab needs.
   const [content, events, openJobs, designers, guest] = await Promise.all([
     eventsMode
       ? Promise.resolve([])
       : visualsMode
         ? getPublishedVisualsPool()
         : getPublishedWritingPool(),
-    articlesMode ? Promise.resolve([]) : getPublishedEvents(),
+    eventsMode ? getPublishedEvents() : Promise.resolve([]),
     articlesMode ? getPublishedJobs() : Promise.resolve([]),
     articlesMode ? getRegisteredDesignerCount() : Promise.resolve(0),
     articlesMode ? getCurrentGuestEditor() : Promise.resolve(null),
@@ -87,6 +114,7 @@ export default async function HomePage({ searchParams }: HomeProps) {
           (a, b) =>
             new Date(a.startDate).getTime() - new Date(b.startDate).getTime()
         )
+        .slice(0, EVENTS_TAB_LIMIT)
         .map(slimEvent)
     : [];
 
@@ -100,13 +128,10 @@ export default async function HomePage({ searchParams }: HomeProps) {
     (item) => item.kind === "content" && item.item.featured
   ).length;
 
+  const filters = <HomeFilters />;
+
   return (
     <div className="mx-auto w-full min-w-0 max-w-[45rem] px-5 py-10 sm:px-6 sm:py-20">
-      {/* Stable filter row — does not remount on tab change */}
-      <div className="mb-8 sm:mb-10">
-        <HomeFilters />
-      </div>
-
       <FeedViewTransition viewKey={filter}>
         <section className="mb-10 space-y-4 sm:mb-16 sm:space-y-5">
           <p className="text-sm font-medium tracking-[0.16em] text-muted-foreground uppercase">
@@ -154,7 +179,9 @@ export default async function HomePage({ searchParams }: HomeProps) {
 
         {eventsMode ? (
           <div className="space-y-8 sm:space-y-10">
+            {/* Same row as Writing/Visuals: filters left, count right */}
             <FeedToolbar
+              toolbar={filters}
               count={upcomingEvents.length}
               hideLayoutSwitcher
             />
@@ -166,6 +193,7 @@ export default async function HomePage({ searchParams }: HomeProps) {
             filter={filter}
             featuredJob={featuredJob}
             designerWriting={designerWriting}
+            toolbar={filters}
           />
         )}
       </FeedViewTransition>

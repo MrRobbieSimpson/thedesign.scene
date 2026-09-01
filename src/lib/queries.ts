@@ -152,8 +152,28 @@ async function fetchPublishedEvents() {
       .sort((a, b) => a.startDate.getTime() - b.startDate.getTime());
   }
 
+  // Omit source_payload — never needed on the public Events UI.
   return db.query.events.findMany({
     where: eq(events.status, "published"),
+    columns: {
+      id: true,
+      title: true,
+      description: true,
+      url: true,
+      location: true,
+      latitude: true,
+      longitude: true,
+      startDate: true,
+      endDate: true,
+      type: true,
+      status: true,
+      sourcePlatform: true,
+      sourceUrl: true,
+      externalId: true,
+      createdAt: true,
+      updatedAt: true,
+      sourcePayload: false,
+    },
     orderBy: (fields, { asc }) => [asc(fields.startDate)],
   });
 }
@@ -161,13 +181,13 @@ async function fetchPublishedEvents() {
 export async function getPublishedEvents() {
   const rows = await unstable_cache(
     () => fetchPublishedEvents(),
-    ["published-events", "v4"],
+    ["published-events", "v5"],
     {
       revalidate: FEED_REVALIDATE_SECONDS,
       tags: ["events"],
     }
   )();
-  return rows.map(reviveEvent);
+  return rows.map((row) => reviveEvent({ ...row, sourcePayload: null }));
 }
 
 export async function getAllEvents() {

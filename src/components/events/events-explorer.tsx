@@ -52,12 +52,12 @@ function reviveEvent(event: SerializedEvent): Event {
 }
 
 function isBelfastDesignEvent(event: Event) {
-  const payload = event.sourcePayload as { username?: string } | null;
+  const title = event.title.toLowerCase();
   return (
-    event.sourcePlatform === "luma" &&
-    (payload?.username === BELFAST_DESIGN_LUMA.username ||
-      event.title.toLowerCase().includes("belfast design") ||
-      event.sourceUrl?.includes("lu.ma/"))
+    title.includes("belfast design") ||
+    (event.sourcePlatform === "luma" &&
+      (event.sourceUrl?.includes("lu.ma/") ||
+        event.location?.toLowerCase().includes("belfast") === true))
   );
 }
 
