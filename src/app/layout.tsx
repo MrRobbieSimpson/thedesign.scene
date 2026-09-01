@@ -5,7 +5,7 @@ import { Geist, Geist_Mono, Source_Serif_4 } from "next/font/google";
 import { DeferredUi } from "@/components/deferred-ui";
 import { EnsureProfile } from "@/components/ensure-profile";
 import { Footer } from "@/components/layout/footer";
-import { SiteHeader } from "@/components/layout/site-header";
+import { SiteHeader, SiteMobileNav } from "@/components/layout/site-header";
 import { JsonLd } from "@/components/seo/json-ld";
 import { ThemeProvider } from "@/components/theme-provider";
 import { SoftToastProvider } from "@/components/ui/soft-toast";
@@ -65,6 +65,7 @@ export default function RootLayout({
               aria-hidden
             />
           </SiteStage>
+          <SiteMobileNav />
           <DeferredUi />
         </SoftToastProvider>
       </WritingProvider>

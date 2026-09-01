@@ -9,8 +9,10 @@ import {
   useRef,
   useState,
 } from "react";
+import { createPortal } from "react-dom";
 import { Briefcase, CalendarDays, Newspaper } from "lucide-react";
 
+import { useWriting } from "@/components/writing/writing-context";
 import { cn } from "@/lib/utils";
 
 const nav = [
@@ -48,6 +50,8 @@ export function MobileBottomNav({
 }) {
   const pathname = usePathname();
   const active = matchFromPath(pathname);
+  const { open: writingOpen, visible: writingVisible } = useWriting();
+  const [mounted, setMounted] = useState(false);
 
   const trackRef = useRef<HTMLDivElement>(null);
   const itemRefs = useRef(new Map<string, HTMLElement>());
@@ -58,6 +62,10 @@ export function MobileBottomNav({
   });
   const [traveling, setTraveling] = useState(false);
   const prevActive = useRef(active);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const measure = useCallback(() => {
     const track = trackRef.current;
@@ -113,12 +121,14 @@ export function MobileBottomNav({
     [measure]
   );
 
-  return (
+  if (!mounted || (writingOpen && writingVisible)) return null;
+
+  return createPortal(
     <nav
       data-mobile-nav
       aria-label="Primary"
       className={cn(
-        "fixed inset-x-0 bottom-0 z-40 md:hidden",
+        "fixed inset-x-0 bottom-0 z-[60] md:hidden",
         "border-t border-border/50 bg-background/85 backdrop-blur-2xl",
         "shadow-[0_-12px_40px_-28px_rgba(0,0,0,0.45)]",
         "pb-[env(safe-area-inset-bottom)]"
@@ -204,6 +214,7 @@ export function MobileBottomNav({
           );
         })}
       </div>
-    </nav>
+    </nav>,
+    document.body
   );
 }
