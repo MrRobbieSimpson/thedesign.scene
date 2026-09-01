@@ -2,22 +2,116 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
 import { Briefcase, CalendarDays, Newspaper } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
 const nav = [
-  { href: "/", label: "Feed", icon: Newspaper },
-  { href: "/events", label: "Events", icon: CalendarDays },
-  { href: "/jobs", label: "Jobs", icon: Briefcase },
+  { href: "/", label: "Feed", icon: Newspaper, match: "feed" as const },
+  {
+    href: "/events",
+    label: "Events",
+    icon: CalendarDays,
+    match: "events" as const,
+  },
+  { href: "/jobs", label: "Jobs", icon: Briefcase, match: "jobs" as const },
 ] as const;
 
+type NavMatch = (typeof nav)[number]["match"];
+
+function matchFromPath(pathname: string): NavMatch {
+  if (pathname.startsWith("/events")) return "events";
+  if (pathname.startsWith("/jobs")) return "jobs";
+  return "feed";
+}
+
+type Indicator = {
+  left: number;
+  width: number;
+  ready: boolean;
+};
+
 /**
- * Mobile-only primary nav — fixed bottom bar.
- * Desktop keeps Feed / Events / Jobs in the header.
+ * Mobile-only primary nav — premium glass bar with a liquid sliding pill.
  */
-export function MobileBottomNav({ openJobCount = 0 }: { openJobCount?: number }) {
+export function MobileBottomNav({
+  openJobCount = 0,
+}: {
+  openJobCount?: number;
+}) {
   const pathname = usePathname();
+  const active = matchFromPath(pathname);
+
+  const trackRef = useRef<HTMLDivElement>(null);
+  const itemRefs = useRef(new Map<string, HTMLElement>());
+  const [indicator, setIndicator] = useState<Indicator>({
+    left: 0,
+    width: 0,
+    ready: false,
+  });
+  const [traveling, setTraveling] = useState(false);
+  const prevActive = useRef(active);
+
+  const measure = useCallback(() => {
+    const track = trackRef.current;
+    const el = itemRefs.current.get(active);
+    if (!track || !el) {
+      setIndicator((current) => ({ ...current, ready: false }));
+      return;
+    }
+    const trackRect = track.getBoundingClientRect();
+    const elRect = el.getBoundingClientRect();
+    setIndicator({
+      left: elRect.left - trackRect.left,
+      width: elRect.width,
+      ready: true,
+    });
+  }, [active]);
+
+  useLayoutEffect(() => {
+    measure();
+  }, [measure]);
+
+  useEffect(() => {
+    if (prevActive.current !== active) {
+      setTraveling(true);
+      prevActive.current = active;
+      const id = window.setTimeout(() => setTraveling(false), 480);
+      return () => window.clearTimeout(id);
+    }
+  }, [active]);
+
+  useEffect(() => {
+    const track = trackRef.current;
+    if (!track) return;
+    const ro =
+      typeof ResizeObserver !== "undefined"
+        ? new ResizeObserver(() => measure())
+        : null;
+    ro?.observe(track);
+    for (const el of itemRefs.current.values()) ro?.observe(el);
+    window.addEventListener("resize", measure);
+    return () => {
+      ro?.disconnect();
+      window.removeEventListener("resize", measure);
+    };
+  }, [measure]);
+
+  const setItemRef = useCallback(
+    (key: string, node: HTMLElement | null) => {
+      if (node) itemRefs.current.set(key, node);
+      else itemRefs.current.delete(key);
+      requestAnimationFrame(() => measure());
+    },
+    [measure]
+  );
 
   return (
     <nav
@@ -25,50 +119,72 @@ export function MobileBottomNav({ openJobCount = 0 }: { openJobCount?: number })
       aria-label="Primary"
       className={cn(
         "fixed inset-x-0 bottom-0 z-40 md:hidden",
-        "border-t border-border/60 bg-background/90 backdrop-blur-xl",
+        "border-t border-border/50 bg-background/85 backdrop-blur-2xl",
+        "shadow-[0_-12px_40px_-28px_rgba(0,0,0,0.45)]",
         "pb-[env(safe-area-inset-bottom)]"
       )}
     >
-      <div className="mx-auto flex h-14 max-w-6xl items-stretch px-2">
+      <div
+        ref={trackRef}
+        className="relative mx-auto flex h-[3.75rem] max-w-6xl items-stretch px-2"
+      >
+        {/* Liquid pill — slides + gently stretches while traveling */}
+        <span
+          aria-hidden
+          className={cn(
+            "mobile-nav-liquid pointer-events-none absolute top-1.5 bottom-1.5 z-0 rounded-[1.15rem]",
+            "bg-foreground/[0.07] ring-1 ring-inset ring-foreground/[0.06]",
+            "shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06)]",
+            indicator.ready ? "opacity-100" : "opacity-0",
+            traveling && "mobile-nav-liquid--travel"
+          )}
+          style={{
+            width: indicator.width,
+            transform: `translate3d(${indicator.left}px, 0, 0)`,
+          }}
+        />
+
         {nav.map((item) => {
-          const active =
-            item.href === "/"
-              ? pathname === "/" || pathname.startsWith("/article") || pathname.startsWith("/content")
-              : pathname.startsWith(item.href);
+          const isActive = active === item.match;
           const Icon = item.icon;
 
           return (
             <Link
               key={item.href}
               href={item.href}
-              aria-current={active ? "page" : undefined}
+              ref={(node) => setItemRef(item.match, node)}
+              aria-current={isActive ? "page" : undefined}
               aria-label={
                 item.href === "/jobs" && openJobCount > 0
                   ? `Jobs, ${openJobCount} open`
                   : item.label
               }
               className={cn(
-                "relative flex flex-1 flex-col items-center justify-center gap-0.5",
-                "text-[11px] font-medium tracking-tight transition-colors",
+                "relative z-10 flex flex-1 flex-col items-center justify-center gap-0.5",
+                "text-[10px] font-medium tracking-[0.04em] uppercase",
                 "touch-manipulation select-none",
-                active
+                "transition-colors duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
+                isActive
                   ? "text-foreground"
-                  : "text-muted-foreground active:text-foreground"
+                  : "text-muted-foreground/75 active:text-foreground/90"
               )}
             >
               <span className="relative inline-flex">
                 <Icon
                   className={cn(
-                    "size-[1.15rem] stroke-[1.75]",
-                    active ? "opacity-100" : "opacity-80"
+                    "size-[1.2rem] stroke-[1.6] transition-transform duration-500",
+                    "ease-[cubic-bezier(0.22,1,0.36,1)] will-change-transform",
+                    isActive
+                      ? "scale-110 -translate-y-px opacity-100"
+                      : "scale-100 opacity-70"
                   )}
                   aria-hidden
                 />
                 {item.href === "/jobs" && openJobCount > 0 ? (
                   <span
                     className={cn(
-                      "absolute -top-1.5 -right-2.5 inline-flex h-4 min-w-4 items-center justify-center",
-                      "rounded-full bg-foreground px-1 text-[9px] font-semibold tabular-nums leading-none text-background"
+                      "absolute -top-1.5 -right-2.5 inline-flex h-3.5 min-w-3.5 items-center justify-center",
+                      "rounded-full bg-foreground px-1 text-[8px] font-semibold tabular-nums leading-none text-background"
                     )}
                     aria-hidden
                   >
@@ -76,13 +192,14 @@ export function MobileBottomNav({ openJobCount = 0 }: { openJobCount?: number })
                   </span>
                 ) : null}
               </span>
-              <span>{item.label}</span>
-              {active ? (
-                <span
-                  aria-hidden
-                  className="absolute inset-x-3 top-0 h-0.5 rounded-full bg-foreground/80"
-                />
-              ) : null}
+              <span
+                className={cn(
+                  "transition-opacity duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
+                  isActive ? "opacity-100" : "opacity-70"
+                )}
+              >
+                {item.label}
+              </span>
             </Link>
           );
         })}

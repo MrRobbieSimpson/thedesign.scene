@@ -602,14 +602,47 @@ html.reading-focus main {
   }
 }
 
+/* Mobile bottom nav — liquid sliding pill */
+.mobile-nav-liquid {
+  transition:
+    transform 0.52s cubic-bezier(0.32, 0.72, 0, 1),
+    width 0.52s cubic-bezier(0.32, 0.72, 0, 1),
+    opacity 0.25s ease,
+    border-radius 0.52s cubic-bezier(0.32, 0.72, 0, 1);
+  will-change: transform, width;
+}
+
+/* Soft stretch / settle while the pill is mid-travel */
+.mobile-nav-liquid--travel {
+  border-radius: 1.35rem / 0.95rem;
+  animation: mobile-nav-liquid-settle 0.52s cubic-bezier(0.32, 0.72, 0, 1) both;
+}
+
+@keyframes mobile-nav-liquid-settle {
+  0% {
+    filter: brightness(1);
+  }
+  35% {
+    filter: brightness(1.04);
+  }
+  100% {
+    filter: brightness(1);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .page-enter,
   .feed-enter {
     animation: none;
   }
 
-  .nav-pill-indicator {
+  .nav-pill-indicator,
+  .mobile-nav-liquid {
     transition: none !important;
+  }
+
+  .mobile-nav-liquid--travel {
+    filter: none;
   }
 
   body {
