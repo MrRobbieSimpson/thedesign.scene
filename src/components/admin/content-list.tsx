@@ -3,7 +3,11 @@
 import Link from "next/link";
 import { useTransition } from "react";
 
-import { setContentStatus } from "@/app/admin/actions";
+import {
+  approveFeatureBoost,
+  rejectFeatureBoost,
+  setContentStatus,
+} from "@/app/admin/actions";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import type { ContentWithMaker } from "@/lib/demo-data";
@@ -24,7 +28,28 @@ export function ContentList({
     });
   }
 
-  if (items.length === 0) {
+  function approveFeature(id: string) {
+    startTransition(async () => {
+      await approveFeatureBoost(id);
+    });
+  }
+
+  function rejectFeature(id: string) {
+    startTransition(async () => {
+      await rejectFeatureBoost(id);
+    });
+  }
+
+  const sorted = [...items].sort((a, b) => {
+    const aBoost = a.featureBoostStatus === "pending_review" ? 0 : 1;
+    const bBoost = b.featureBoostStatus === "pending_review" ? 0 : 1;
+    if (aBoost !== bBoost) return aBoost - bBoost;
+    return (
+      new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    );
+  });
+
+  if (sorted.length === 0) {
     return (
       <div className="rounded-2xl border border-dashed border-border/80 px-6 py-12 text-center text-sm text-muted-foreground">
         No content yet. Create your first piece above.
@@ -35,7 +60,7 @@ export function ContentList({
   return (
     <div className="overflow-hidden rounded-2xl border border-border/70">
       <ul className="divide-y divide-border/70">
-        {items.map((item) => (
+        {sorted.map((item) => (
           <li
             key={item.id}
             className="flex flex-col gap-4 bg-card px-5 py-4 sm:flex-row sm:items-center sm:justify-between"
@@ -53,6 +78,9 @@ export function ContentList({
                 {item.featured ? (
                   <Badge variant="outline">Featured</Badge>
                 ) : null}
+                {item.featureBoostStatus === "pending_review" ? (
+                  <Badge variant="default">feature $10</Badge>
+                ) : null}
               </div>
               <Link
                 href={`/content/${item.id}`}
@@ -68,7 +96,26 @@ export function ContentList({
               </p>
             </div>
 
-            <div className="flex shrink-0 items-center gap-2">
+            <div className="flex shrink-0 flex-wrap items-center gap-2">
+              {item.featureBoostStatus === "pending_review" ? (
+                <>
+                  <Button
+                    size="sm"
+                    disabled={disabled || pending}
+                    onClick={() => approveFeature(item.id)}
+                  >
+                    Feature
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={disabled || pending}
+                    onClick={() => rejectFeature(item.id)}
+                  >
+                    Dismiss
+                  </Button>
+                </>
+              ) : null}
               {item.status === "published" ? (
                 <Button
                   variant="outline"

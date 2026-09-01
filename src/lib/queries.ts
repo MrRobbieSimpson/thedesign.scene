@@ -45,14 +45,38 @@ function reviveContent(item: ContentWithMaker): ContentWithMaker {
   };
 }
 
-function reviveEvent(event: Event): Event {
-  return {
-    ...event,
+function reviveEvent(
+  event: Partial<Event> &
+    Pick<Event, "id" | "title" | "type" | "status" | "startDate" | "createdAt" | "updatedAt">
+): Event {
+  const base: Event = {
+    id: event.id,
+    title: event.title,
+    description: event.description ?? null,
+    url: event.url ?? null,
+    location: event.location ?? null,
+    latitude: event.latitude ?? null,
+    longitude: event.longitude ?? null,
     startDate: asDate(event.startDate) ?? new Date(0),
-    endDate: asDate(event.endDate),
+    endDate: asDate(event.endDate ?? null),
+    type: event.type,
+    status: event.status,
+    source: event.source ?? "admin",
+    contactEmail: event.contactEmail ?? null,
+    postedByProfileId: event.postedByProfileId ?? null,
+    stripeCheckoutSessionId: event.stripeCheckoutSessionId ?? null,
+    stripePaymentIntentId: event.stripePaymentIntentId ?? null,
+    amountCents: event.amountCents ?? null,
+    currency: event.currency ?? null,
+    paidAt: asDate(event.paidAt ?? null),
+    sourcePlatform: event.sourcePlatform ?? null,
+    sourceUrl: event.sourceUrl ?? null,
+    externalId: event.externalId ?? null,
+    sourcePayload: event.sourcePayload ?? null,
     createdAt: asDate(event.createdAt) ?? new Date(0),
     updatedAt: asDate(event.updatedAt) ?? new Date(0),
   };
+  return base;
 }
 
 /** Lean columns for feed cards — never ship full body / JSON blobs. */

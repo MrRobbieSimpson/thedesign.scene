@@ -46,8 +46,17 @@ export const eventTypeEnum = pgEnum("event_type", [
 
 export const eventStatusEnum = pgEnum("event_status", [
   "draft",
+  "pending_payment",
+  "pending_review",
   "published",
   "cancelled",
+]);
+
+/** Paid “feature this piece” request on published writing. */
+export const featureBoostStatusEnum = pgEnum("feature_boost_status", [
+  "none",
+  "pending_payment",
+  "pending_review",
 ]);
 
 export const subscriberStatusEnum = pgEnum("subscriber_status", [
@@ -133,6 +142,16 @@ export const content = pgTable(
     featured: boolean("featured").notNull().default(false),
     /** Short curation note shown on editor picks (“Why this is here”). */
     editorNote: text("editor_note"),
+    /** Paid feature boost — none until author starts checkout. */
+    featureBoostStatus: featureBoostStatusEnum("feature_boost_status")
+      .notNull()
+      .default("none"),
+    featureStripeCheckoutSessionId: text(
+      "feature_stripe_checkout_session_id"
+    ),
+    featureStripePaymentIntentId: text("feature_stripe_payment_intent_id"),
+    featureAmountCents: integer("feature_amount_cents"),
+    featurePaidAt: timestamp("feature_paid_at", { withTimezone: true }),
     makerId: uuid("maker_id").references(() => makers.id, {
       onDelete: "set null",
     }),
@@ -155,6 +174,9 @@ export const content = pgTable(
       .$onUpdate(() => new Date()),
   },
   (table) => [
+    uniqueIndex("content_feature_stripe_checkout_uidx").on(
+      table.featureStripeCheckoutSessionId
+    ),
     uniqueIndex("content_source_external_uidx")
       .on(table.sourcePlatform, table.externalId)
       .where(
@@ -177,6 +199,18 @@ export const events = pgTable(
     endDate: timestamp("end_date", { withTimezone: true }),
     type: eventTypeEnum("type").notNull(),
     status: eventStatusEnum("status").notNull().default("draft"),
+    /** `admin` curated vs `paid` organiser submission. */
+    source: text("source").notNull().default("admin"),
+    contactEmail: text("contact_email"),
+    postedByProfileId: uuid("posted_by_profile_id").references(
+      () => profiles.id,
+      { onDelete: "set null" }
+    ),
+    stripeCheckoutSessionId: text("stripe_checkout_session_id"),
+    stripePaymentIntentId: text("stripe_payment_intent_id"),
+    amountCents: integer("amount_cents"),
+    currency: text("currency"),
+    paidAt: timestamp("paid_at", { withTimezone: true }),
     sourcePlatform: text("source_platform"),
     sourceUrl: text("source_url"),
     externalId: text("external_id"),
@@ -190,6 +224,9 @@ export const events = pgTable(
       .$onUpdate(() => new Date()),
   },
   (table) => [
+    uniqueIndex("events_stripe_checkout_session_uidx").on(
+      table.stripeCheckoutSessionId
+    ),
     uniqueIndex("events_source_external_uidx")
       .on(table.sourcePlatform, table.externalId)
       .where(
@@ -469,6 +506,8 @@ export type NewsletterSubscriber = typeof newsletterSubscribers.$inferSelect;
 export type ContentType = (typeof CONTENT_TYPES)[number];
 export type PublicContentType = (typeof PUBLIC_CONTENT_TYPES)[number];
 export type ContentStatus = (typeof contentStatusEnum.enumValues)[number];
+export type FeatureBoostStatus =
+  (typeof featureBoostStatusEnum.enumValues)[number];
 export type EventType = (typeof eventTypeEnum.enumValues)[number];
 export type EventStatus = (typeof eventStatusEnum.enumValues)[number];
 export type JobStatus = (typeof jobStatusEnum.enumValues)[number];

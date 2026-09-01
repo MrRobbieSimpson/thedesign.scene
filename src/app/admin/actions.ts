@@ -475,8 +475,53 @@ export async function setEventStatus(
   revalidateTag("events");
   return {
     ok: true,
-    message: status === "published" ? "Published." : "Unpublished.",
+    message:
+      status === "published"
+        ? "Published."
+        : status === "cancelled"
+          ? "Cancelled."
+          : "Updated.",
   };
+}
+
+/** Approve a paid article feature request — sets featured + clears boost queue. */
+export async function approveFeatureBoost(
+  id: string
+): Promise<ActionResult> {
+  const missing = requireDb();
+  if (missing) return missing;
+
+  const forbidden = await requireAdminAccess();
+  if (forbidden) return forbidden;
+
+  await db!
+    .update(content)
+    .set({
+      featured: true,
+      featureBoostStatus: "none",
+    })
+    .where(eq(content.id, id));
+
+  revalidatePath("/admin");
+  revalidatePath("/");
+  revalidateTag("content");
+  return { ok: true, message: "Featured." };
+}
+
+export async function rejectFeatureBoost(id: string): Promise<ActionResult> {
+  const missing = requireDb();
+  if (missing) return missing;
+
+  const forbidden = await requireAdminAccess();
+  if (forbidden) return forbidden;
+
+  await db!
+    .update(content)
+    .set({ featureBoostStatus: "none" })
+    .where(eq(content.id, id));
+
+  revalidatePath("/admin");
+  return { ok: true, message: "Feature request dismissed." };
 }
 
 function normalizeUrl(raw: string): string | null {

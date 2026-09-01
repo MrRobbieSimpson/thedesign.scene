@@ -1,31 +1,15 @@
 import { eq } from "drizzle-orm";
 
 import { db } from "@/db";
-import { jobs } from "@/db/schema";
+import { events } from "@/db/schema";
+import { createPaidCheckoutSession } from "@/lib/paid-checkout";
 import {
-  isValidContactEmail,
-  normalizeHttpUrl,
-  createPaidCheckoutSession,
-} from "@/lib/paid-checkout";
-import {
-  JOB_POST_AMOUNT_CENTS,
-  JOB_POST_CURRENCY,
-  JOB_POST_LABEL,
+  EVENT_POST_AMOUNT_CENTS,
+  EVENT_POST_CURRENCY,
 } from "@/lib/stripe";
 
-export { JOB_POST_AMOUNT_CENTS, JOB_POST_CURRENCY, JOB_POST_LABEL };
-export { isValidContactEmail };
-
-export function normalizeJobUrl(raw: string): string | null {
-  return normalizeHttpUrl(raw);
-}
-
-/**
- * After Stripe Checkout succeeds — move paid listing into the review queue.
- * Idempotent for already-reviewed / published rows.
- */
-export async function markJobPaidFromCheckout(options: {
-  jobId: string;
+export async function markEventPaidFromCheckout(options: {
+  eventId: string;
   checkoutSessionId: string;
   paymentIntentId?: string | null;
   amountCents?: number | null;
@@ -34,8 +18,8 @@ export async function markJobPaidFromCheckout(options: {
 }) {
   if (!db) return { ok: false as const, reason: "no_db" };
 
-  const existing = await db.query.jobs.findFirst({
-    where: eq(jobs.id, options.jobId),
+  const existing = await db.query.events.findFirst({
+    where: eq(events.id, options.eventId),
   });
 
   if (!existing) return { ok: false as const, reason: "not_found" };
@@ -43,7 +27,7 @@ export async function markJobPaidFromCheckout(options: {
   if (
     existing.status === "pending_review" ||
     existing.status === "published" ||
-    existing.status === "closed"
+    existing.status === "cancelled"
   ) {
     return { ok: true as const, already: true as const };
   }
@@ -53,32 +37,34 @@ export async function markJobPaidFromCheckout(options: {
   }
 
   await db
-    .update(jobs)
+    .update(events)
     .set({
       status: "pending_review",
       paidAt: new Date(),
       stripeCheckoutSessionId: options.checkoutSessionId,
-      stripePaymentIntentId: options.paymentIntentId ?? existing.stripePaymentIntentId,
-      amountCents: options.amountCents ?? existing.amountCents ?? JOB_POST_AMOUNT_CENTS,
+      stripePaymentIntentId:
+        options.paymentIntentId ?? existing.stripePaymentIntentId,
+      amountCents:
+        options.amountCents ?? existing.amountCents ?? EVENT_POST_AMOUNT_CENTS,
       currency:
         options.currency?.toLowerCase() ??
         existing.currency ??
-        JOB_POST_CURRENCY,
+        EVENT_POST_CURRENCY,
       contactEmail:
         options.customerEmail?.trim() || existing.contactEmail || null,
     })
-    .where(eq(jobs.id, options.jobId));
+    .where(eq(events.id, options.eventId));
 
   return { ok: true as const, already: false as const };
 }
 
-export async function createJobCheckoutSession(options: {
-  jobId: string;
+export async function createEventCheckoutSession(options: {
+  eventId: string;
   customerEmail: string;
 }) {
   return createPaidCheckoutSession({
-    kind: "job_post",
-    entityId: options.jobId,
+    kind: "event_post",
+    entityId: options.eventId,
     customerEmail: options.customerEmail,
   });
 }

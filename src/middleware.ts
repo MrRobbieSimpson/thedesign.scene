@@ -14,6 +14,8 @@ const isProtectedRoute = createRouteMatcher([
   "/settings(.*)",
   "/me",
   "/jobs/post(.*)",
+  "/events/post(.*)",
+  "/feature(.*)",
 ]);
 
 const isAdminRoute = createRouteMatcher(["/admin(.*)"]);

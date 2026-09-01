@@ -4,6 +4,7 @@ import dynamic from "next/dynamic";
 import { FeedFilters } from "@/components/content/feed-filters";
 import { FeedToolbar } from "@/components/content/feed-toolbar";
 import { FeedViewTransition } from "@/components/content/feed-view-transition";
+import { FeatureWritingCta } from "@/components/home/feature-writing-cta";
 import { GuestEditorStrip } from "@/components/home/guest-editor-strip";
 import { HomeFeed } from "@/components/home/home-feed";
 import {
@@ -176,6 +177,12 @@ export default async function HomePage({ searchParams }: HomeProps) {
         </section>
 
         {articlesMode && guest ? <GuestEditorStrip guest={guest} /> : null}
+
+        {articlesMode ? (
+          <div className="mb-8 sm:mb-10">
+            <FeatureWritingCta />
+          </div>
+        ) : null}
 
         {eventsMode ? (
           <div className="space-y-5 sm:space-y-10">
