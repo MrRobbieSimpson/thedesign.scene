@@ -1,14 +1,11 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 
 import { ContentCard } from "@/components/content/content-card";
 import { FeedEventCard } from "@/components/content/feed-event-card";
-import {
-  FEED_LAYOUT_STORAGE_KEY,
-  isFeedLayout,
-  type FeedLayout,
-} from "@/components/content/feed-layout";
+import type { FeedLayout } from "@/components/content/feed-layout";
+import { useFeedLayout } from "@/components/content/feed-layout-context";
 import { FeedLayoutGrid } from "@/components/content/feed-layout-grid";
 import { resolveFeedLayout } from "@/components/content/feed-layout-switcher";
 import { FeedToolbar } from "@/components/content/feed-toolbar";
@@ -118,28 +115,16 @@ export function HomeFeed({
 }) {
   const visualsMode = filter === "visuals";
   const articlesMode = filter === "articles";
-  const [layout, setLayout] = useState<FeedLayout>(
-    visualsMode ? "mosaic" : "big"
-  );
+  const { layout, setLayout } = useFeedLayout();
   const smUp = useIsSmUp();
   const effectiveLayout = visualsMode
     ? "mosaic"
     : resolveFeedLayout(layout, smUp);
   const revived = useMemo(() => items.map(reviveFeedItem), [items]);
 
-  useEffect(() => {
-    if (visualsMode) {
-      setLayout("mosaic");
-      return;
-    }
-    const stored = window.localStorage.getItem(FEED_LAYOUT_STORAGE_KEY);
-    if (stored && isFeedLayout(stored)) setLayout(stored);
-  }, [visualsMode]);
-
   function onLayoutChange(next: FeedLayout) {
     if (visualsMode) return;
     setLayout(next);
-    window.localStorage.setItem(FEED_LAYOUT_STORAGE_KEY, next);
   }
 
   const mid = Math.max(1, Math.ceil(revived.length / 2));

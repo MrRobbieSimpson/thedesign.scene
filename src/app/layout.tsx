@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { ClerkProvider } from "@clerk/nextjs";
 import { Geist, Geist_Mono, Source_Serif_4 } from "next/font/google";
 
+import { FeedLayoutProvider } from "@/components/content/feed-layout-context";
 import { DeferredUi } from "@/components/deferred-ui";
 import { EnsureProfile } from "@/components/ensure-profile";
 import { Footer } from "@/components/layout/footer";
@@ -53,21 +54,23 @@ export default function RootLayout({
       disableTransitionOnChange={false}
     >
       <WritingProvider>
-        <SoftToastProvider>
-          <EnsureProfile />
-          <SiteStage>
-            <SiteHeader />
-            <main className="min-w-0 flex-1">{children}</main>
-            <Footer />
-            {/* Clears fixed mobile bottom nav so footer CTAs aren’t covered. */}
-            <div
-              className="h-[calc(3.5rem+env(safe-area-inset-bottom))] shrink-0 md:hidden"
-              aria-hidden
-            />
-          </SiteStage>
-          <SiteMobileNav />
-          <DeferredUi />
-        </SoftToastProvider>
+        <FeedLayoutProvider>
+          <SoftToastProvider>
+            <EnsureProfile />
+            <SiteStage>
+              <SiteHeader />
+              <main className="min-w-0 flex-1">{children}</main>
+              <Footer />
+              {/* Clears fixed mobile bottom nav so footer CTAs aren’t covered. */}
+              <div
+                className="h-[calc(3.5rem+env(safe-area-inset-bottom))] shrink-0 md:hidden"
+                aria-hidden
+              />
+            </SiteStage>
+            <SiteMobileNav />
+            <DeferredUi />
+          </SoftToastProvider>
+        </FeedLayoutProvider>
       </WritingProvider>
     </ThemeProvider>
   );

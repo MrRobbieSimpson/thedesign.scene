@@ -42,7 +42,9 @@ export function FeedToolbar({
           </p>
         ) : null}
         {!hideLayoutSwitcher && onLayoutChange ? (
-          <FeedLayoutSwitcher value={layout} onChange={onLayoutChange} />
+          <div className="hidden md:block">
+            <FeedLayoutSwitcher value={layout} onChange={onLayoutChange} />
+          </div>
         ) : null}
       </div>
     </div>
