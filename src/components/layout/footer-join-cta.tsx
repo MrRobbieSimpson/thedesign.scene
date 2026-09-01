@@ -4,20 +4,18 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { SignUpButton, useAuth } from "@clerk/nextjs";
 
-import { BrandMarkChip } from "@/components/brand/mark";
 import { Button } from "@/components/ui/button";
 import { isClerkPublishableConfigured } from "@/lib/clerk";
 import { DIGEST_SUBSCRIBED_STORAGE_KEY } from "@/lib/digest-subscription";
-import { cn } from "@/lib/utils";
 
-const joinBtnClass =
-  "h-9 w-full border-0 bg-background px-4 text-sm font-medium text-foreground hover:bg-background/90 sm:w-auto";
+const primaryBtnClass =
+  "h-9 w-full border border-border/70 bg-transparent px-4 text-sm font-medium text-foreground hover:bg-muted/50 sm:w-auto";
 
-const ghostBtnClass =
-  "h-9 w-full px-3.5 text-sm text-background/80 hover:bg-background/10 hover:text-background sm:w-auto";
+const linkBtnClass =
+  "h-9 w-full px-3.5 text-sm text-muted-foreground hover:bg-transparent hover:text-foreground sm:w-auto";
 
 /**
- * Footer signup nudge — inverse paper bar.
+ * Footer signup nudge — flat on paper (no dark card), like the calm lockup.
  * Adjusts when the visitor is already on the Thursday digest.
  */
 export function FooterJoinCta({
@@ -48,34 +46,24 @@ export function FooterJoinCta({
   const onDigest = subscribedToDigest || localSubscribed;
 
   return (
-    <section
-      className={cn(
-        "relative isolate overflow-hidden rounded-2xl bg-foreground px-4 py-4 text-background sm:px-5",
-        "shadow-[0_20px_50px_-28px_rgba(0,0,0,0.55)]"
-      )}
-    >
-      <div className="flex flex-col gap-4">
-        <div className="flex min-w-0 items-start gap-3">
-          <BrandMarkChip className="mt-0.5 size-8 shrink-0 rounded-lg bg-background p-[0.35rem] text-foreground [&_svg]:size-[1.05rem]" />
-          <div className="min-w-0 flex-1">
-            <p className="font-sans text-[0.95rem] font-medium tracking-tight text-background">
-              sit with design
-            </p>
-            {clerkReady ? (
-              <FooterCopyClerk onDigest={onDigest} />
-            ) : (
-              <FooterCopyStatic onDigest={onDigest} />
-            )}
-          </div>
-        </div>
+    <section className="space-y-4">
+      <div className="min-w-0 space-y-2">
+        <h2 className="font-heading text-2xl tracking-tight text-foreground sm:text-3xl">
+          sit with design
+        </h2>
+        {clerkReady ? (
+          <FooterCopyClerk onDigest={onDigest} />
+        ) : (
+          <FooterCopyStatic onDigest={onDigest} />
+        )}
+      </div>
 
-        <div className="flex w-full flex-col gap-2 sm:flex-row sm:items-center">
-          {clerkReady ? (
-            <FooterAuthActionsClerk onDigest={onDigest} />
-          ) : (
-            <FooterAuthActionsStatic onDigest={onDigest} />
-          )}
-        </div>
+      <div className="flex w-full flex-col gap-2 sm:flex-row sm:items-center">
+        {clerkReady ? (
+          <FooterAuthActionsClerk onDigest={onDigest} />
+        ) : (
+          <FooterAuthActionsStatic onDigest={onDigest} />
+        )}
       </div>
     </section>
   );
@@ -83,7 +71,7 @@ export function FooterJoinCta({
 
 function FooterCopyStatic({ onDigest }: { onDigest: boolean }) {
   return (
-    <p className="mt-1 text-sm leading-relaxed text-background/65">
+    <p className="max-w-md text-sm leading-relaxed text-muted-foreground">
       {onDigest
         ? "You’re on the Thursday digest. Join to save work and set a location for nearby events."
         : "Join to save what resonates — and get the Thursday digest."}
@@ -96,7 +84,7 @@ function FooterCopyClerk({ onDigest }: { onDigest: boolean }) {
 
   if (!isLoaded) {
     return (
-      <p className="mt-1 text-sm leading-relaxed text-background/65">
+      <p className="max-w-md text-sm leading-relaxed text-muted-foreground">
         {onDigest
           ? "You’re on the Thursday digest."
           : "Join to save what resonates — and get the Thursday digest."}
@@ -106,7 +94,7 @@ function FooterCopyClerk({ onDigest }: { onDigest: boolean }) {
 
   if (onDigest && isSignedIn) {
     return (
-      <p className="mt-1 text-sm leading-relaxed text-background/65">
+      <p className="max-w-md text-sm leading-relaxed text-muted-foreground">
         You’re on the Thursday digest. Add a location for nearby events.
       </p>
     );
@@ -114,7 +102,7 @@ function FooterCopyClerk({ onDigest }: { onDigest: boolean }) {
 
   if (onDigest) {
     return (
-      <p className="mt-1 text-sm leading-relaxed text-background/65">
+      <p className="max-w-md text-sm leading-relaxed text-muted-foreground">
         You’re on the Thursday digest. Join to save work and set a location for
         nearby events.
       </p>
@@ -123,14 +111,14 @@ function FooterCopyClerk({ onDigest }: { onDigest: boolean }) {
 
   if (isSignedIn) {
     return (
-      <p className="mt-1 text-sm leading-relaxed text-background/65">
+      <p className="max-w-md text-sm leading-relaxed text-muted-foreground">
         Get the Thursday digest — picks, writing, and a few events near you.
       </p>
     );
   }
 
   return (
-    <p className="mt-1 text-sm leading-relaxed text-background/65">
+    <p className="max-w-md text-sm leading-relaxed text-muted-foreground">
       Join to save what resonates — and get the Thursday digest.
     </p>
   );
@@ -141,7 +129,8 @@ function FooterAuthActionsStatic({ onDigest }: { onDigest: boolean }) {
     <>
       <Button
         size="sm"
-        className={joinBtnClass}
+        variant="outline"
+        className={primaryBtnClass}
         render={<Link href="/sign-up" />}
         nativeButton={false}
       >
@@ -151,7 +140,7 @@ function FooterAuthActionsStatic({ onDigest }: { onDigest: boolean }) {
         <Button
           size="sm"
           variant="ghost"
-          className={ghostBtnClass}
+          className={linkBtnClass}
           render={<Link href="/subscribe" />}
           nativeButton={false}
         >
@@ -168,7 +157,7 @@ function FooterAuthActionsClerk({ onDigest }: { onDigest: boolean }) {
   if (!isLoaded) {
     return (
       <div
-        className="h-9 w-full animate-pulse rounded-lg bg-background/15 sm:w-40"
+        className="h-9 w-full animate-pulse rounded-lg bg-muted/60 sm:w-40"
         aria-hidden
       />
     );
@@ -178,7 +167,8 @@ function FooterAuthActionsClerk({ onDigest }: { onDigest: boolean }) {
     return (
       <Button
         size="sm"
-        className={joinBtnClass}
+        variant="outline"
+        className={primaryBtnClass}
         render={<Link href="/settings/profile" />}
         nativeButton={false}
       >
@@ -191,7 +181,8 @@ function FooterAuthActionsClerk({ onDigest }: { onDigest: boolean }) {
     return (
       <Button
         size="sm"
-        className={joinBtnClass}
+        variant="outline"
+        className={primaryBtnClass}
         render={<Link href="/subscribe" />}
         nativeButton={false}
       >
@@ -203,7 +194,7 @@ function FooterAuthActionsClerk({ onDigest }: { onDigest: boolean }) {
   if (onDigest) {
     return (
       <SignUpButton mode="modal">
-        <Button size="sm" className={joinBtnClass}>
+        <Button size="sm" variant="outline" className={primaryBtnClass}>
           Join
         </Button>
       </SignUpButton>
@@ -213,14 +204,14 @@ function FooterAuthActionsClerk({ onDigest }: { onDigest: boolean }) {
   return (
     <>
       <SignUpButton mode="modal">
-        <Button size="sm" className={joinBtnClass}>
+        <Button size="sm" variant="outline" className={primaryBtnClass}>
           Join
         </Button>
       </SignUpButton>
       <Button
         size="sm"
         variant="ghost"
-        className={ghostBtnClass}
+        className={linkBtnClass}
         render={<Link href="/subscribe" />}
         nativeButton={false}
       >
