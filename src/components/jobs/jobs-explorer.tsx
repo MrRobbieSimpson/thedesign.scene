@@ -10,11 +10,15 @@ import type { Job, JobWorkMode } from "@/db/schema";
 
 type Filter = "all" | JobWorkMode;
 
-const filters: { key: Filter; label: string }[] = [
-  { key: "all", label: "All" },
-  { key: "remote", label: "Remote" },
-  { key: "hybrid", label: "Hybrid" },
-  { key: "onsite", label: "On site" },
+const filters: {
+  key: Filter;
+  label: string;
+  shortLabel: string;
+}[] = [
+  { key: "all", label: "All", shortLabel: "All" },
+  { key: "remote", label: "Remote", shortLabel: "Remote" },
+  { key: "hybrid", label: "Hybrid", shortLabel: "Hybrid" },
+  { key: "onsite", label: "On site", shortLabel: "On-site" },
 ];
 
 function JobsToolbar({
@@ -27,8 +31,9 @@ function JobsToolbar({
   showWorkModes: boolean;
 }) {
   return (
-    <div className="flex w-full min-w-0 flex-col gap-3 sm:flex-row sm:items-center sm:gap-3">
-      <div className="min-w-0 w-full overflow-x-auto overscroll-x-contain [-ms-overflow-style:none] [scrollbar-width:none] sm:flex-1 [&::-webkit-scrollbar]:hidden">
+    <div className="flex w-full min-w-0 flex-col gap-3 md:flex-row md:items-center md:justify-between md:gap-4">
+      {/* Writing / Visuals / Events — own row on mobile, left on desktop */}
+      <div className="min-w-0 w-full overflow-x-auto overscroll-x-contain [-ms-overflow-style:none] [scrollbar-width:none] md:w-auto md:flex-1 [&::-webkit-scrollbar]:hidden">
         <Suspense
           fallback={
             <div className="h-10 w-56 max-w-full animate-pulse rounded-full bg-muted" />
@@ -38,17 +43,25 @@ function JobsToolbar({
         </Suspense>
       </div>
 
+      {/* Work mode — never share a cramped row with feed nav on small screens.
+          size="md" is required: size="sm" is icon-only (32×32) and wraps text. */}
       {showWorkModes ? (
-        <div className="min-w-0 w-full overflow-x-auto overscroll-x-contain [-ms-overflow-style:none] [scrollbar-width:none] sm:w-auto sm:max-w-[min(100%,24rem)] sm:shrink-0 [&::-webkit-scrollbar]:hidden">
+        <div className="min-w-0 w-full overflow-x-auto overscroll-x-contain [-ms-overflow-style:none] [scrollbar-width:none] md:w-auto md:max-w-none md:shrink-0 [&::-webkit-scrollbar]:hidden">
           <AnimatedPills
-            size="sm"
+            size="md"
             followHover={false}
             aria-label="Filter by work mode"
             className="w-max max-w-none"
             items={filters.map((item) => ({
               key: item.key,
-              label: item.label,
+              label: (
+                <>
+                  <span className="sm:hidden">{item.shortLabel}</span>
+                  <span className="hidden sm:inline">{item.label}</span>
+                </>
+              ),
               active: filter === item.key,
+              "aria-label": item.label,
               onClick: () => onFilterChange(item.key),
             }))}
           />
@@ -85,11 +98,7 @@ export function JobsExplorer({ jobs }: { jobs: Job[] }) {
 
   return (
     <div className="space-y-8">
-      <JobsToolbar
-        filter={filter}
-        onFilterChange={setFilter}
-        showWorkModes
-      />
+      <JobsToolbar filter={filter} onFilterChange={setFilter} showWorkModes />
 
       {visible.length === 0 ? (
         <EmptyState
