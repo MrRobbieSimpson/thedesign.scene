@@ -529,53 +529,7 @@
   }
 }
 
-/* Founder ribbon — paper band + shine on hover (Figma 15:72) */
-.founder-ribbon-base {
-  position: relative;
-  overflow: hidden;
-}
-
-.founder-ribbon-base::after {
-  content: "";
-  pointer-events: none;
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    105deg,
-    transparent 35%,
-    rgba(255, 255, 255, 0.55) 50%,
-    transparent 65%
-  );
-  transform: translateX(-120%);
-  opacity: 0;
-}
-
-@media (hover: hover) and (pointer: fine) {
-  .community-badge-founder:hover .founder-ribbon-base::after {
-    opacity: 1;
-    animation: community-badge-shine 0.8s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-  }
-}
-
-@keyframes community-badge-shine {
-  from {
-    transform: translateX(-120%);
-  }
-  to {
-    transform: translateX(120%);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .community-badge-founder:hover .founder-ribbon-base::after {
-    animation: none;
-    opacity: 0;
-  }
-
-  .community-badge-founder:hover > span {
-    transform: none !important;
-  }
-}
+/* Founder ribbon — quiet paper seal (Figma 15:72); no hover chrome */
 
 /* Page click-through: soft fade + slight rise (kept short — long delays felt sluggish) */
 @keyframes page-enter {

@@ -148,7 +148,14 @@ function Attribution({
       />
       <span className="flex min-w-0 items-center gap-1.5 truncate">
         <span className="truncate">{name}</span>
-        <CommunityBadge badge={communityBadge} size="sm" className="shrink-0" />
+        {/* Founder seal lives on profile/article avatars; cards only show founding writer */}
+        <CommunityBadge
+          badge={
+            communityBadge === "founding_writer" ? "founding_writer" : null
+          }
+          size="sm"
+          className="shrink-0"
+        />
         {date ? (
           <>
             <span className="mx-1.5 text-border">·</span>

@@ -186,18 +186,29 @@ export default async function ArticlePage({
                 href={authorHref}
                 className="flex items-center gap-3 transition-opacity hover:opacity-80"
               >
-                <Avatar
-                  src={authorAvatar}
-                  alt={authorName}
-                  size={44}
-                  xHandle={profile?.xHandle ?? authorHandle}
-                  className="ring-1 ring-border"
-                />
+                <span className="relative shrink-0">
+                  <Avatar
+                    src={authorAvatar}
+                    alt={authorName}
+                    size={44}
+                    xHandle={profile?.xHandle ?? authorHandle}
+                    className="ring-1 ring-border"
+                  />
+                  <CommunityBadge
+                    badge={profile?.communityBadge}
+                    size="sm"
+                    placement="on-avatar"
+                  />
+                </span>
                 <div className="min-w-0 space-y-0.5">
                   <div className="flex flex-wrap items-center gap-2">
                     <p className="text-sm font-medium">{authorName}</p>
                     <CommunityBadge
-                      badge={profile?.communityBadge}
+                      badge={
+                        profile?.communityBadge === "founding_writer"
+                          ? "founding_writer"
+                          : null
+                      }
                       size="sm"
                     />
                   </div>
@@ -210,18 +221,29 @@ export default async function ArticlePage({
               </Link>
             ) : (
               <div className="flex items-center gap-3">
-                <Avatar
-                  src={authorAvatar}
-                  alt={authorName}
-                  size={44}
-                  xHandle={profile?.xHandle ?? authorHandle}
-                  className="ring-1 ring-border"
-                />
+                <span className="relative shrink-0">
+                  <Avatar
+                    src={authorAvatar}
+                    alt={authorName}
+                    size={44}
+                    xHandle={profile?.xHandle ?? authorHandle}
+                    className="ring-1 ring-border"
+                  />
+                  <CommunityBadge
+                    badge={profile?.communityBadge}
+                    size="sm"
+                    placement="on-avatar"
+                  />
+                </span>
                 <div className="min-w-0 space-y-0.5">
                   <div className="flex flex-wrap items-center gap-2">
                     <p className="text-sm font-medium">{authorName}</p>
                     <CommunityBadge
-                      badge={profile?.communityBadge}
+                      badge={
+                        profile?.communityBadge === "founding_writer"
+                          ? "founding_writer"
+                          : null
+                      }
                       size="sm"
                     />
                   </div>

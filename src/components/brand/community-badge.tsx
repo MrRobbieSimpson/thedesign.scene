@@ -2,17 +2,21 @@ import type { CommunityBadge as CommunityBadgeKind } from "@/db/schema";
 import { cn } from "@/lib/utils";
 
 /**
- * Community recognition chips.
- * Founder = Figma paper ribbon (tilted, SWD + Founder) — swap SWD for logo later.
+ * Community recognition.
+ * Founder = Figma paper ribbon (15:72) — tilted cream→slate band, SWD + Founder.
  * Founding writer = quiet hairline pill.
+ *
+ * Use `placement="on-avatar"` on profile/article avatars (Figma). Inline for cards.
  */
 export function CommunityBadge({
   badge,
   size = "md",
+  placement = "inline",
   className,
 }: {
   badge: CommunityBadgeKind | null | undefined;
   size?: "sm" | "md";
+  placement?: "inline" | "on-avatar";
   className?: string;
 }) {
   if (!badge || badge === "none") return null;
@@ -24,42 +28,44 @@ export function CommunityBadge({
       <span
         title="Founder of sit with design"
         className={cn(
-          "community-badge-founder group/founder relative inline-flex shrink-0",
-          "origin-center",
-          compact ? "scale-[0.85]" : "scale-100",
+          "community-badge-founder pointer-events-none inline-flex shrink-0",
+          placement === "on-avatar" &&
+            (compact
+              ? "absolute -left-1 bottom-[8%] z-10 origin-center scale-[0.72]"
+              : "absolute -left-1.5 bottom-[10%] z-10 origin-center"),
           className
         )}
       >
+        {/* Figma 15:58 instance: ~76×48 @ 24.76° */}
         <span
           className={cn(
-            "relative flex w-[4.75rem] flex-col items-center",
-            "rotate-[22deg] transition-transform duration-300",
-            "ease-[cubic-bezier(0.22,1,0.36,1)]",
-            "group-hover/founder:rotate-[18deg] group-hover/founder:scale-[1.04]"
+            "relative flex w-[4.7rem] flex-col items-center",
+            "rotate-[24.76deg]"
           )}
         >
-          {/* Ribbon body */}
-          <span
-            className={cn(
-              "founder-ribbon-base relative z-[2] -mb-[0.55rem] flex items-center justify-center",
-              "bg-gradient-to-b from-[#eeeae3] to-[#898989]",
-              "px-2 py-[0.2rem]",
-              "shadow-[0_1px_2px_rgba(0,0,0,0.18)]"
-            )}
-          >
-            <span className="relative z-[1] whitespace-nowrap text-center text-[9px] leading-none text-[#211c19]">
-              <span className="font-sans font-bold tracking-tight">SWD</span>
-              <span className="font-sans font-medium tracking-tight">
-                {" "}
-                Founder
+          {/* Ribbon Base Container — px ~11px, tails tuck under via negative mb */}
+          <span className="relative z-[2] -mb-[0.6rem] flex w-full flex-col items-center px-[0.7rem]">
+            <span
+              className={cn(
+                "flex items-center justify-center",
+                "bg-gradient-to-b from-[#eeeae3] to-[#898989]",
+                "px-[0.52rem] py-[0.17rem]"
+              )}
+            >
+              <span className="whitespace-nowrap text-center text-[9px] leading-none text-[#211c19]">
+                <span className="font-sans font-bold tracking-tight">SWD</span>
+                <span className="font-sans font-medium tracking-tight">
+                  {" "}
+                  Founder
+                </span>
               </span>
             </span>
           </span>
 
-          {/* Ribbon tails */}
+          {/* Ribbon tails — 13.657px, left flipped */}
           <span
             aria-hidden
-            className="relative z-[1] flex w-full items-start justify-between px-[0.15rem]"
+            className="relative z-[1] flex w-full items-start justify-between px-[0.17rem]"
           >
             <img
               src="/badges/ribbon-bottom-l.svg"
@@ -80,6 +86,9 @@ export function CommunityBadge({
       </span>
     );
   }
+
+  // Founding writer stays inline only — not an avatar seal
+  if (placement === "on-avatar") return null;
 
   return (
     <span

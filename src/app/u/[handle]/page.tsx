@@ -55,22 +55,33 @@ export default async function PortfolioPage({ params }: PortfolioPageProps) {
     <div className="mx-auto max-w-[45rem] px-5 py-14 sm:px-6 sm:py-20">
       <section className="mb-14 space-y-8 border-b border-border/50 pb-14">
         <div className="flex items-start gap-5">
-          <Avatar
-            src={profile.avatarUrl}
-            alt={displayName}
-            size={96}
-            xHandle={profile.xHandle}
-            priority
-            className="ring-1 ring-border"
-          />
+          <div className="relative shrink-0">
+            <Avatar
+              src={profile.avatarUrl}
+              alt={displayName}
+              size={96}
+              xHandle={profile.xHandle}
+              priority
+              className="ring-1 ring-border"
+            />
+            <CommunityBadge
+              badge={profile.communityBadge}
+              placement="on-avatar"
+            />
+          </div>
           <div className="min-w-0 space-y-3 pt-1">
             <div className="space-y-1.5">
               <div className="flex flex-wrap items-center gap-3">
                 <h1 className="font-heading text-3xl tracking-tight sm:text-4xl">
                   {displayName}
                 </h1>
+                {/* Founding writer stays beside the name; Founder seals the avatar */}
                 <CommunityBadge
-                  badge={profile.communityBadge}
+                  badge={
+                    profile.communityBadge === "founding_writer"
+                      ? "founding_writer"
+                      : null
+                  }
                   className="translate-y-0.5"
                 />
                 {guestTerm ? (
