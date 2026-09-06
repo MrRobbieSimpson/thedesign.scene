@@ -31,8 +31,8 @@ export function CommunityBadge({
           "community-badge-founder pointer-events-none inline-flex shrink-0",
           placement === "on-avatar" &&
             (compact
-              ? "absolute -left-1 bottom-[8%] z-10 origin-center scale-[0.72]"
-              : "absolute -left-1.5 bottom-[10%] z-10 origin-center"),
+              ? "absolute left-0 bottom-[18%] z-10 origin-center scale-[0.72]"
+              : "absolute left-[0.15rem] bottom-[22%] z-10 origin-center"),
           className
         )}
       >
