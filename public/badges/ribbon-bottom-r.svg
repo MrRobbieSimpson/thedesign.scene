@@ -1,0 +1,12 @@
+<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="13.6572" height="13.6572" viewBox="0 0 13.6572 13.6572" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="Ribbon Bottom">
+<path id="Base" d="M13.6572 0L-4.76837e-07 0L-4.76837e-07 13.6572L13.6572 13.6572L10.9258 6.82861L13.6572 0Z" fill="url(#paint0_linear_15_77)"/>
+<path id="Shadow" d="M5.35578 9.6404L4.76837e-07 13.6572L4.76837e-07 9.6404H5.35578Z" fill="black" fill-opacity="0.4"/>
+</g>
+<defs>
+<linearGradient id="paint0_linear_15_77" x1="6.82861" y1="0" x2="6.82861" y2="13.6572" gradientUnits="userSpaceOnUse">
+<stop stop-color="#EEEAE3"/>
+<stop offset="1" stop-color="#898989"/>
+</linearGradient>
+</defs>
+</svg>
