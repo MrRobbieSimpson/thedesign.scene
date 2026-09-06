@@ -2,14 +2,13 @@ import type { CommunityBadge as CommunityBadgeKind } from "@/db/schema";
 import { cn } from "@/lib/utils";
 
 /**
- * Figma paper ribbon (15:58 / 15:72) — straight tilted band, cream→slate,
- * SWD + Founder, forked tails. Sits on the avatar’s circular frame.
+ * Figma paper ribbon (15:58 / 15:72) — tilted cream→slate band, SWD Founder, tails.
  */
 function FounderRibbon({ className }: { className?: string }) {
   return (
     <span
       className={cn(
-        "founder-ribbon-wrap relative flex w-[4.7rem] flex-col items-center",
+        "relative flex w-[4.7rem] flex-col items-center",
         "rotate-[24.76deg]",
         className
       )}
@@ -57,7 +56,7 @@ function FounderRibbon({ className }: { className?: string }) {
 
 /**
  * Community recognition.
- * Founder = Figma paper ribbon on the avatar frame (15:72).
+ * Founder = Figma ribbon, sits beneath the avatar.
  * Founding writer = quiet hairline pill.
  *
  * `placement="on-avatar"` — parent must be `relative` around the Avatar.
@@ -71,7 +70,6 @@ export function CommunityBadge({
   badge: CommunityBadgeKind | null | undefined;
   size?: "sm" | "md";
   placement?: "inline" | "on-avatar";
-  /** Kept for call-site compat; sizing is via `size`. */
   avatarSize?: number;
   className?: string;
 }) {
@@ -87,9 +85,8 @@ export function CommunityBadge({
           "community-badge-founder pointer-events-none inline-flex shrink-0",
           placement === "on-avatar" &&
             (compact
-              ? // On the circular frame — lower-left rim
-                "absolute -left-1 bottom-0 z-20 origin-center scale-[0.72]"
-              : "absolute -left-1.5 bottom-0 z-20 origin-center"),
+              ? "absolute left-1/2 top-full z-10 -translate-x-1/2 -mt-1 scale-[0.72]"
+              : "absolute left-1/2 top-full z-10 -translate-x-1/2 -mt-1.5"),
           className
         )}
       >

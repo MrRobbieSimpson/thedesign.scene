@@ -529,10 +529,7 @@
   }
 }
 
-/* Founder ribbon — Figma paper seal on the avatar frame */
-.founder-ribbon-wrap {
-  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.2));
-}
+
 
 /* Page click-through: soft fade + slight rise (kept short — long delays felt sluggish) */
 @keyframes page-enter {

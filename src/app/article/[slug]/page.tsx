@@ -186,7 +186,7 @@ export default async function ArticlePage({
                 href={authorHref}
                 className="flex items-center gap-3 transition-opacity hover:opacity-80"
               >
-                <span className="relative shrink-0">
+                <span className="relative shrink-0 pb-5">
                   <Avatar
                     src={authorAvatar}
                     alt={authorName}
@@ -198,7 +198,6 @@ export default async function ArticlePage({
                     badge={profile?.communityBadge}
                     size="sm"
                     placement="on-avatar"
-                    avatarSize={44}
                   />
                 </span>
                 <div className="min-w-0 space-y-0.5">
@@ -222,7 +221,7 @@ export default async function ArticlePage({
               </Link>
             ) : (
               <div className="flex items-center gap-3">
-                <span className="relative shrink-0">
+                <span className="relative shrink-0 pb-5">
                   <Avatar
                     src={authorAvatar}
                     alt={authorName}
@@ -234,7 +233,6 @@ export default async function ArticlePage({
                     badge={profile?.communityBadge}
                     size="sm"
                     placement="on-avatar"
-                    avatarSize={44}
                   />
                 </span>
                 <div className="min-w-0 space-y-0.5">
