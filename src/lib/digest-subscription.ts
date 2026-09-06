@@ -1,7 +1,7 @@
 import "server-only";
 
 import { and, eq } from "drizzle-orm";
-import { currentUser } from "@clerk/nextjs/server";
+import { cache } from "react";
 
 import { db, isDatabaseConfigured } from "@/db";
 import { newsletterSubscribers, profiles } from "@/db/schema";
@@ -10,47 +10,29 @@ import { getClerkUserId } from "@/lib/auth";
 export { DIGEST_SUBSCRIBED_STORAGE_KEY } from "@/lib/digest-subscription-client";
 
 /**
- * True when the current visitor is an active digest subscriber
- * (matched by Clerk email and/or local profile id).
+ * Fast digest check for layout — one profile lookup + one subscriber lookup.
+ * Skips Clerk `currentUser()` (slow) — signed-in subscribe always links profileId.
+ * Guests rely on localStorage in the footer client component.
  */
-export async function isCurrentUserOnDigest(): Promise<boolean> {
+export const isCurrentUserOnDigest = cache(async (): Promise<boolean> => {
   if (!isDatabaseConfigured() || !db) return false;
 
   const userId = await getClerkUserId();
   if (!userId) return false;
 
-  const [user, profile] = await Promise.all([
-    currentUser(),
-    db.query.profiles.findFirst({
-      where: eq(profiles.clerkUserId, userId),
-      columns: { id: true },
-    }),
-  ]);
+  const profile = await db.query.profiles.findFirst({
+    where: eq(profiles.clerkUserId, userId),
+    columns: { id: true },
+  });
+  if (!profile?.id) return false;
 
-  const email =
-    user?.primaryEmailAddress?.emailAddress?.trim().toLowerCase() ?? null;
+  const row = await db.query.newsletterSubscribers.findFirst({
+    where: and(
+      eq(newsletterSubscribers.profileId, profile.id),
+      eq(newsletterSubscribers.status, "active")
+    ),
+    columns: { id: true },
+  });
 
-  if (email) {
-    const byEmail = await db.query.newsletterSubscribers.findFirst({
-      where: and(
-        eq(newsletterSubscribers.email, email),
-        eq(newsletterSubscribers.status, "active")
-      ),
-      columns: { id: true },
-    });
-    if (byEmail) return true;
-  }
-
-  if (profile?.id) {
-    const byProfile = await db.query.newsletterSubscribers.findFirst({
-      where: and(
-        eq(newsletterSubscribers.profileId, profile.id),
-        eq(newsletterSubscribers.status, "active")
-      ),
-      columns: { id: true },
-    });
-    if (byProfile) return true;
-  }
-
-  return false;
-}
+  return Boolean(row);
+});

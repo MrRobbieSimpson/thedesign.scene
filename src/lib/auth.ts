@@ -1,6 +1,7 @@
 import { auth, clerkClient, currentUser } from "@clerk/nextjs/server";
 import { eq } from "drizzle-orm";
 import { revalidateTag } from "next/cache";
+import { cache } from "react";
 
 import { db } from "@/db";
 import { profiles, type Profile } from "@/db/schema";
@@ -34,11 +35,12 @@ export function isAdminClerkUserId(userId: string | null | undefined) {
   return adminUserIdSet().has(userId);
 }
 
-export async function getClerkUserId() {
+/** Request-scoped — header/footer/ensure-profile share one auth() call. */
+export const getClerkUserId = cache(async () => {
   if (!isClerkConfigured()) return null;
   const { userId } = await auth();
   return userId;
-}
+});
 
 export async function requireClerkUserId() {
   const userId = await getClerkUserId();
@@ -99,21 +101,8 @@ export async function getOrCreateProfile(options?: {
   const syncFromClerk = options?.syncFromClerk === true;
 
   // Hot path: profile already exists and caller doesn’t need a Clerk sync.
+  // Founder badge late-bind lives in EnsureProfile (once), not every auth call.
   if (existing && !syncFromClerk) {
-    // Late-bind Founder badge for allowlisted accounts created before badges.
-    if (existing.communityBadge === "none") {
-      const { resolveNewProfileBadge } = await import("@/lib/community-badge");
-      const badge = await resolveNewProfileBadge(userId);
-      if (badge === "founder") {
-        const [updated] = await db
-          .update(profiles)
-          .set({ communityBadge: "founder" })
-          .where(eq(profiles.id, existing.id))
-          .returning();
-        revalidateTag("profiles");
-        return updated ?? existing;
-      }
-    }
     return existing;
   }
 

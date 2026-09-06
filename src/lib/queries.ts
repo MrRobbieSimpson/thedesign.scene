@@ -1,5 +1,6 @@
 import { unstable_cache } from "next/cache";
 import { and, eq, gte, inArray, lte, sql } from "drizzle-orm";
+import { cache } from "react";
 
 import {
   content,
@@ -254,9 +255,10 @@ async function fetchPublishedEvents() {
       .sort((a, b) => a.startDate.getTime() - b.startDate.getTime());
   }
 
-  // Omit source_payload — never needed on the public Events UI.
+  // Upcoming + recent only — keeps Events TTFB down.
+  const since = new Date(Date.now() - 2 * 24 * 60 * 60 * 1000);
   return db.query.events.findMany({
-    where: eq(events.status, "published"),
+    where: and(eq(events.status, "published"), gte(events.startDate, since)),
     columns: {
       id: true,
       title: true,
@@ -277,13 +279,14 @@ async function fetchPublishedEvents() {
       sourcePayload: false,
     },
     orderBy: (fields, { asc }) => [asc(fields.startDate)],
+    limit: 80,
   });
 }
 
 export async function getPublishedEvents() {
   const rows = await unstable_cache(
     () => fetchPublishedEvents(),
-    ["published-events", "v5"],
+    ["published-events", "v6"],
     {
       revalidate: FEED_REVALIDATE_SECONDS,
       tags: ["events"],
@@ -339,7 +342,7 @@ export async function getPublishedJobs() {
 }
 
 /** Lean count for the header badge — avoid loading every job on each page. */
-export async function getPublishedJobCount(): Promise<number> {
+export const getPublishedJobCount = cache(async (): Promise<number> => {
   if (!isDatabaseConfigured() || !db) return 0;
 
   return unstable_cache(
@@ -356,7 +359,7 @@ export async function getPublishedJobCount(): Promise<number> {
       tags: ["jobs"],
     }
   )();
-}
+});
 
 export async function getAllJobs() {
   if (!isDatabaseConfigured() || !db) return [];

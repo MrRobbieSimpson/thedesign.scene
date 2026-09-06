@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { ClerkProvider } from "@clerk/nextjs";
 import { Geist, Geist_Mono, Source_Serif_4 } from "next/font/google";
 
@@ -56,9 +57,13 @@ export default function RootLayout({
       <WritingProvider>
         <FeedLayoutProvider>
           <SoftToastProvider>
-            <EnsureProfile />
+            <Suspense fallback={null}>
+              <EnsureProfile />
+            </Suspense>
             <SiteStage>
-              <SiteHeader />
+              <Suspense fallback={null}>
+                <SiteHeader />
+              </Suspense>
               <main className="min-w-0 w-full max-w-full flex-1 overflow-x-clip">
                 {children}
               </main>
@@ -69,7 +74,9 @@ export default function RootLayout({
                 aria-hidden
               />
             </SiteStage>
-            <SiteMobileNav />
+            <Suspense fallback={null}>
+              <SiteMobileNav />
+            </Suspense>
             <DeferredUi />
           </SoftToastProvider>
         </FeedLayoutProvider>
