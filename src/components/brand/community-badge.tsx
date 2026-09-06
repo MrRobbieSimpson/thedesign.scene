@@ -30,10 +30,12 @@ export function CommunityBadge({
       <span
         title="Founder of sit with design"
         className={cn(
-          "community-badge-founder inline-flex items-center gap-1.5 rounded-full",
+          "community-badge-founder group/founder relative inline-flex items-center gap-1.5 overflow-hidden rounded-full",
           "bg-foreground text-background",
           "shadow-[inset_0_1px_0_0_rgba(255,255,255,0.14),0_1px_2px_rgba(0,0,0,0.18)]",
           "ring-1 ring-inset ring-white/10",
+          "transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
+          "hover:scale-[1.03]",
           compact
             ? "h-5 pl-1 pr-1.5 text-[9px] font-semibold tracking-[0.14em] uppercase"
             : "h-6 pl-1.5 pr-2 text-[10px] font-semibold tracking-[0.16em] uppercase",
@@ -43,7 +45,7 @@ export function CommunityBadge({
         <span
           aria-hidden
           className={cn(
-            "inline-flex items-center justify-center rounded-[0.3rem]",
+            "relative z-[1] inline-flex items-center justify-center rounded-[0.3rem]",
             "bg-background/15 font-sans font-bold tracking-tight text-background",
             "ring-1 ring-inset ring-background/20",
             compact
@@ -53,7 +55,7 @@ export function CommunityBadge({
         >
           SWD
         </span>
-        {label}
+        <span className="relative z-[1]">{label}</span>
       </span>
     );
   }

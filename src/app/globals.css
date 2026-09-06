@@ -529,6 +529,54 @@
   }
 }
 
+/* Founder badge — cool shine sweep on hover */
+.community-badge-founder::after {
+  content: "";
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: inherit;
+  background: linear-gradient(
+    115deg,
+    transparent 30%,
+    rgba(255, 255, 255, 0.08) 42%,
+    rgba(255, 255, 255, 0.55) 50%,
+    rgba(255, 255, 255, 0.08) 58%,
+    transparent 70%
+  );
+  transform: translateX(-120%);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .community-badge-founder:hover::after {
+    opacity: 1;
+    animation: community-badge-shine 0.85s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  }
+}
+
+@keyframes community-badge-shine {
+  from {
+    transform: translateX(-120%);
+  }
+  to {
+    transform: translateX(120%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .community-badge-founder:hover::after {
+    animation: none;
+    opacity: 0;
+  }
+
+  .community-badge-founder:hover {
+    transform: none;
+  }
+}
+
 /* Page click-through: soft fade + slight rise (kept short — long delays felt sluggish) */
 @keyframes page-enter {
   from {
