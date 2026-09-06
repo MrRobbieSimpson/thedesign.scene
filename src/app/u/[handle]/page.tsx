@@ -62,7 +62,7 @@ export default async function PortfolioPage({ params }: PortfolioPageProps) {
               size={96}
               xHandle={profile.xHandle}
               priority
-              className="ring-1 ring-border"
+              className="relative z-10 ring-1 ring-border"
             />
             <CommunityBadge
               badge={profile.communityBadge}

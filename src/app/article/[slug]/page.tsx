@@ -192,7 +192,7 @@ export default async function ArticlePage({
                     alt={authorName}
                     size={44}
                     xHandle={profile?.xHandle ?? authorHandle}
-                    className="ring-1 ring-border"
+                    className="relative z-10 ring-1 ring-border"
                   />
                   <CommunityBadge
                     badge={profile?.communityBadge}
@@ -227,7 +227,7 @@ export default async function ArticlePage({
                     alt={authorName}
                     size={44}
                     xHandle={profile?.xHandle ?? authorHandle}
-                    className="ring-1 ring-border"
+                    className="relative z-10 ring-1 ring-border"
                   />
                   <CommunityBadge
                     badge={profile?.communityBadge}
