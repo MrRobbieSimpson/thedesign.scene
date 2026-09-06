@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowUpRight } from "lucide-react";
 
+import { CommunityBadge } from "@/components/brand/community-badge";
 import { PortfolioWork } from "@/components/writing/portfolio-work";
 import { WriteButton } from "@/components/writing/write-button";
 import { Avatar } from "@/components/ui/avatar";
@@ -68,6 +69,7 @@ export default async function PortfolioPage({ params }: PortfolioPageProps) {
                 <h1 className="font-heading text-3xl tracking-tight sm:text-4xl">
                   {displayName}
                 </h1>
+                <CommunityBadge badge={profile.communityBadge} />
                 {guestTerm ? (
                   <Badge variant="secondary">Guest Editor</Badge>
                 ) : null}

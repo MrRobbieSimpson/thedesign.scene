@@ -130,6 +130,14 @@ export async function saveArticleDraft(payload: WritePayload) {
       .where(eq(content.id, existing.id))
       .returning();
 
+    if (status === "published") {
+      const { maybeGrantFoundingWriterOnPublish } = await import(
+        "@/lib/community-badge"
+      );
+      await maybeGrantFoundingWriterOnPublish(profile.id);
+      revalidateTag("profiles");
+    }
+
     revalidatePath("/");
     revalidateTag("content");
     revalidatePath("/drafts");
@@ -170,6 +178,14 @@ export async function saveArticleDraft(payload: WritePayload) {
       publishedAt: status === "published" ? new Date() : null,
     })
     .returning();
+
+  if (status === "published") {
+    const { maybeGrantFoundingWriterOnPublish } = await import(
+      "@/lib/community-badge"
+    );
+    await maybeGrantFoundingWriterOnPublish(profile.id);
+    revalidateTag("profiles");
+  }
 
   revalidatePath("/");
   revalidateTag("content");

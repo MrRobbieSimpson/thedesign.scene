@@ -100,6 +100,20 @@ export async function getOrCreateProfile(options?: {
 
   // Hot path: profile already exists and caller doesn’t need a Clerk sync.
   if (existing && !syncFromClerk) {
+    // Late-bind Founder badge for allowlisted accounts created before badges.
+    if (existing.communityBadge === "none") {
+      const { resolveNewProfileBadge } = await import("@/lib/community-badge");
+      const badge = await resolveNewProfileBadge(userId);
+      if (badge === "founder") {
+        const [updated] = await db
+          .update(profiles)
+          .set({ communityBadge: "founder" })
+          .where(eq(profiles.id, existing.id))
+          .returning();
+        revalidateTag("profiles");
+        return updated ?? existing;
+      }
+    }
     return existing;
   }
 
@@ -156,6 +170,9 @@ export async function getOrCreateProfile(options?: {
     return existing;
   }
 
+  const { resolveNewProfileBadge } = await import("@/lib/community-badge");
+  const communityBadge = await resolveNewProfileBadge(userId);
+
   const [created] = await db
     .insert(profiles)
     .values({
@@ -164,6 +181,7 @@ export async function getOrCreateProfile(options?: {
       handle,
       avatarUrl: resolvedAvatar ?? user.imageUrl ?? null,
       xHandle,
+      communityBadge,
     })
     .returning();
 

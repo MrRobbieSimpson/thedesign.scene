@@ -100,6 +100,13 @@ export type ProfileLink = {
   url: string;
 };
 
+/** Community recognition — Founder (you) + Founding writer (first cohort). */
+export const communityBadgeEnum = pgEnum("community_badge", [
+  "none",
+  "founder",
+  "founding_writer",
+]);
+
 export const profiles = pgTable("profiles", {
   id: uuid("id").defaultRandom().primaryKey(),
   clerkUserId: text("clerk_user_id").notNull().unique(),
@@ -114,6 +121,10 @@ export const profiles = pgTable("profiles", {
   timezone: text("timezone"),
   /** Optional label+URL pairs shown on the portfolio. */
   links: jsonb("links").$type<ProfileLink[]>().notNull().default([]),
+  /** Founder / Founding writer — shown on portfolio + bylines. */
+  communityBadge: communityBadgeEnum("community_badge")
+    .notNull()
+    .default("none"),
   makerId: uuid("maker_id").references(() => makers.id, {
     onDelete: "set null",
   }),
@@ -508,6 +519,7 @@ export type PublicContentType = (typeof PUBLIC_CONTENT_TYPES)[number];
 export type ContentStatus = (typeof contentStatusEnum.enumValues)[number];
 export type FeatureBoostStatus =
   (typeof featureBoostStatusEnum.enumValues)[number];
+export type CommunityBadge = (typeof communityBadgeEnum.enumValues)[number];
 export type EventType = (typeof eventTypeEnum.enumValues)[number];
 export type EventStatus = (typeof eventStatusEnum.enumValues)[number];
 export type JobStatus = (typeof jobStatusEnum.enumValues)[number];

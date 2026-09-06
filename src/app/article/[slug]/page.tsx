@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 
+import { CommunityBadge } from "@/components/brand/community-badge";
 import { ArticleBody } from "@/components/content/article-body";
 import { EditorNote } from "@/components/content/editor-note";
 import { ArticleEnd } from "@/components/reading/article-end";
@@ -192,8 +193,14 @@ export default async function ArticlePage({
                   xHandle={profile?.xHandle ?? authorHandle}
                   className="ring-1 ring-border"
                 />
-                <div>
-                  <p className="text-sm font-medium">{authorName}</p>
+                <div className="min-w-0 space-y-0.5">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <p className="text-sm font-medium">{authorName}</p>
+                    <CommunityBadge
+                      badge={profile?.communityBadge}
+                      size="sm"
+                    />
+                  </div>
                   {authorHandle ? (
                     <p className="text-sm text-muted-foreground">
                       @{authorHandle}
@@ -210,8 +217,14 @@ export default async function ArticlePage({
                   xHandle={profile?.xHandle ?? authorHandle}
                   className="ring-1 ring-border"
                 />
-                <div>
-                  <p className="text-sm font-medium">{authorName}</p>
+                <div className="min-w-0 space-y-0.5">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <p className="text-sm font-medium">{authorName}</p>
+                    <CommunityBadge
+                      badge={profile?.communityBadge}
+                      size="sm"
+                    />
+                  </div>
                   {authorHandle ? (
                     <p className="text-sm text-muted-foreground">
                       @{authorHandle}

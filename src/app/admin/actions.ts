@@ -10,6 +10,8 @@ import {
   isContentType,
   isPublicContentType,
   jobs,
+  profiles,
+  type CommunityBadge,
   type ContentStatus,
   type ContentType,
   type EventStatus,
@@ -17,6 +19,7 @@ import {
   type JobStatus,
   type JobWorkMode,
 } from "@/db/schema";
+import { FOUNDING_WRITER_LIMIT } from "@/lib/community-badge";
 import { geocodeLocation } from "@/lib/geo";
 import {
   eventNeedsDates,
@@ -522,6 +525,71 @@ export async function rejectFeatureBoost(id: string): Promise<ActionResult> {
 
   revalidatePath("/admin");
   return { ok: true, message: "Feature request dismissed." };
+}
+
+export async function setCommunityBadge(
+  formData: FormData
+): Promise<ActionResult> {
+  const missing = requireDb();
+  if (missing) return missing;
+
+  const forbidden = await requireAdminAccess();
+  if (forbidden) return forbidden;
+
+  const handle = String(formData.get("handle") ?? "")
+    .trim()
+    .replace(/^@/, "")
+    .toLowerCase();
+  const badgeRaw = String(formData.get("badge") ?? "none");
+  const badge = (
+    ["none", "founder", "founding_writer"].includes(badgeRaw)
+      ? badgeRaw
+      : "none"
+  ) as CommunityBadge;
+
+  if (!handle) return { ok: false, message: "Handle is required." };
+
+  const profile = await db!.query.profiles.findFirst({
+    where: eq(profiles.handle, handle),
+    columns: { id: true, displayName: true, communityBadge: true },
+  });
+  if (!profile) {
+    return { ok: false, message: `No profile with handle @${handle}.` };
+  }
+
+  if (badge === "founding_writer" && profile.communityBadge !== "founding_writer") {
+    const { countFoundingWriters } = await import("@/lib/community-badge");
+    const n = await countFoundingWriters();
+    if (n >= FOUNDING_WRITER_LIMIT) {
+      return {
+        ok: false,
+        message: `Founding writer cohort is full (${FOUNDING_WRITER_LIMIT}).`,
+      };
+    }
+  }
+
+  await db!
+    .update(profiles)
+    .set({ communityBadge: badge })
+    .where(eq(profiles.id, profile.id));
+
+  revalidatePath("/admin");
+  revalidatePath(`/u/${handle}`);
+  revalidatePath("/");
+  revalidateTag("profiles");
+  revalidateTag("content");
+
+  const label =
+    badge === "founder"
+      ? "Founder"
+      : badge === "founding_writer"
+        ? "Founding writer"
+        : "cleared";
+
+  return {
+    ok: true,
+    message: `${profile.displayName ?? `@${handle}`} → ${label}.`,
+  };
 }
 
 function normalizeUrl(raw: string): string | null {

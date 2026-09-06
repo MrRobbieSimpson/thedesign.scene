@@ -11,6 +11,7 @@ import {
 
 import { EditorNote } from "@/components/content/editor-note";
 import { SaveButton } from "@/components/save-button";
+import { CommunityBadge } from "@/components/brand/community-badge";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -134,8 +135,10 @@ function Attribution({
       ? `/u/${profile.handle}`
       : null;
 
+  const communityBadge = profile?.communityBadge;
+
   const inner = (
-    <div className="flex items-center gap-2 text-xs text-muted-foreground/70">
+    <div className="flex min-w-0 items-center gap-2 text-xs text-muted-foreground/70">
       <Avatar
         src={avatar}
         alt={name}
@@ -143,8 +146,9 @@ function Attribution({
         xHandle={xHandle}
         className="ring-1 ring-border/70"
       />
-      <span className="truncate">
-        {name}
+      <span className="flex min-w-0 items-center gap-1.5 truncate">
+        <span className="truncate">{name}</span>
+        <CommunityBadge badge={communityBadge} size="sm" className="shrink-0" />
         {date ? (
           <>
             <span className="mx-1.5 text-border">·</span>

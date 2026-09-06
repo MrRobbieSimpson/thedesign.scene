@@ -92,6 +92,13 @@
       "when": 1787800000000,
       "tag": "0012_paid_events_article_feature",
       "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1787900000000,
+      "tag": "0013_community_badge",
+      "breakpoints": true
     }
   ]
 }

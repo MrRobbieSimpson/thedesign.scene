@@ -123,6 +123,7 @@ const feedProfileColumns = {
   handle: true,
   avatarUrl: true,
   xHandle: true,
+  communityBadge: true,
   clerkUserId: false,
   bio: false,
   website: false,

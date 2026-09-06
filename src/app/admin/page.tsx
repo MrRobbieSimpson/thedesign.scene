@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 
+import { CommunityBadgeForm } from "@/components/admin/community-badge-form";
 import { ContentForm } from "@/components/admin/content-form";
 import { ContentList } from "@/components/admin/content-list";
 import { EventList } from "@/components/admin/event-list";
@@ -75,6 +76,7 @@ export default async function AdminPage() {
         <ImportUrlForm disabled={!dbReady} />
         <ImportRssPanel disabled={!dbReady} />
         <ContentForm disabled={!dbReady} makers={makers} />
+        <CommunityBadgeForm disabled={!dbReady} />
         <GuestEditorForm disabled={!dbReady} profiles={profiles} />
 
         <section className="space-y-4">
