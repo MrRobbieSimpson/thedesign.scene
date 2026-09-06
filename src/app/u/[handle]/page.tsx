@@ -62,11 +62,12 @@ export default async function PortfolioPage({ params }: PortfolioPageProps) {
               size={96}
               xHandle={profile.xHandle}
               priority
-              className="relative z-10 ring-1 ring-border"
+              className="ring-1 ring-border"
             />
             <CommunityBadge
               badge={profile.communityBadge}
               placement="on-avatar"
+              avatarSize={96}
             />
           </div>
           <div className="min-w-0 space-y-3 pt-1">

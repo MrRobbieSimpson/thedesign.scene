@@ -529,11 +529,9 @@
   }
 }
 
-/* Founder ribbon — wraps under the avatar circle (Figma 15:72).
-   Badge is z-0; Avatar is z-10. The photo covers the ribbon inside the
-   disc, so the band only shows along/below the arc — reads as wrapping. */
+/* Founder ribbon — arcs along the avatar’s circular frame */
 .founder-ribbon-wrap {
-  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.28));
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.22));
 }
 
 /* Page click-through: soft fade + slight rise (kept short — long delays felt sluggish) */
