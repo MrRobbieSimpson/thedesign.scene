@@ -2,7 +2,8 @@ import type { CommunityBadge as CommunityBadgeKind } from "@/db/schema";
 import { cn } from "@/lib/utils";
 
 /**
- * Figma paper ribbon (15:58 / 15:72) — tilted cream→slate band, SWD Founder, tails.
+ * Figma paper ribbon (15:58 / 15:72) — tilted cream→slate, SWD Founder, tails.
+ * On-avatar: sits over the lower-left of the photo.
  */
 function FounderRibbon({ className }: { className?: string }) {
   return (
@@ -56,10 +57,8 @@ function FounderRibbon({ className }: { className?: string }) {
 
 /**
  * Community recognition.
- * Founder = Figma ribbon, sits beneath the avatar.
- * Founding writer = quiet hairline pill.
- *
- * `placement="on-avatar"` — parent must be `relative` around the Avatar.
+ * Founder = Figma ribbon over the avatar (lower-left).
+ * Founding writer = quiet hairline pill beside the name.
  */
 export function CommunityBadge({
   badge,
@@ -85,8 +84,8 @@ export function CommunityBadge({
           "community-badge-founder pointer-events-none inline-flex shrink-0",
           placement === "on-avatar" &&
             (compact
-              ? "absolute left-1/2 top-full z-10 -translate-x-1/2 -mt-1 scale-[0.72]"
-              : "absolute left-1/2 top-full z-10 -translate-x-1/2 -mt-1.5"),
+              ? "absolute -left-1 bottom-[16%] z-20 origin-center scale-[0.72]"
+              : "absolute -left-1.5 bottom-[18%] z-20 origin-center"),
           className
         )}
       >

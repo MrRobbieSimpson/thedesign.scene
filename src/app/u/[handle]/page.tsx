@@ -55,7 +55,7 @@ export default async function PortfolioPage({ params }: PortfolioPageProps) {
     <div className="mx-auto max-w-[45rem] px-5 py-14 sm:px-6 sm:py-20">
       <section className="mb-14 space-y-8 border-b border-border/50 pb-14">
         <div className="flex items-start gap-5">
-          <div className="relative shrink-0 pb-8">
+          <div className="relative shrink-0">
             <Avatar
               src={profile.avatarUrl}
               alt={displayName}
