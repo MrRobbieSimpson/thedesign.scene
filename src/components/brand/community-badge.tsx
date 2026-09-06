@@ -8,7 +8,8 @@ const LABELS: Record<Exclude<CommunityBadgeKind, "none">, string> = {
 
 /**
  * Sharp community recognition chip — worth showing off, never shouty.
- * Founder = ink + warm gold pin. Founding writer = refined hairline ribbon.
+ * Founder = ink pill + SWD monogram (swap for logo mark later).
+ * Founding writer = refined hairline ribbon.
  */
 export function CommunityBadge({
   badge,
@@ -34,19 +35,24 @@ export function CommunityBadge({
           "shadow-[inset_0_1px_0_0_rgba(255,255,255,0.14),0_1px_2px_rgba(0,0,0,0.18)]",
           "ring-1 ring-inset ring-white/10",
           compact
-            ? "h-5 px-1.5 text-[9px] font-semibold tracking-[0.14em] uppercase"
-            : "h-6 px-2 text-[10px] font-semibold tracking-[0.16em] uppercase",
+            ? "h-5 pl-1 pr-1.5 text-[9px] font-semibold tracking-[0.14em] uppercase"
+            : "h-6 pl-1.5 pr-2 text-[10px] font-semibold tracking-[0.16em] uppercase",
           className
         )}
       >
         <span
           aria-hidden
           className={cn(
-            "rounded-full bg-[oklch(0.84_0.11_85)]",
-            "shadow-[0_0_0_1px_rgba(0,0,0,0.2),0_0_8px_rgba(212,175,55,0.45)]",
-            compact ? "size-1" : "size-1.5"
+            "inline-flex items-center justify-center rounded-[0.3rem]",
+            "bg-background/15 font-sans font-bold tracking-tight text-background",
+            "ring-1 ring-inset ring-background/20",
+            compact
+              ? "h-3.5 min-w-3.5 px-0.5 text-[7px] leading-none"
+              : "h-4 min-w-4 px-1 text-[8px] leading-none"
           )}
-        />
+        >
+          SWD
+        </span>
         {label}
       </span>
     );
