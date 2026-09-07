@@ -6,11 +6,14 @@
  */
 import { config } from "dotenv";
 
-import { pullWritingDrafts } from "../src/lib/ingest/pull-writing-drafts";
-
+// Load env before @/db is imported (module init reads DATABASE_URL once).
 config({ path: ".env.local" });
 
 async function main() {
+  const { pullWritingDrafts } = await import(
+    "../src/lib/ingest/pull-writing-drafts"
+  );
+
   const dryRun =
     process.argv.includes("--dry-run") || !process.env.DATABASE_URL;
 

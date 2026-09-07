@@ -1,11 +1,14 @@
+/**
+ *   npm run ingest:url -- "https://…" [--dry-run]
+ */
 import { config } from "dotenv";
-
-import { resolveImportUrl } from "../src/lib/ingest/resolve";
-import { insertResolvedDraft } from "../src/lib/ingest/upsert";
 
 config({ path: ".env.local" });
 
 async function main() {
+  const { resolveImportUrl } = await import("../src/lib/ingest/resolve");
+  const { insertResolvedDraft } = await import("../src/lib/ingest/upsert");
+
   const url = process.argv[2];
   const dryRun = process.argv.includes("--dry-run");
 

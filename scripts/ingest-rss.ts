@@ -1,8 +1,8 @@
+/**
+ *   npm run ingest:rss -- --source handheld --limit 3
+ *   npm run ingest:rss -- --source smashing --limit 5 --dry-run
+ */
 import { config } from "dotenv";
-
-import { fetchRssCandidates } from "../src/lib/ingest/rss";
-import { FEED_SOURCES, getFeedSource } from "../src/lib/ingest/sources";
-import { insertRssDrafts } from "../src/lib/ingest/upsert";
 
 config({ path: ".env.local" });
 
@@ -13,6 +13,12 @@ function arg(name: string) {
 }
 
 async function main() {
+  const { fetchRssCandidates } = await import("../src/lib/ingest/rss");
+  const { FEED_SOURCES, getFeedSource } = await import(
+    "../src/lib/ingest/sources"
+  );
+  const { insertRssDrafts } = await import("../src/lib/ingest/upsert");
+
   const sourceId = arg("--source") ?? "handheld";
   const limit = Number(arg("--limit") ?? "10");
   const dryRun = process.argv.includes("--dry-run");
@@ -27,11 +33,11 @@ async function main() {
 
   console.log(`Fetching ${source.name} (limit ${limit})…`);
   const items = await fetchRssCandidates(source.feedUrl, limit);
+  console.log(JSON.stringify(items, null, 2));
 
   if (dryRun || !process.env.DATABASE_URL) {
-    console.log(JSON.stringify(items, null, 2));
     if (!process.env.DATABASE_URL) {
-      console.log("\nNo DATABASE_URL — printed preview only.");
+      console.log("\nNo DATABASE_URL — preview only.");
     }
     return;
   }

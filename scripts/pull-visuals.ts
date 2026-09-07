@@ -2,14 +2,15 @@
  * High-bar product / UI visuals → published (image required).
  *
  * Sources:
- *   - Layers.to posts that include still-image layers (thumbnails)
- *   - recent.design items whose slug reads as product/UI
+ *   - Layers.to still-image layers (product/UI titles only; spam filtered)
+ *   - Optional: recent.design via --include-recent (off by default)
  *
  * Spotted in Prod is excluded — OG full-frames, not thumbnails.
  * Also demotes Behance / Awwwards / Httpster / One Page Love / SaaS LP / Spotted.
  *
  *   npm run ingest:visuals
  *   npm run ingest:visuals -- --dry-run
+ *   npm run ingest:visuals -- --include-recent
  */
 import { config } from "dotenv";
 import { and, eq, inArray, sql } from "drizzle-orm";
@@ -26,8 +27,18 @@ config({ path: ".env.local" });
 const UA =
   "sitwithdesign/1.0 (+https://sitwithdesign.online; curated design platform)";
 
-const PRODUCT_UI_SLUG =
-  /app|ui|ux|interface|onboard|dashboard|saas|mobile|product|screen|flow|pay|wallet|bank|finance|health|music|map|chat|inbox|settings|home-screen|icon|portfolio-theme|monitor|feature/i;
+const PRODUCT_UI_TITLE =
+  /\b(app|ui|ux|interface|onboard(?:ing)?|dashboard|saas|mobile|product|screen|flow|pay(?:ments?)?|wallet|bank|finance|health|music|map|chat|inbox|settings|home[\s-]?screen|icons?|monitor|feature|command[\s-]?menu|notification|drawer|recipe|food)\b/i;
+
+/** Layers firehose is full of marketplace + generic brand spam — reject hard. */
+const SPAM_TITLE =
+  /\b(buy|bu~y|bulk|old\s+(gmail|github|twitter|instagram|reddit|accounts?)|voice\s+numbers?|smm\s+panel|followers?|crypto\s+signal|brand\s+identity|creative\s+branding|guidelines|daily\s+ui|day\s+\d+\s+of)\b/i;
+
+function looksLikeProductUi(title: string) {
+  if (SPAM_TITLE.test(title)) return false;
+  if (/untitled/i.test(title)) return false;
+  return PRODUCT_UI_TITLE.test(title);
+}
 
 async function fetchHtml(url: string) {
   const response = await fetch(url, {
@@ -92,7 +103,7 @@ async function discoverLayersVisuals(limit = 28): Promise<LayerVisual[]> {
       const image = normalizeImageUrl(layer.imageUrl);
       if (!image || !isStillImage(image)) continue;
       const title = layer.title?.trim() || "Untitled layer";
-      // Skip empty / spammy soft titles without product signal when possible
+      if (!looksLikeProductUi(title)) continue;
       out.push({
         url: `https://layers.to/posts/${post.id}`,
         title,
@@ -266,6 +277,7 @@ async function demoteGenericVisuals(db: Db) {
 
 async function main() {
   const dryRun = process.argv.includes("--dry-run");
+  const includeRecent = process.argv.includes("--include-recent");
   const url = process.env.DATABASE_URL;
   if (!url && !dryRun) {
     console.error("DATABASE_URL required (or pass --dry-run)");
@@ -275,10 +287,10 @@ async function main() {
   const client = url ? postgres(url, { prepare: false, max: 1 }) : null;
   const db: Db | null = client ? drizzle(client, { schema }) : null;
 
-  console.log("Discovering Layers still-image layers…");
+  console.log("Discovering Layers still-image layers (product/UI only)…");
   let layers: LayerVisual[] = [];
   try {
-    layers = await discoverLayersVisuals(28);
+    layers = await discoverLayersVisuals(12);
     console.log(`  ${layers.length}`);
   } catch (error) {
     console.log(
@@ -286,9 +298,14 @@ async function main() {
     );
   }
 
-  console.log("Discovering selective recent.design product/UI…");
-  const recent = await discoverRecentDesignUrls(16);
-  console.log(`  ${recent.length}`);
+  let recent: string[] = [];
+  if (includeRecent) {
+    console.log("Discovering selective recent.design product/UI…");
+    recent = await discoverRecentDesignUrls(8);
+    console.log(`  ${recent.length}`);
+  } else {
+    console.log("Skipping recent.design (pass --include-recent to enable)");
+  }
 
   let created = 0;
   let updated = 0;
