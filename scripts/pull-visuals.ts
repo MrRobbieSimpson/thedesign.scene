@@ -63,7 +63,7 @@ async function discoverRecentDesignUrls(limit = 16): Promise<string[]> {
   const html = await fetchHtml("https://recent.design/");
   const paths = unique(
     Array.from(html.matchAll(/href="(\/i\/[a-z0-9-]+)"/g), (m) => m[1])
-  ).filter((path) => PRODUCT_UI_SLUG.test(path));
+  ).filter((path) => PRODUCT_UI_TITLE.test(path));
   return paths.slice(0, limit).map((path) => `https://recent.design${path}`);
 }
 
